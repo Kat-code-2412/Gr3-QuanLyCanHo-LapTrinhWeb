@@ -186,8 +186,9 @@ Thanh cong: redirect ve danh sach va flash `success`. Loi validate: giu lai form
 
 ## 6. Module: Khach thue & Bao tri
 
-**Trang thai:** Chua lam  
-**Nguoi phu trach:** ___
+**Trang thai:** Xong  
+**Nguoi phu trach:** Nguyen Minh Thao  
+**File da tao:** `config/database.php`, `config/env.php`, `.env.example`, `includes/header.php`, `includes/footer.php`, `config/test-connection.php`, `README.md`
 
 ### Trang can code
 
@@ -227,7 +228,8 @@ Thanh cong: redirect ve danh sach va flash `success`. Loi validate: giu lai form
 
 | Ngay | Module | Viec da lam |
 |---|---|---|
-|  |  |  |
+| 2026-08-31 | Kien truc & Setup chung | Tao cau truc thu muc chuan, file PDO MySQL chung, layout header/footer theo vai tro, mau env va file kiem tra ket noi; check syntax PHP ban dau. |
+| 2026-08-31 | Kien truc & Setup chung | Test thực tế trên Laragon: import schema `quanlycandichvu`, kết nối DB thành công qua `config/test-connection.php`, và render header thật với menu khác nhau cho Admin/Nhân viên. |
 
 ### Quy trinh cap nhat changelog
 
