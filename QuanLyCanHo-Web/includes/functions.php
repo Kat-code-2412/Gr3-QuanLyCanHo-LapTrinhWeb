@@ -144,10 +144,13 @@ function url(string $path = ''): string
     }
 
     $path = '/' . ltrim($path, '/');
-    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-    
-    if (str_starts_with($scriptName, '/QuanLyCanHo-Web') && !str_starts_with($path, '/QuanLyCanHo-Web')) {
-        return '/QuanLyCanHo-Web' . $path;
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+    $projectFolder = '/QuanLyCanHo-Web';
+    $projectPosition = strpos($scriptName, $projectFolder);
+
+    if ($projectPosition !== false && !str_starts_with($path, $projectFolder)) {
+        $basePath = substr($scriptName, 0, $projectPosition + strlen($projectFolder));
+        return $basePath . $path;
     }
 
     return $path;

@@ -187,7 +187,7 @@ Thanh cong: redirect ve danh sach va flash `success`. Loi validate: giu lai form
 ## 6. Module: Khach thue & Bao tri
 
 **Trang thai:** Xong  
-**Nguoi phu trach:** Nguyen Minh Thao  
+**Nguoi phu trach:**  
 **File da tao:** `config/database.php`, `config/env.php`, `.env.example`, `includes/header.php`, `includes/footer.php`, `config/test-connection.php`, `README.md`
 
 ### Trang can code
