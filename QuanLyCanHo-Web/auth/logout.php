@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../includes/functions.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -18,7 +20,8 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-session_start();
-$_SESSION['flash_success'] = 'Bạn đã đăng xuất thành công khỏi hệ thống.';
-header('Location: /auth/login.php');
-exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+setFlash('success', 'Bạn đã đăng xuất thành công khỏi hệ thống.');
+redirect('/auth/login.php');

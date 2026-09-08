@@ -46,6 +46,41 @@ try {
             PDO::ATTR_EMULATE_PREPARES => false,
         ]
     );
+
+    // Tự động kiểm tra và thêm cột NgheNghiep, GhiChu cho KhachThue nếu chưa có
+    try {
+        $columns = $pdo->query("SHOW COLUMNS FROM KhachThue")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('NgheNghiep', $columns, true)) {
+            $pdo->exec("ALTER TABLE KhachThue ADD COLUMN NgheNghiep VARCHAR(100) NULL AFTER DiaChiThuongTru");
+        }
+        if (!in_array('GhiChu', $columns, true)) {
+            $pdo->exec("ALTER TABLE KhachThue ADD COLUMN GhiChu VARCHAR(255) NULL AFTER NgheNghiep");
+        }
+
+        // Tự động kiểm tra và mở rộng cột cho HopDong
+        $hdColumns = $pdo->query("SHOW COLUMNS FROM HopDong")->fetchAll(PDO::FETCH_COLUMN);
+        $alterQueries = [
+            'NgayKy'           => "ALTER TABLE HopDong ADD COLUMN NgayKy DATE NULL AFTER MaNV",
+            'ThoiHanThang'     => "ALTER TABLE HopDong ADD COLUMN ThoiHanThang INT NULL DEFAULT 6 AFTER NgayKetThuc",
+            'NgayCheckIn'      => "ALTER TABLE HopDong ADD COLUMN NgayCheckIn DATE NULL AFTER GhiChu",
+            'GioCheckIn'       => "ALTER TABLE HopDong ADD COLUMN GioCheckIn VARCHAR(10) NULL AFTER NgayCheckIn",
+            'NgayCheckOut'     => "ALTER TABLE HopDong ADD COLUMN NgayCheckOut DATE NULL AFTER GioCheckIn",
+            'GioCheckOut'      => "ALTER TABLE HopDong ADD COLUMN GioCheckOut VARCHAR(10) NULL AFTER NgayCheckOut",
+            'AnhKhachThue'     => "ALTER TABLE HopDong ADD COLUMN AnhKhachThue VARCHAR(255) NULL AFTER FileHopDong",
+            'AnhCCCD'          => "ALTER TABLE HopDong ADD COLUMN AnhCCCD VARCHAR(255) NULL AFTER AnhKhachThue",
+            'AnhCCCDMatTruoc'  => "ALTER TABLE HopDong ADD COLUMN AnhCCCDMatTruoc VARCHAR(255) NULL AFTER AnhCCCD",
+            'AnhCCCDMatSau'    => "ALTER TABLE HopDong ADD COLUMN AnhCCCDMatSau VARCHAR(255) NULL AFTER AnhCCCDMatTruoc",
+            'AnhBienBan'       => "ALTER TABLE HopDong ADD COLUMN AnhBienBan VARCHAR(255) NULL AFTER AnhCCCDMatSau",
+        ];
+
+        foreach ($alterQueries as $colName => $sqlCmd) {
+            if (!in_array($colName, $hdColumns, true)) {
+                $pdo->exec($sqlCmd);
+            }
+        }
+    } catch (Throwable $t) {
+        // Tránh gián đoạn kết nối nếu bảng chưa tạo
+    }
 } catch (PDOException $e) {
     throw new RuntimeException('Kết nối database thất bại: ' . $e->getMessage());
 }

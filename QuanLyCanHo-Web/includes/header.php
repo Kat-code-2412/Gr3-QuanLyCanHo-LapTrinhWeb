@@ -39,28 +39,29 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? 'Quản lý căn dịch vụ') ?></title>
+    <title><?= e($title ?? 'Hệ Thống Quản Lý Căn Hộ Dịch Vụ') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
 </head>
 <body>
     <header class="navbar-header">
         <nav class="container nav-container">
             <div class="brand">
-                <a href="<?= ($vaiTro === 'Admin') ? '/admin/index.php' : '/user/index.php' ?>">
-                    🏢 <span>Quản Lý Căn Dịch Vụ</span>
+                <a href="<?= url(($vaiTro === 'Admin') ? '/admin/index.php' : '/user/index.php') ?>">
+                    🏢 <span>Hệ Thống Quản Lý Căn Hộ Dịch Vụ</span>
                 </a>
             </div>
 
             <?php if ($loggedIn): ?>
                 <ul class="menu-list">
                     <?php foreach ($menuItems as $item): 
+                        $targetUrl = url($item['url']);
                         $isActive = (str_contains($currentUri, parse_url($item['url'], PHP_URL_PATH)));
                     ?>
                         <li>
-                            <a href="<?= e($item['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
+                            <a href="<?= e($targetUrl) ?>" class="<?= $isActive ? 'active' : '' ?>">
                                 <?= e($item['label']) ?>
                             </a>
                         </li>
@@ -71,11 +72,11 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
                     <span class="user-role-badge role-<?= strtolower(e((string)$vaiTro)) ?>">
                         👤 <?= e((string)$vaiTro) ?>
                     </span>
-                    <a href="/auth/logout.php" class="btn-logout">Đăng xuất</a>
+                    <a href="<?= url('/auth/logout.php') ?>" class="btn-logout">Đăng xuất</a>
                 </div>
             <?php else: ?>
                 <div class="guest-box">
-                    <a href="/auth/login.php" class="btn-login">Đăng nhập</a>
+                    <a href="<?= url('/auth/login.php') ?>" class="btn-login">Đăng nhập</a>
                 </div>
             <?php endif; ?>
         </nav>

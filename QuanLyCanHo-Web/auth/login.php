@@ -72,11 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập hệ thống - Quản lý Căn dịch vụ</title>
+    <title>Đăng nhập hệ thống - Quản Lý Căn Hộ Dịch Vụ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
     <style>
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="login-card">
     <div class="login-header">
-        <h2>🏢 Quản Lý Căn Dịch Vụ</h2>
+        <h2>🏢 Hệ Thống Quản Lý Căn Hộ Dịch Vụ</h2>
         <p>Vui lòng đăng nhập tài khoản của bạn</p>
     </div>
 
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    id="username" 
                    name="username" 
                    class="form-control" 
-                   placeholder="Nhập tên đăng nhập (admin / nhanvien1)" 
+                   placeholder="Nhập tên đăng nhập (admin / nhanvien)" 
                    value="<?= e($username) ?>" 
                    required 
                    autofocus>

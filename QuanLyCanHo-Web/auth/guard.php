@@ -20,9 +20,8 @@ function isLoggedIn(): bool
 function requireLogin(): void
 {
     if (!isLoggedIn()) {
-        $_SESSION['flash_error'] = 'Vui lòng đăng nhập để truy cập hệ thống.';
-        header('Location: /auth/login.php');
-        exit;
+        setFlash('error', 'Vui lòng đăng nhập để truy cập hệ thống.');
+        redirect('/auth/login.php');
     }
 }
 
@@ -33,9 +32,8 @@ function requireAdmin(): void
 {
     requireLogin();
     if (($_SESSION['VaiTro'] ?? '') !== 'Admin') {
-        $_SESSION['flash_error'] = 'Bạn không có quyền thực hiện thao tác này (Chỉ dành cho Admin).';
-        header('Location: /user/index.php');
-        exit;
+        setFlash('error', 'Bạn không có quyền thực hiện thao tác này (Chỉ dành cho Admin).');
+        redirect('/user/index.php');
     }
 }
 

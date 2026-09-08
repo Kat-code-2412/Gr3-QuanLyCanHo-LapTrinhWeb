@@ -18,7 +18,6 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai =
 <div class="page-header">
     <div>
         <h1 class="page-title">Dashboard Tổng Quan (Admin)</h1>
-        <p class="page-subtitle">Xin chào <strong><?= e($_SESSION['HoTen'] ?? 'Admin') ?></strong>, chúc bạn một ngày làm việc hiệu quả!</p>
     </div>
 </div>
 
@@ -29,7 +28,7 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai =
         <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">
             <?= $countKhach ?>
         </div>
-        <a href="/admin/khach-thue/index.php" style="font-size: 0.85rem; font-weight: 500;">Xem danh sách →</a>
+        <a href="<?= url('/admin/khach-thue/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem danh sách →</a>
     </div>
 
     <div class="detail-item" style="border-left: 4px solid var(--warning-color);">
@@ -37,7 +36,7 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai =
         <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--warning-color);">
             <?= $countBaoTri ?>
         </div>
-        <a href="/admin/bao-tri/index.php" style="font-size: 0.85rem; font-weight: 500;">Quản lý bảo trì →</a>
+        <a href="<?= url('/admin/bao-tri/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Quản lý bảo trì →</a>
     </div>
 
     <div class="detail-item" style="border-left: 4px solid var(--success-color);">
@@ -57,11 +56,11 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai =
         </div>
         <div class="card-body">
             <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                Quản lý danh sách hồ sơ khách thuê, tìm kiếm theo Tên / CCCD / SĐT, xem lịch sử hợp đồng và yêu cầu bảo trì.
+                Quản lý danh sách hồ sơ khách thuê, tìm kiếm theo Tên / CCCD / SĐT và xem yêu cầu bảo trì.
             </p>
             <div style="display: flex; gap: 0.5rem;">
-                <a href="/admin/khach-thue/index.php" class="btn btn-primary">Xem danh sách</a>
-                <a href="/admin/khach-thue/create.php" class="btn btn-outline">+ Thêm khách mới</a>
+                <a href="<?= url('/admin/khach-thue/index.php') ?>" class="btn btn-primary">Xem danh sách</a>
+                <a href="<?= url('/admin/khach-thue/create.php') ?>" class="btn btn-outline">+ Thêm khách mới</a>
             </div>
         </div>
     </div>
@@ -75,8 +74,8 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai =
                 Tiếp nhận sự cố sửa chữa từ khách thuê, phân công tiến độ, cập nhật chi phí và xác nhận hoàn thành.
             </p>
             <div style="display: flex; gap: 0.5rem;">
-                <a href="/admin/bao-tri/index.php" class="btn btn-primary">Xem danh sách bảo trì</a>
-                <a href="/admin/bao-tri/create.php" class="btn btn-outline">+ Tạo yêu cầu mới</a>
+                <a href="<?= url('/admin/bao-tri/index.php') ?>" class="btn btn-primary">Xem danh sách bảo trì</a>
+                <a href="<?= url('/admin/bao-tri/create.php') ?>" class="btn btn-outline">+ Tạo yêu cầu mới</a>
             </div>
         </div>
     </div>

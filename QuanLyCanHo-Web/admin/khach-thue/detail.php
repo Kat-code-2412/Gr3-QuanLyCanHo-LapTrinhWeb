@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-$title = 'Chi tiết Khách thuê';
+$title = 'Chi Tiết Hồ Sơ Khách Thuê';
 require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = (currentUserRole() === 'Admin') ? '/admin/khach-thue' : '/user/khach-thue';
+$baseUrl = url((currentUserRole() === 'Admin') ? '/admin/khach-thue' : '/user/khach-thue');
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
@@ -25,56 +25,77 @@ if (!$tenant) {
     redirect($baseUrl . '/index.php');
 }
 
-// 2. Các hợp đồng của khách thuê (JOIN HopDong & CanHo)
-$contractsSql = 'SELECT hp.*, ch.SoPhong, ch.TrangThai AS TrangThaiCanHo
+// 2. Lấy danh sách hợp đồng của khách (mới nhất xếp trước)
+$contractsSql = 'SELECT hp.*, ch.SoPhong, ch.DiaChi, ch.MoTa AS NoiThatCanHo, ch.DienTich, lch.TenLoai
                  FROM HopDong hp
                  JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo
+                 JOIN LoaiCanHo lch ON ch.MaLoai = lch.MaLoai
                  WHERE hp.MaKhach = ?
                  ORDER BY hp.MaHopDong DESC';
 $contractsStmt = $pdo->prepare($contractsSql);
 $contractsStmt->execute([$id]);
-$contracts = $contractsStmt->fetchAll();
+$allContracts = $contractsStmt->fetchAll();
 
-// 3. Lịch sử yêu cầu bảo trì của khách thuê (JOIN YeuCauBaoTri & CanHo)
-$maintenanceSql = 'SELECT bt.*, ch.SoPhong
-                   FROM YeuCauBaoTri bt
-                   JOIN CanHo ch ON bt.MaCanHo = ch.MaCanHo
-                   WHERE bt.MaKhach = ?
-                   ORDER BY bt.MaBaoTri DESC';
-$maintStmt = $pdo->prepare($maintenanceSql);
-$maintStmt->execute([$id]);
-$maintenances = $maintStmt->fetchAll();
+// Tách hợp đồng đang hiệu lực
+$activeContract = null;
+foreach ($allContracts as $c) {
+    if ($c['TrangThai'] === 'Đang hiệu lực') {
+        $activeContract = $c;
+        break;
+    }
+}
+
+// Tính Trạng thái Khách thuê
+if ($activeContract !== null) {
+    $tenantStatus = 'Đang thuê';
+} elseif (!empty($allContracts)) {
+    $tenantStatus = 'Đã trả phòng';
+} else {
+    $tenantStatus = 'Chưa thuê';
+}
 ?>
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Hồ Sơ Khách Thuê: <?= e($tenant['HoTen']) ?></h1>
-        <p class="page-subtitle">Mã khách: #<?= e((string)$tenant['MaKhach']) ?> | CCCD: <?= e($tenant['CCCD']) ?></p>
+        <p class="page-subtitle">Mã khách: #<?= e((string)$tenant['MaKhach']) ?> | Trạng thái: <?= renderStatusBadge($tenantStatus) ?></p>
     </div>
     <div style="display: flex; gap: 0.5rem;">
         <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline">← Danh sách</a>
-        <a href="<?= $baseUrl ?>/edit.php?id=<?= $id ?>" class="btn btn-secondary">✏️ Chỉnh sửa</a>
+        <a href="<?= $baseUrl ?>/edit.php?id=<?= $id ?>" class="btn btn-secondary">✏️ Sửa</a>
         <a href="<?= $baseUrl ?>/delete.php?id=<?= $id ?>" 
            class="btn btn-danger" 
-           onclick="return confirm('Bạn có chắc chắn muốn xóa khách thuê này?');">
-            🗑️ Xóa khách
+           onclick="return confirm('Bạn có chắc chắn muốn xóa khách thuê này không?');">
+            🗑️ Xóa
         </a>
     </div>
 </div>
 
-<!-- Grid Thông tin cá nhân -->
+<!-- 1. THÔNG TIN KHÁCH THUÊ -->
 <div class="card mb-3">
-    <div class="card-header">
-        <h3>📋 Thông Tin Cá Nhân</h3>
+    <div class="card-header" style="background-color: #f8fafc;">
+        <h3>📋 THÔNG TIN KHÁCH THUÊ</h3>
     </div>
     <div class="card-body">
         <div class="detail-grid">
             <div class="detail-item">
-                <div class="detail-label">Họ và Tên</div>
+                <div class="detail-label">Mã khách thuê</div>
+                <div class="detail-value"><strong>#<?= e((string)$tenant['MaKhach']) ?></strong></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Họ và tên</div>
                 <div class="detail-value"><?= e($tenant['HoTen']) ?></div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Số CCCD / CMND</div>
+                <div class="detail-label">Số điện thoại</div>
+                <div class="detail-value"><strong><?= e($tenant['SoDienThoai']) ?></strong></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Email</div>
+                <div class="detail-value"><?= e($tenant['Email'] ?? 'Chưa đăng ký') ?></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">CCCD / CMND</div>
                 <div class="detail-value"><code><?= e($tenant['CCCD']) ?></code></div>
             </div>
             <div class="detail-item">
@@ -86,30 +107,81 @@ $maintenances = $maintStmt->fetchAll();
                 <div class="detail-value"><?= e($tenant['GioiTinh']) ?></div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Số điện thoại</div>
-                <div class="detail-value"><strong><?= e($tenant['SoDienThoai']) ?></strong></div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Email</div>
-                <div class="detail-value"><?= e($tenant['Email'] ?? 'Chưa đăng ký') ?></div>
+                <div class="detail-label">Nghề nghiệp</div>
+                <div class="detail-value"><?= e($tenant['NgheNghiep'] ?? 'Chưa cập nhật') ?></div>
             </div>
             <div class="detail-item" style="grid-column: 1 / -1;">
-                <div class="detail-label">Địa chỉ thường trú</div>
+                <div class="detail-label">Địa chỉ đăng ký thường trú</div>
                 <div class="detail-value"><?= e($tenant['DiaChiThuongTru'] ?? 'Chưa cập nhật') ?></div>
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="detail-label">Ghi chú</div>
+                <div class="detail-value"><?= nl2br(e($tenant['GhiChu'] ?? 'Không có ghi chú.')) ?></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Trạng thái</div>
+                <div class="detail-value"><?= renderStatusBadge($tenantStatus) ?></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Danh sách Hợp đồng -->
+<!-- 2. HỢP ĐỒNG HIỆN TẠI -->
 <div class="card mb-3">
-    <div class="card-header">
-        <h3>📄 Các Hợp Đồng Thuê Căn Hộ (<?= count($contracts) ?> hợp đồng)</h3>
+    <div class="card-header" style="background-color: #f8fafc;">
+        <h3>🏠 HỢP ĐỒNG HIỆN TẠI</h3>
+    </div>
+    <div class="card-body">
+        <?php if ($activeContract !== null): ?>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Mã Hợp Đồng</div>
+                    <div class="detail-value"><strong>#<?= e((string)$activeContract['MaHopDong']) ?></strong></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Phòng đang thuê</div>
+                    <div class="detail-value" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color);">
+                        Phòng <?= e($activeContract['SoPhong']) ?> (<?= e($activeContract['TenLoai']) ?>)
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Địa chỉ căn hộ</div>
+                    <div class="detail-value"><?= e($activeContract['DiaChi'] ?? 'Tòa nhà A') ?></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Giá thuê thỏa thuận</div>
+                    <div class="detail-value"><strong><?= formatMoney($activeContract['GiaThueThoaThuan']) ?></strong></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Tiền cọc</div>
+                    <div class="detail-value"><span style="color: var(--success-color); font-weight: 600;"><?= formatMoney($activeContract['TienCoc']) ?></span></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Thời hạn thuê</div>
+                    <div class="detail-value"><?= formatDate($activeContract['NgayBatDau']) ?> → <?= formatDate($activeContract['NgayKetThuc']) ?></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Trạng thái hợp đồng</div>
+                    <div class="detail-value"><?= renderStatusBadge($activeContract['TrangThai']) ?></div>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="empty-state" style="padding: 1.5rem; text-align: center;">
+                <p style="font-size: 1.05rem; color: #64748b; margin: 0;">Khách thuê chưa có hợp đồng.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- 3. LỊCH SỬ HỢP ĐỒNG -->
+<div class="card mb-3">
+    <div class="card-header" style="background-color: #f8fafc;">
+        <h3>📄 LỊCH SỬ HỢP ĐỒNG (<?= count($allContracts) ?> hợp đồng)</h3>
     </div>
     <div class="card-body" style="padding: 0;">
-        <?php if (empty($contracts)): ?>
+        <?php if (empty($allContracts)): ?>
             <div class="empty-state">
-                <p>Khách thuê này chưa đăng ký hợp đồng nào.</p>
+                <p>Khách thuê chưa có hợp đồng nào trong lịch sử.</p>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -117,75 +189,28 @@ $maintenances = $maintStmt->fetchAll();
                     <thead>
                         <tr>
                             <th>Mã HĐ</th>
-                            <th>Căn hộ (Phòng)</th>
+                            <th>Phòng</th>
                             <th>Ngày bắt đầu</th>
                             <th>Ngày kết thúc</th>
-                            <th>Giá thuê thỏa thuận</th>
+                            <th>Giá thuê</th>
                             <th>Tiền cọc</th>
-                            <th>Trạng thái HĐ</th>
-                            <th>Ghi chú</th>
+                            <th>Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($contracts as $contract): ?>
+                        <?php foreach ($allContracts as $c): ?>
                             <tr>
-                                <td><strong>#<?= e((string)$contract['MaHopDong']) ?></strong></td>
+                                <td><strong>#<?= e((string)$c['MaHopDong']) ?></strong></td>
                                 <td>
-                                    <span style="font-weight: 600; color: var(--primary-color);">
-                                        Phòng <?= e($contract['SoPhong']) ?>
+                                    <span style="font-weight: 700; color: var(--primary-color);">
+                                        Phòng <?= e($c['SoPhong']) ?>
                                     </span>
                                 </td>
-                                <td><?= formatDate($contract['NgayBatDau']) ?></td>
-                                <td><?= formatDate($contract['NgayKetThuc']) ?></td>
-                                <td><strong><?= formatMoney($contract['GiaThueThoaThuan']) ?></strong></td>
-                                <td><?= formatMoney($contract['TienCoc']) ?></td>
-                                <td><?= renderStatusBadge($contract['TrangThai']) ?></td>
-                                <td><?= e($contract['GhiChu'] ?? '-') ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Lịch sử Yêu cầu Bảo trì -->
-<div class="card mb-3">
-    <div class="card-header">
-        <h3>🛠️ Lịch Sử Yêu Cầu Bảo Trì (<?= count($maintenances) ?> yêu cầu)</h3>
-    </div>
-    <div class="card-body" style="padding: 0;">
-        <?php if (empty($maintenances)): ?>
-            <div class="empty-state">
-                <p>Khách thuê này chưa gửi yêu cầu bảo trì nào.</p>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Mã BT</th>
-                            <th>Phòng</th>
-                            <th>Nội dung yêu cầu</th>
-                            <th>Ngày tiếp nhận</th>
-                            <th>Ngày hoàn thành</th>
-                            <th>Chi phí</th>
-                            <th>Trạng thái</th>
-                            <th>Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($maintenances as $maint): ?>
-                            <tr>
-                                <td><strong>#<?= e((string)$maint['MaBaoTri']) ?></strong></td>
-                                <td>Phòng <?= e($maint['SoPhong']) ?></td>
-                                <td><?= e($maint['NoiDung']) ?></td>
-                                <td><?= formatDateTime($maint['NgayTiepNhan']) ?></td>
-                                <td><?= formatDateTime($maint['NgayHoanThanh']) ?></td>
-                                <td><?= formatMoney($maint['ChiPhi']) ?></td>
-                                <td><?= renderStatusBadge($maint['TrangThai']) ?></td>
-                                <td><?= e($maint['GhiChu'] ?? '-') ?></td>
+                                <td><?= formatDate($c['NgayBatDau']) ?></td>
+                                <td><?= formatDate($c['NgayKetThuc']) ?></td>
+                                <td><strong><?= formatMoney($c['GiaThueThoaThuan']) ?></strong></td>
+                                <td><?= formatMoney($c['TienCoc']) ?></td>
+                                <td><?= renderStatusBadge($c['TrangThai']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

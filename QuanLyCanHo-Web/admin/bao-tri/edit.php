@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = (currentUserRole() === 'Admin') ? '/admin/bao-tri' : '/user/bao-tri';
+$baseUrl = url((currentUserRole() === 'Admin') ? '/admin/bao-tri' : '/user/bao-tri');
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {

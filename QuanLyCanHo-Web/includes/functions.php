@@ -83,15 +83,20 @@ function formatDateTime(?string $dateTimeStr): string
 function renderStatusBadge(string $status): string
 {
     $classMap = [
-        'Đã tiếp nhận' => 'badge-info',
-        'Đang xử lý'   => 'badge-warning',
-        'Hoàn thành'    => 'badge-success',
-        'Đang hiệu lực' => 'badge-success',
-        'Hết hạn'       => 'badge-danger',
-        'Đã thanh lý'   => 'badge-secondary',
-        'Trống'         => 'badge-success',
-        'Đang thuê'     => 'badge-info',
-        'Bảo trì'       => 'badge-warning',
+        'Đã tiếp nhận'   => 'badge-info',
+        'Đang xử lý'     => 'badge-warning',
+        'Hoàn thành'      => 'badge-success',
+        'Đang hiệu lực'   => 'badge-success',
+        'Sắp hết hạn'    => 'badge-warning',
+        'Hết hạn'         => 'badge-danger',
+        'Đã thanh lý'     => 'badge-secondary',
+        'Chưa check-in'   => 'badge-warning',
+        'Đã check-out'    => 'badge-secondary',
+        'Trống'           => 'badge-success',
+        'Đang thuê'       => 'badge-success',
+        'Đã trả phòng'   => 'badge-secondary',
+        'Chưa thuê'       => 'badge-warning',
+        'Bảo trì'         => 'badge-warning',
     ];
 
     $badgeClass = $classMap[$status] ?? 'badge-secondary';
@@ -99,10 +104,60 @@ function renderStatusBadge(string $status): string
 }
 
 /**
+ * Xử lý upload file an toàn
+ */
+function uploadFile(array $file, string $subFolder = 'files'): ?string
+{
+    if (empty($file['name']) || $file['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+
+    $allowedExts = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'];
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    if (!in_array($ext, $allowedExts, true)) {
+        return null;
+    }
+
+    $uploadDir = __DIR__ . '/../uploads/' . trim($subFolder, '/');
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $fileName = time() . '_' . uniqid() . '.' . $ext;
+    $targetPath = $uploadDir . '/' . $fileName;
+
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        return '/uploads/' . trim($subFolder, '/') . '/' . $fileName;
+    }
+
+    return null;
+}
+
+/**
+ * Tạo URL chuẩn theo môi trường (XAMPP subfolder hoặc standalone host)
+ */
+function url(string $path = ''): string
+{
+    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        return $path;
+    }
+
+    $path = '/' . ltrim($path, '/');
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    
+    if (str_starts_with($scriptName, '/QuanLyCanHo-Web') && !str_starts_with($path, '/QuanLyCanHo-Web')) {
+        return '/QuanLyCanHo-Web' . $path;
+    }
+
+    return $path;
+}
+
+/**
  * Chuyển hướng URL nhanh
  */
-function redirect(string $url): void
+function redirect(string $path): void 
 {
-    header('Location: ' . $url);
+    header('Location: ' . url($path));
     exit;
 }

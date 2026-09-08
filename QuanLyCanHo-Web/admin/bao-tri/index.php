@@ -19,13 +19,16 @@ $whereClauses = [];
 $params = [];
 
 if ($keyword !== '') {
-    $whereClauses[] = '(kt.HoTen LIKE :k OR ch.SoPhong LIKE :k OR bt.NoiDung LIKE :k)';
-    $params[':k'] = '%' . $keyword . '%';
+    $whereClauses[] = '(kt.HoTen LIKE ? OR ch.SoPhong LIKE ? OR bt.NoiDung LIKE ?)';
+    $k = '%' . $keyword . '%';
+    $params[] = $k;
+    $params[] = $k;
+    $params[] = $k;
 }
 
 if ($trangThaiFilter !== '') {
-    $whereClauses[] = 'bt.TrangThai = :tt';
-    $params[':tt'] = $trangThaiFilter;
+    $whereClauses[] = 'bt.TrangThai = ?';
+    $params[] = $trangThaiFilter;
 }
 
 $whereSql = (!empty($whereClauses)) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
@@ -53,13 +56,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $requests = $stmt->fetchAll();
 
-$baseUrl = (currentUserRole() === 'Admin') ? '/admin/bao-tri' : '/user/bao-tri';
+$baseUrl = url((currentUserRole() === 'Admin') ? '/admin/bao-tri' : '/user/bao-tri');
 ?>
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Quản Lý Bảo Trì & Sửa Chữa</h1>
-        <p class="page-subtitle">Theo dõi và cập nhật tiến độ xử lý sự cố căn hộ</p>
     </div>
     <div>
         <a href="<?= $baseUrl ?>/create.php" class="btn btn-primary">
@@ -135,7 +137,7 @@ $baseUrl = (currentUserRole() === 'Admin') ? '/admin/bao-tri' : '/user/bao-tri';
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="<?= (currentUserRole() === 'Admin' ? '/admin' : '/user') ?>/khach-thue/detail.php?id=<?= $item['MaKhach'] ?>" style="font-weight: 500;">
+                                    <a href="<?= url((currentUserRole() === 'Admin' ? '/admin' : '/user') . '/khach-thue/detail.php?id=' . $item['MaKhach']) ?>" style="font-weight: 500;">
                                         <?= e($item['TenKhach']) ?>
                                     </a>
                                     <br>

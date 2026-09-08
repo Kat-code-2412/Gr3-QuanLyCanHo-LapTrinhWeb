@@ -27,7 +27,7 @@ $countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangTh
         <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">
             <?= $countKhach ?>
         </div>
-        <a href="/user/khach-thue/index.php" style="font-size: 0.85rem; font-weight: 500;">Tra cứu khách thuê →</a>
+        <a href="<?= url('/user/khach-thue/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Tra cứu khách thuê →</a>
     </div>
 
     <div class="detail-item" style="border-left: 4px solid var(--warning-color);">
@@ -35,7 +35,7 @@ $countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangTh
         <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--warning-color);">
             <?= $countBaoTri ?>
         </div>
-        <a href="/user/bao-tri/index.php" style="font-size: 0.85rem; font-weight: 500;">Xử lý bảo trì →</a>
+        <a href="<?= url('/user/bao-tri/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xử lý bảo trì →</a>
     </div>
 </div>
 
@@ -50,8 +50,8 @@ $countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangTh
                 Xem danh sách khách thuê, tìm kiếm thông tin liên lạc, hỗ trợ cập nhật thông tin và kiểm tra lịch sử thuê.
             </p>
             <div style="display: flex; gap: 0.5rem;">
-                <a href="/user/khach-thue/index.php" class="btn btn-primary">Danh sách khách thuê</a>
-                <a href="/user/khach-thue/create.php" class="btn btn-outline">+ Thêm khách mới</a>
+                <a href="<?= url('/user/khach-thue/index.php') ?>" class="btn btn-primary">Danh sách khách thuê</a>
+                <a href="<?= url('/user/khach-thue/create.php') ?>" class="btn btn-outline">+ Thêm khách mới</a>
             </div>
         </div>
     </div>
@@ -65,8 +65,8 @@ $countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangTh
                 Ghi nhận sự cố căn hộ từ khách thuê, theo dõi trạng thái xử lý và cập nhật ngày hoàn thành.
             </p>
             <div style="display: flex; gap: 0.5rem;">
-                <a href="/user/bao-tri/index.php" class="btn btn-primary">Danh sách bảo trì</a>
-                <a href="/user/bao-tri/create.php" class="btn btn-outline">+ Tiếp nhận sự cố</a>
+                <a href="<?= url('/user/bao-tri/index.php') ?>" class="btn btn-primary">Danh sách bảo trì</a>
+                <a href="<?= url('/user/bao-tri/create.php') ?>" class="btn btn-outline">+ Tiếp nhận sự cố</a>
             </div>
         </div>
     </div>
