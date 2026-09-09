@@ -20,6 +20,9 @@ $adminMenus = [
     ['label' => 'Hợp đồng', 'url' => '/admin/hop-dong/index.php'],
     ['label' => 'Hóa đơn', 'url' => '/admin/hoa-don/index.php'],
     ['label' => 'Bảo trì', 'url' => '/admin/bao-tri/index.php'],
+    ['label' => 'Doanh thu', 'url' => '/admin/bao-cao/doanh-thu.php'],
+    ['label' => 'Công nợ', 'url' => '/admin/bao-cao/cong-no.php'],
+    ['label' => 'Lịch sử thuê', 'url' => '/admin/bao-cao/lich-su-thue.php'],
 ];
 
 $staffMenus = [
