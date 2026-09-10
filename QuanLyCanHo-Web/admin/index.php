@@ -8,14 +8,11 @@ requireAdmin();
 
 $pdo = require __DIR__ . '/../config/database.php';
 
-// Thống kê nhanh
-$countKhach = (int)$pdo->query('SELECT COUNT(*) FROM KhachThue')->fetchColumn();
-$maintenanceTable = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'yeucaubaotri'")->fetchColumn();
-$countBaoTri = $maintenanceTable
-    ? (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> "Hoàn thành"')->fetchColumn()
-    : 0;
-$countCanHo = (int)$pdo->query('SELECT COUNT(*) FROM CanHo')->fetchColumn();
-$countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai NOT LIKE "%thanh%"')->fetchColumn();
+// 4 KPI theo PROJECT.md mục 7
+$countCanHo        = (int)$pdo->query('SELECT COUNT(*) FROM CanHo')->fetchColumn();
+$countCanDangThue  = (int)$pdo->query("SELECT COUNT(*) FROM CanHo WHERE TrangThai = 'Đang thuê'")->fetchColumn();
+$countHoaDonChuaTT = (int)$pdo->query('SELECT COUNT(*) FROM View_HoaDonChuaThanhToan')->fetchColumn();
+$countBaoTri       = (int)$pdo->query("SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> 'Hoàn thành'")->fetchColumn();
 ?>
 
 <div class="page-header">
@@ -24,14 +21,29 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai N
     </div>
 </div>
 
-<!-- Stats Grid -->
 <div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 2rem;">
     <div class="detail-item" style="border-left: 4px solid var(--primary-color);">
-        <div class="detail-label">Khách thuê trong hệ thống</div>
+        <div class="detail-label">Tổng số căn hộ</div>
         <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">
-            <?= $countKhach ?>
+            <?= $countCanHo ?>
         </div>
-        <a href="<?= url('/admin/khach-thue/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem danh sách →</a>
+        <a href="<?= url('/admin/can-ho/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem danh sách →</a>
+    </div>
+
+    <div class="detail-item" style="border-left: 4px solid var(--success-color);">
+        <div class="detail-label">Căn đang thuê</div>
+        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--success-color);">
+            <?= $countCanDangThue ?>
+        </div>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">/ <?= $countCanHo ?> căn</span>
+    </div>
+
+    <div class="detail-item" style="border-left: 4px solid var(--danger-color);">
+        <div class="detail-label">Hóa đơn chưa thanh toán</div>
+        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--danger-color);">
+            <?= $countHoaDonChuaTT ?>
+        </div>
+        <a href="<?= url('/admin/hoa-don/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem công nợ →</a>
     </div>
 
     <div class="detail-item" style="border-left: 4px solid var(--warning-color);">
@@ -40,14 +52,6 @@ $countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai N
             <?= $countBaoTri ?>
         </div>
         <a href="<?= url('/admin/bao-tri/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Quản lý bảo trì →</a>
-    </div>
-
-    <div class="detail-item" style="border-left: 4px solid var(--success-color);">
-        <div class="detail-label">Hợp đồng đang hiệu lực</div>
-        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--success-color);">
-            <?= $countHopDong ?>
-        </div>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Tổng số căn: <?= $countCanHo ?></span>
     </div>
 </div>
 
