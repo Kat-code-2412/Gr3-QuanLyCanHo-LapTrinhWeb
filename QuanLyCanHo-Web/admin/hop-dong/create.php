@@ -12,17 +12,11 @@ $baseUrl = url(($role === 'Admin') ? '/admin/hop-dong' : '/user/hop-dong');
 $currentStaffId = $_SESSION['MaNV'] ?? null;
 
 // Lấy danh sách tất cả các Căn hộ kèm Loại căn hộ để đổ vào Dropdown
-$canHoStmt = $pdo->query('
-    SELECT ch.*, lch.TenLoai
-    FROM CanHo ch
-    JOIN LoaiCanHo lch ON ch.MaLoai = lch.MaLoai
-    ORDER BY ch.DiaChi ASC, ch.SoPhong ASC
-');
+$canHoStmt = $pdo->query('SELECT * FROM CanHo ORDER BY Tang ASC, MaCanHo ASC');
 $canHoList = $canHoStmt->fetchAll();
 
 // Lấy danh sách các Địa chỉ Tòa nhà độc bản
-$diaChiStmt = $pdo->query('SELECT DISTINCT DiaChi FROM CanHo WHERE DiaChi IS NOT NULL AND DiaChi <> "" ORDER BY DiaChi ASC');
-$diaChiList = $diaChiStmt->fetchAll(PDO::FETCH_COLUMN);
+$diaChiList = [];
 
 $errors = [];
 $formData = [
@@ -147,19 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             // 1. Insert KhachThue
-            $insertKhachSql = 'INSERT INTO KhachThue (HoTen, CCCD, NgaySinh, GioiTinh, SoDienThoai, Email, DiaChiThuongTru, NgheNghiep, GhiChu)
-                               VALUES (:hoTen, :cccd, :ngaySinh, :gioiTinh, :soDienThoai, :email, :diaChi, :ngheNghiep, :ghiChu)';
+            $insertKhachSql = 'INSERT INTO KhachThue (HoTen, CCCD, SoDienThoai, Email)
+                               VALUES (:hoTen, :cccd, :soDienThoai, :email)';
             $stmtKhach = $pdo->prepare($insertKhachSql);
             $stmtKhach->execute([
                 ':hoTen' => $formData['HoTen'],
                 ':cccd' => ($formData['CCCD'] !== '') ? $formData['CCCD'] : null,
-                ':ngaySinh' => ($formData['NgaySinh'] !== '') ? $formData['NgaySinh'] : date('Y-m-d'),
-                ':gioiTinh' => $formData['GioiTinh'],
                 ':soDienThoai' => $formData['SoDienThoai'],
                 ':email' => ($formData['Email'] !== '') ? $formData['Email'] : null,
-                ':diaChi' => ($formData['DiaChiThuongTru'] !== '') ? $formData['DiaChiThuongTru'] : null,
-                ':ngheNghiep' => ($formData['NgheNghiep'] !== '') ? $formData['NgheNghiep'] : null,
-                ':ghiChu' => ($formData['GhiChuKhach'] !== '') ? $formData['GhiChuKhach'] : null,
             ]);
             $maKhach = (int)$pdo->lastInsertId();
 
@@ -169,41 +158,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileCccdSau = uploadFile($_FILES['file_cccd_sau'] ?? [], 'cccd');
 
             // 3. Insert HopDong
-            $insertHdSql = 'INSERT INTO HopDong (
-                                MaCanHo, MaKhach, MaNV, NgayKy, NgayBatDau, NgayKetThuc, ThoiHanThang,
-                                GiaThueThoaThuan, TienCoc, SoNguoiOi, SoXeMay, SoOto,
-                                GiaDien, GiaNuoc, GiaXeMay, GiaOto, GiaInternet, GiaVeSinh,
-                                TrangThai, GhiChu, FileHopDong, AnhCCCDMatTruoc, AnhCCCDMatSau
-                            ) VALUES (
-                                :maCanHo, :maKhach, :maNv, :ngayKy, :ngayBatDau, :ngayKetThuc, :thoiHan,
-                                :giaThue, :tienCoc, :soNguoi, :soXeMay, :soOto,
-                                :giaDien, :giaNuoc, :giaXeMay, :giaOto, :giaInternet, :giaVeSinh,
-                                "Đang hiệu lực", :ghiChu, :fileHd, :cccdTruoc, :cccdSau
-                            )';
+            $insertHdSql = 'INSERT INTO HopDong (MaCanHo, MaKhach, MaNV, NgayBatDau, NgayKetThuc, GiaThueThoaThuan, TienCoc, TrangThai, GhiChu)
+                            VALUES (:maCanHo, :maKhach, :maNv, :ngayBatDau, :ngayKetThuc, :giaThue, :tienCoc, "Đang hiệu lực", :ghiChu)';
             $stmtHd = $pdo->prepare($insertHdSql);
             $stmtHd->execute([
                 ':maCanHo' => $formData['MaCanHo'],
                 ':maKhach' => $maKhach,
                 ':maNv' => $currentStaffId,
-                ':ngayKy' => $formData['NgayKy'],
                 ':ngayBatDau' => $formData['NgayBatDau'],
                 ':ngayKetThuc' => $formData['NgayKetThuc'],
-                ':thoiHan' => $formData['ThoiHanThang'],
                 ':giaThue' => $formData['GiaThueThoaThuan'],
                 ':tienCoc' => $formData['TienCoc'],
-                ':soNguoi' => $formData['SoNguoiOi'],
-                ':soXeMay' => $formData['SoXeMay'],
-                ':soOto' => $formData['SoOto'],
-                ':giaDien' => $formData['GiaDien'],
-                ':giaNuoc' => $formData['GiaNuoc'],
-                ':giaXeMay' => $formData['GiaXeMay'],
-                ':giaOto' => $formData['GiaOto'],
-                ':giaInternet' => $formData['GiaInternet'],
-                ':giaVeSinh' => $formData['GiaVeSinh'],
                 ':ghiChu' => ($formData['GhiChuHopDong'] !== '') ? $formData['GhiChuHopDong'] : null,
-                ':fileHd' => $fileHopDong,
-                ':cccdTruoc' => $fileCccdTruoc,
-                ':cccdSau' => $fileCccdSau,
             ]);
 
             // 4. Update CanHo -> Đang thuê
@@ -328,16 +294,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="">-- Chọn Mã Phòng --</option>
                         <?php foreach ($canHoList as $ch): ?>
                             <option value="<?= $ch['MaCanHo'] ?>" 
-                                    data-building="<?= e($ch['DiaChi'] ?? 'Tòa nhà A') ?>"
-                                    data-so-phong="<?= e($ch['SoPhong']) ?>"
-                                    data-dia-chi="<?= e($ch['DiaChi'] ?? 'Tòa nhà A') ?>"
-                                    data-gia="<?= $ch['GiaThue'] ?>"
+                                    data-building=""
+                                    data-so-phong="<?= e($ch['MaCanHoHienThi'] ?? ('#' . $ch['MaCanHo'])) ?>"
+                                    data-dia-chi="Tầng <?= e((string)($ch['Tang'] ?? '-')) ?>"
+                                    data-gia=""
                                     data-trang-thai="<?= e($ch['TrangThai']) ?>"
-                                    data-loai="<?= e($ch['TenLoai']) ?>"
+                                    data-loai="Căn hộ"
                                     data-dien-tich="<?= $ch['DienTich'] ?>"
-                                    data-noi-that="<?= e($ch['MoTa'] ?? 'Đầy đủ tiện nghi cơ bản') ?>"
+                                    data-noi-that=""
                                     <?= ($formData['MaCanHo'] === (int)$ch['MaCanHo']) ? 'selected' : '' ?>>
-                                Phòng <?= e($ch['SoPhong']) ?> (<?= e($ch['TenLoai']) ?>) - <?= formatMoney($ch['GiaThue']) ?> [<?= e($ch['TrangThai']) ?>]
+                                Phòng <?= e($ch['MaCanHoHienThi'] ?? ('#' . $ch['MaCanHo'])) ?> - [<?= e($ch['TrangThai']) ?>]
                             </option>
                         <?php endforeach; ?>
                     </select>

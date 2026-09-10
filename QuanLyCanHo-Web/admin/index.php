@@ -10,9 +10,12 @@ $pdo = require __DIR__ . '/../config/database.php';
 
 // Thống kê nhanh
 $countKhach = (int)$pdo->query('SELECT COUNT(*) FROM KhachThue')->fetchColumn();
-$countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> "Hoàn thành"')->fetchColumn();
+$maintenanceTable = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'yeucaubaotri'")->fetchColumn();
+$countBaoTri = $maintenanceTable
+    ? (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> "Hoàn thành"')->fetchColumn()
+    : 0;
 $countCanHo = (int)$pdo->query('SELECT COUNT(*) FROM CanHo')->fetchColumn();
-$countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai = "Đang hiệu lực"')->fetchColumn();
+$countHopDong = (int)$pdo->query('SELECT COUNT(*) FROM HopDong WHERE TrangThai NOT LIKE "%thanh%"')->fetchColumn();
 ?>
 
 <div class="page-header">

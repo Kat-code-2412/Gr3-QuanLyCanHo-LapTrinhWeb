@@ -18,12 +18,11 @@ if ($id <= 0) {
 }
 
 // Fetch chi tiết Hợp đồng JOIN CanHo, LoaiCanHo, KhachThue, NhanVien
-$sql = "SELECT hp.*, ch.SoPhong, ch.DiaChi AS DiaChiCanHo, ch.DienTich, ch.MoTa AS NoiThatCanHo, lch.TenLoai, 
-               kt.HoTen AS TenKhach, kt.SoDienThoai, kt.Email, kt.CCCD, kt.GioiTinh, kt.NgaySinh, kt.DiaChiThuongTru, kt.NgheNghiep, kt.GhiChu AS GhiChuKhach,
+$sql = "SELECT hp.*, ch.MaCanHoHienThi AS SoPhong, CONCAT('Tầng ', ch.Tang) AS DiaChiCanHo, ch.DienTich, '' AS NoiThatCanHo, 'Căn hộ' AS TenLoai,
+         kt.HoTen AS TenKhach, kt.SoDienThoai, kt.Email, kt.CCCD, NULL AS GioiTinh, NULL AS NgaySinh, NULL AS DiaChiThuongTru, NULL AS NgheNghiep, NULL AS GhiChuKhach,
                nv.HoTen AS TenNhanVien
         FROM HopDong hp
         JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo
-        JOIN LoaiCanHo lch ON ch.MaLoai = lch.MaLoai
         JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach
         LEFT JOIN NhanVien nv ON hp.MaNV = nv.MaNV
         WHERE hp.MaHopDong = ?";
@@ -163,7 +162,7 @@ if (!$contract) {
             </div>
             <div class="detail-item">
                 <div class="detail-label">Số người ở / Phương tiện</div>
-                <div class="detail-value">👥 <?= (int)$contract['SoNguoiOi'] ?> người | 🛵 <?= (int)$contract['SoXeMay'] ?> xe máy | 🚗 <?= (int)$contract['SoOto'] ?> ô tô</div>
+                    <div class="detail-value">Thông tin người ở và phương tiện chưa có trong cơ sở dữ liệu hiện tại.</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Nhân viên phụ trách</div>

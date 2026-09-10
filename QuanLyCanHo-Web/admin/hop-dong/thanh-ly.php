@@ -17,7 +17,7 @@ if ($id <= 0) {
 }
 
 // 1. Kiểm tra tồn tại hợp đồng
-$stmt = $pdo->prepare('SELECT hp.*, ch.SoPhong FROM HopDong hp JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaHopDong = ?');
+$stmt = $pdo->prepare('SELECT hp.*, ch.MaCanHoHienThi AS SoPhong FROM HopDong hp JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaHopDong = ?');
 $stmt->execute([$id]);
 $contract = $stmt->fetch();
 
@@ -33,14 +33,8 @@ try {
     // A. Cập nhật Hợp đồng -> Đã thanh lý, lưu ngày Check-out thực tế
     $today = date('Y-m-d');
     $timeNow = date('H:i');
-    $updateHd = $pdo->prepare("
-        UPDATE HopDong 
-        SET TrangThai = 'Đã thanh lý',
-            NgayCheckOut = ?,
-            GioCheckOut = ?
-        WHERE MaHopDong = ?
-    ");
-    $updateHd->execute([$today, $timeNow, $id]);
+    $updateHd = $pdo->prepare("UPDATE HopDong SET TrangThai = 'Đã thanh lý' WHERE MaHopDong = ?");
+    $updateHd->execute([$id]);
 
     // B. Cập nhật Căn hộ -> Trống
     $updateCh = $pdo->prepare("UPDATE CanHo SET TrangThai = 'Trống' WHERE MaCanHo = ?");

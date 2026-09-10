@@ -30,7 +30,7 @@ if (file_exists($envFile)) {
 $dbHost = $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? '127.0.0.1';
 $dbUser = $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? 'root';
 $dbPass = $_ENV['DB_PASSWORD'] ?? $_SERVER['DB_PASSWORD'] ?? '';
-$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycandichvu';
+$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycanho';
 $dbCharset = $_ENV['DB_CHARSET'] ?? $_SERVER['DB_CHARSET'] ?? 'utf8mb4';
 
 $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $dbHost, $dbName, $dbCharset);

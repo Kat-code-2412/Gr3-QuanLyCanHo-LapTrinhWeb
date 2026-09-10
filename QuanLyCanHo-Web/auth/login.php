@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $pdo = require __DIR__ . '/../config/database.php';
-            $stmt = $pdo->prepare('SELECT * FROM NhanVien WHERE TenDangNhap = ? AND TrangThai = "Đang làm việc"');
+            $stmt = $pdo->prepare('SELECT * FROM NhanVien WHERE TenDangNhap = ? LIMIT 1');
             $stmt->execute([$username]);
             $user = $stmt->fetch();
 
@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user && $isValidPassword) {
                 session_regenerate_id(true);
+                unset($_SESSION['MaKhach'], $_SESSION['HoTenKhach']);
                 $_SESSION['MaNV'] = (int)$user['MaNV'];
                 $_SESSION['TenDangNhap'] = $user['TenDangNhap'];
                 $_SESSION['HoTen'] = $user['HoTen'];
@@ -171,6 +172,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         • Admin: <code>admin</code> / <code>123456</code><br>
         • Nhân viên: <code>nhanvien1</code> / <code>123456</code>
     </div>
+    <p style="text-align: center; margin: 1rem 0 0;">
+        <a href="<?= url('/auth/customer-login.php') ?>">Khách hàng đăng nhập bằng SĐT và CCCD</a>
+    </p>
 </div>
 
 </body>

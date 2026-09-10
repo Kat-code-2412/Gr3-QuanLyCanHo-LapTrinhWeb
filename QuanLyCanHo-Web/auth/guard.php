@@ -52,3 +52,21 @@ function currentUserRole(): string
 {
     return $_SESSION['VaiTro'] ?? '';
 }
+
+function isCustomerLoggedIn(): bool
+{
+    return !empty($_SESSION['MaKhach']);
+}
+
+function requireCustomerLogin(): void
+{
+    if (!isCustomerLoggedIn()) {
+        setFlash('error', 'Vui lòng đăng nhập tài khoản khách hàng.');
+        redirect('/auth/customer-login.php');
+    }
+}
+
+function currentCustomerId(): ?int
+{
+    return isset($_SESSION['MaKhach']) ? (int)$_SESSION['MaKhach'] : null;
+}

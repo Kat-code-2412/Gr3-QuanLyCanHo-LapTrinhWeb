@@ -8,15 +8,23 @@ requireLogin();
 
 $pdo = require __DIR__ . '/../config/database.php';
 
+$staffStmt = $pdo->prepare('SELECT HoTen FROM NhanVien WHERE MaNV = ?');
+$staffStmt->execute([(int)($_SESSION['MaNV'] ?? 0)]);
+$currentStaffName = (string)($staffStmt->fetchColumn() ?: ($_SESSION['HoTen'] ?? 'Nhân viên'));
+$_SESSION['HoTen'] = $currentStaffName;
+
 // Thống kê nhanh
 $countKhach = (int)$pdo->query('SELECT COUNT(*) FROM KhachThue')->fetchColumn();
-$countBaoTri = (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> "Hoàn thành"')->fetchColumn();
+$maintenanceTable = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'yeucaubaotri'")->fetchColumn();
+$countBaoTri = $maintenanceTable
+    ? (int)$pdo->query('SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> "Hoàn thành"')->fetchColumn()
+    : 0;
 ?>
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Dashboard Nhân Viên</h1>
-        <p class="page-subtitle">Xin chào <strong><?= e($_SESSION['HoTen'] ?? 'Nhân viên') ?></strong>, chào mừng bạn trở lại!</p>
+        <p class="page-subtitle">Xin chào <strong><?= e($currentStaffName) ?></strong>, chào mừng bạn trở lại!</p>
     </div>
 </div>
 
