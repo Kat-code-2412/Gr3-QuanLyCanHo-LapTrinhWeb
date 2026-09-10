@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../../includes/functions.php'; require_once __DIR__ . '/../../auth/guard.php'; require_once __DIR__ . '/../../config/database.php'; require_once __DIR__ . '/../../includes/module2_helpers.php'; requireAdmin();
+if($_SERVER['REQUEST_METHOD']!=='POST')redirect('/admin/can-ho/index.php'); module2_require_csrf(); $imgId=(int)($_POST['id']??0);$s=$pdo->prepare('SELECT MaAnh,MaCanHo FROM CanHo_Anh WHERE MaAnh=:id');$s->execute([':id'=>$imgId]);$img=$s->fetch();if(!$img){setFlash('error','Không tìm thấy ảnh.');redirect('/admin/can-ho/index.php');}
+try{$pdo->beginTransaction();$pdo->prepare('UPDATE CanHo_Anh SET LaAnhDaiDien=0 WHERE MaCanHo=:id')->execute([':id'=>$img['MaCanHo']]);$pdo->prepare('UPDATE CanHo_Anh SET LaAnhDaiDien=1 WHERE MaAnh=:id')->execute([':id'=>$imgId]);$pdo->commit();setFlash('success','Đã chọn ảnh đại diện.');}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();error_log($e->getMessage());setFlash('error','Không thể đổi ảnh đại diện.');}redirect('/admin/can-ho/detail.php?id='.(int)$img['MaCanHo']);

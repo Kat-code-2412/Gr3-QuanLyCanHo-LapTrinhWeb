@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../../includes/functions.php';require_once __DIR__ . '/../../auth/guard.php';require_once __DIR__ . '/../../config/database.php';require_once __DIR__ . '/../../includes/module2_helpers.php';requireAdmin();if($_SERVER['REQUEST_METHOD']!=='POST')redirect('index.php');module2_require_csrf();$id=(int)($_POST['id']??0);if($id<=0)redirect('index.php');$stmt=$pdo->prepare('SELECT COUNT(*) FROM CanHo WHERE MaLoai=:id');$stmt->execute([':id'=>$id]);if((int)$stmt->fetchColumn()>0){setFlash('error','Không thể xóa: loại căn đang được sử dụng.');redirect('index.php');}$stmt=$pdo->prepare('DELETE FROM LoaiCanHo WHERE MaLoai=:id');$stmt->execute([':id'=>$id]);setFlash('success','Đã xóa loại căn hộ.');redirect('index.php');
