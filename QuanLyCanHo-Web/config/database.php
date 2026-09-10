@@ -30,22 +30,37 @@ if (file_exists($envFile)) {
 $dbHost = $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? '127.0.0.1';
 $dbUser = $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? 'root';
 $dbPass = $_ENV['DB_PASSWORD'] ?? $_SERVER['DB_PASSWORD'] ?? '';
-$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycandichvu';
+$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycanho';
 $dbCharset = $_ENV['DB_CHARSET'] ?? $_SERVER['DB_CHARSET'] ?? 'utf8mb4';
 
-$dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $dbHost, $dbName, $dbCharset);
+$pdo = null;
+$candidates = array_unique(array_filter([$dbName, 'quanlycandichvu', 'quanlycanho']));
+$lastException = null;
+
+foreach ($candidates as $candDb) {
+    try {
+        $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $dbHost, $candDb, $dbCharset);
+        $pdo = new PDO(
+            $dsn,
+            $dbUser,
+            $dbPass,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]
+        );
+        break;
+    } catch (PDOException $e) {
+        $lastException = $e;
+    }
+}
+
+if ($pdo === null) {
+    throw new RuntimeException('Kết nối database thất bại: ' . ($lastException ? $lastException->getMessage() : 'Không thể kết nối.'));
+}
 
 try {
-    $pdo = new PDO(
-        $dsn,
-        $dbUser,
-        $dbPass,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]
-    );
 
     // Chạy kiểm tra cấu trúc bảng 1 lần duy nhất để tối ưu tốc độ
     static $migrationDone = false;

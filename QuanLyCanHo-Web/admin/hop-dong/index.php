@@ -18,9 +18,9 @@ $whereClauses = [];
 $params = [];
 
 if ($keyword !== '') {
-    $whereClauses[] = '(kt.HoTen LIKE ? OR kt.CCCD LIKE ? OR kt.SoDienThoai LIKE ? OR ch.SoPhong LIKE ? OR ch.DiaChi LIKE ? OR hp.MaHopDong LIKE ?)';
+    $whereClauses[] = '(kt.HoTen LIKE ? OR kt.CCCD LIKE ? OR kt.SoDienThoai LIKE ? OR ch.SoPhong LIKE ? OR hp.MaHopDong LIKE ?)';
     $k = '%' . $keyword . '%';
-    $params = [$k, $k, $k, $k, $k, $k];
+    $params = [$k, $k, $k, $k, $k];
 }
 
 if ($trangThaiFilter !== '') {
@@ -42,10 +42,9 @@ $totalRows = (int)$countStmt->fetchColumn();
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
 
 // Lấy danh sách hợp đồng JOIN CanHo, LoaiCanHo, KhachThue, NhanVien
-$sql = "SELECT hp.*, ch.SoPhong, ch.DiaChi, lch.TenLoai, kt.HoTen AS TenKhach, kt.SoDienThoai, kt.CCCD, nv.HoTen AS TenNhanVien
+$sql = "SELECT hp.*, ch.SoPhong, ch.DienTich, kt.HoTen AS TenKhach, kt.SoDienThoai, kt.CCCD, nv.HoTen AS TenNhanVien
         FROM HopDong hp
         JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo
-        JOIN LoaiCanHo lch ON ch.MaLoai = lch.MaLoai
         JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach
         LEFT JOIN NhanVien nv ON hp.MaNV = nv.MaNV
         $whereSql
@@ -141,10 +140,10 @@ $khachThueUrl = url(($role === 'Admin') ? '/admin/khach-thue' : '/user/khach-thu
                                 </td>
                                 <td>
                                     <span style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem;">
-                                        🏢 Phòng <?= e($item['SoPhong']) ?>
+                                        🏢 Phòng <?= e($item['SoPhong'] ?? ('#' . $item['MaCanHo'])) ?>
                                     </span>
                                     <br>
-                                    <small style="color: #475569; font-size: 0.8rem;">📍 <?= e($item['DiaChi'] ?? 'Tòa nhà A') ?></small>
+                                    <small style="color: #475569; font-size: 0.8rem;">Mã căn hộ <?= e((string)$item['MaCanHo']) ?></small>
                                 </td>
                                 <td>
                                     <?= formatDate($item['NgayBatDau']) ?> → <?= formatDate($item['NgayKetThuc']) ?>
@@ -154,17 +153,10 @@ $khachThueUrl = url(($role === 'Admin') ? '/admin/khach-thue' : '/user/khach-thu
                                     Cọc: <span style="color: var(--success-color); font-weight: 600;"><?= formatMoney($item['TienCoc']) ?></span>
                                 </td>
                                 <td>
-                                    ⚡ Điện: <strong><?= number_format((float)($item['GiaDien'] ?? 3500), 0, ',', '.') ?> đ</strong><br>
-                                    💧 Nước: <strong><?= number_format((float)($item['GiaNuoc'] ?? 15000), 0, ',', '.') ?> đ</strong>
+                                    <span style="color: #64748b;">Theo bảng giá hiện hành</span>
                                 </td>
                                 <td>
-                                    <?php if (!empty($item['FileHopDong'])): ?>
-                                        <a href="<?= e(url($item['FileHopDong'])) ?>" target="_blank" class="btn btn-sm btn-outline" style="font-size: 0.8rem;">
-                                            📄 Xem File
-                                        </a>
-                                    <?php else: ?>
-                                        <span style="color: #94a3b8; font-size: 0.85rem;">-</span>
-                                    <?php endif; ?>
+                                    <span style="color: #94a3b8; font-size: 0.85rem;">-</span>
                                 </td>
                                 <td><?= renderStatusBadge($item['TrangThai']) ?></td>
                                 <td class="text-center">
@@ -175,7 +167,7 @@ $khachThueUrl = url(($role === 'Admin') ? '/admin/khach-thue' : '/user/khach-thu
                                         <a href="<?= $baseUrl ?>/edit.php?id=<?= $item['MaHopDong'] ?>" class="btn btn-sm btn-secondary" title="Sửa hợp đồng">
                                             ✏️ Sửa
                                         </a>
-                                        <?php if ($item['TrangThai'] === 'Đang hiệu lực' || $item['TrangThai'] === 'Chưa check-in'): ?>
+                                        <?php if ($role === 'Admin' && ($item['TrangThai'] === 'Đang hiệu lực' || $item['TrangThai'] === 'Chưa check-in')): ?>
                                             <a href="<?= $baseUrl ?>/thanh-ly.php?id=<?= $item['MaHopDong'] ?>" 
                                                class="btn btn-sm btn-danger" 
                                                onclick="return confirm('Bạn có chắc chắn muốn Thanh Lý hợp đồng #<?= $item['MaHopDong'] ?>? Phòng sẽ chuyển về trạng thái Trống.');" 

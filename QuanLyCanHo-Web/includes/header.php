@@ -10,11 +10,13 @@ require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/../auth/guard.php';
 
 $maNv = $_SESSION['MaNV'] ?? null;
+$maKhach = $_SESSION['MaKhach'] ?? null;
 $vaiTro = $_SESSION['VaiTro'] ?? null;
-$loggedIn = !empty($maNv);
+$loggedIn = !empty($maNv) || !empty($maKhach);
 
 $adminMenus = [
     ['label' => 'Dashboard', 'url' => '/admin/index.php'],
+    ['label' => 'Nhân viên', 'url' => '/admin/nhan-vien/index.php'],
     ['label' => 'Căn hộ', 'url' => '/admin/can-ho/index.php'],
     ['label' => 'Khách thuê', 'url' => '/admin/khach-thue/index.php'],
     ['label' => 'Hợp đồng', 'url' => '/admin/hop-dong/index.php'],
@@ -34,7 +36,11 @@ $staffMenus = [
     ['label' => 'Bảo trì', 'url' => '/user/bao-tri/index.php'],
 ];
 
-$menuItems = ($vaiTro === 'Admin') ? $adminMenus : $staffMenus;
+$customerMenus = [
+    ['label' => 'Thanh toán', 'url' => '/khach-hang/index.php'],
+];
+
+$menuItems = !empty($maKhach) ? $customerMenus : (($vaiTro === 'Admin') ? $adminMenus : $staffMenus);
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -52,7 +58,7 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
     <header class="navbar-header">
         <nav class="container nav-container">
             <div class="brand">
-                <a href="<?= url(($vaiTro === 'Admin') ? '/admin/index.php' : '/user/index.php') ?>">
+                <a href="<?= url(!empty($maKhach) ? '/khach-hang/index.php' : (($vaiTro === 'Admin') ? '/admin/index.php' : '/user/index.php')) ?>">
                     🏢 <span>Hệ Thống Quản Lý Căn Hộ Dịch Vụ</span>
                 </a>
             </div>
@@ -72,10 +78,10 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
                 </ul>
 
                 <div class="user-box">
-                    <span class="user-role-badge role-<?= strtolower(e((string)$vaiTro)) ?>">
-                        👤 <?= e((string)$vaiTro) ?>
+                    <span class="user-role-badge role-<?= strtolower(e((string)($vaiTro ?: 'KhachHang'))) ?>">
+                        👤 <?= e((string)($vaiTro ?: ($_SESSION['HoTenKhach'] ?? 'Khách hàng'))) ?>
                     </span>
-                    <a href="<?= url('/auth/logout.php') ?>" class="btn-logout">Đăng xuất</a>
+                    <a href="<?= url(!empty($maKhach) ? '/auth/customer-logout.php' : '/auth/logout.php') ?>" class="btn-logout">Đăng xuất</a>
                 </div>
             <?php else: ?>
                 <div class="guest-box">

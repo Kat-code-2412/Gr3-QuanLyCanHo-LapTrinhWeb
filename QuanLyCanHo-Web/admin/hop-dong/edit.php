@@ -17,7 +17,8 @@ if ($id <= 0) {
 }
 
 // Fetch thông tin hợp đồng hiện tại cùng thông tin khách thuê
-$sql = "SELECT hp.*, kt.HoTen, kt.SoDienThoai, kt.Email, kt.CCCD, kt.NgaySinh, kt.GioiTinh, kt.DiaChiThuongTru, kt.NgheNghiep, kt.GhiChu AS GhiChuKhach
+$sql = "SELECT hp.*, kt.HoTen, kt.SoDienThoai, kt.Email, kt.CCCD,
+           NULL AS NgaySinh, NULL AS GioiTinh, NULL AS DiaChiThuongTru, NULL AS NgheNghiep, NULL AS GhiChuKhach
         FROM HopDong hp
         JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach
         WHERE hp.MaHopDong = ?";
@@ -31,16 +32,10 @@ if (!$contract) {
 }
 
 // Lấy danh sách tất cả các căn hộ
-$canHoList = $pdo->query('
-    SELECT ch.*, lch.TenLoai
-    FROM CanHo ch
-    JOIN LoaiCanHo lch ON ch.MaLoai = lch.MaLoai
-    ORDER BY ch.DiaChi ASC, ch.SoPhong ASC
-')->fetchAll();
+$canHoList = $pdo->query('SELECT * FROM CanHo ORDER BY SoPhong ASC, MaCanHo ASC')->fetchAll();
 
 // Lấy danh sách các Địa chỉ Tòa nhà độc bản
-$diaChiStmt = $pdo->query('SELECT DISTINCT DiaChi FROM CanHo WHERE DiaChi IS NOT NULL AND DiaChi <> "" ORDER BY DiaChi ASC');
-$diaChiList = $diaChiStmt->fetchAll(PDO::FETCH_COLUMN);
+$diaChiList = [];
 
 $errors = [];
 $formData = [
@@ -154,23 +149,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             // 1. Cập nhật KhachThue
-            $updateKt = $pdo->prepare('
-                UPDATE KhachThue 
-                SET HoTen = :hoTen, SoDienThoai = :sdt, Email = :email, CCCD = :cccd,
-                    NgaySinh = :ngaySinh, GioiTinh = :gioiTinh, DiaChiThuongTru = :diaChi,
-                    NgheNghiep = :ngheNghiep, GhiChu = :ghiChu
-                WHERE MaKhach = :id
-            ');
+            $updateKt = $pdo->prepare('UPDATE KhachThue SET HoTen = :hoTen, SoDienThoai = :sdt, Email = :email, CCCD = :cccd WHERE MaKhach = :id');
             $updateKt->execute([
                 ':hoTen' => $formData['HoTen'],
                 ':sdt' => $formData['SoDienThoai'],
                 ':email' => ($formData['Email'] !== '') ? $formData['Email'] : null,
                 ':cccd' => ($formData['CCCD'] !== '') ? $formData['CCCD'] : null,
-                ':ngaySinh' => ($formData['NgaySinh'] !== '') ? $formData['NgaySinh'] : $contract['NgaySinh'],
-                ':gioiTinh' => $formData['GioiTinh'],
-                ':diaChi' => ($formData['DiaChiThuongTru'] !== '') ? $formData['DiaChiThuongTru'] : null,
-                ':ngheNghiep' => ($formData['NgheNghiep'] !== '') ? $formData['NgheNghiep'] : null,
-                ':ghiChu' => ($formData['GhiChuKhach'] !== '') ? $formData['GhiChuKhach'] : null,
                 ':id' => $contract['MaKhach'],
             ]);
 
@@ -180,39 +164,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileCccdSau = uploadFile($_FILES['file_cccd_sau'] ?? [], 'cccd') ?? $contract['AnhCCCDMatSau'];
 
             // 3. Cập nhật HopDong
-            $updateHd = $pdo->prepare('
-                UPDATE HopDong
-                SET MaCanHo = :maCanHo, NgayKy = :ngayKy, NgayBatDau = :ngayBatDau, NgayKetThuc = :ngayKetThuc,
-                    ThoiHanThang = :thoiHan, GiaThueThoaThuan = :giaThue, TienCoc = :tienCoc,
-                    SoNguoiOi = :soNguoi, SoXeMay = :soXeMay, SoOto = :soOto,
-                    GiaDien = :giaDien, GiaNuoc = :giaNuoc, GiaXeMay = :giaXeMay, GiaOto = :giaOto,
-                    GiaInternet = :giaInternet, GiaVeSinh = :giaVeSinh,
-                    TrangThai = :trangThai, GhiChu = :ghiChu,
-                    FileHopDong = :fileHd, AnhCCCDMatTruoc = :cccdTruoc, AnhCCCDMatSau = :cccdSau
-                WHERE MaHopDong = :id
-            ');
+            $updateHd = $pdo->prepare('UPDATE HopDong SET MaCanHo = :maCanHo, NgayBatDau = :ngayBatDau, NgayKetThuc = :ngayKetThuc, GiaThueThoaThuan = :giaThue, TienCoc = :tienCoc, TrangThai = :trangThai, GhiChu = :ghiChu WHERE MaHopDong = :id');
             $updateHd->execute([
                 ':maCanHo' => $newMaCanHo,
-                ':ngayKy' => $formData['NgayKy'],
                 ':ngayBatDau' => $formData['NgayBatDau'],
                 ':ngayKetThuc' => $formData['NgayKetThuc'],
-                ':thoiHan' => $formData['ThoiHanThang'],
                 ':giaThue' => $formData['GiaThueThoaThuan'],
                 ':tienCoc' => $formData['TienCoc'],
-                ':soNguoi' => $formData['SoNguoiOi'],
-                ':soXeMay' => $formData['SoXeMay'],
-                ':soOto' => $formData['SoOto'],
-                ':giaDien' => $formData['GiaDien'],
-                ':giaNuoc' => $formData['GiaNuoc'],
-                ':giaXeMay' => $formData['GiaXeMay'],
-                ':giaOto' => $formData['GiaOto'],
-                ':giaInternet' => $formData['GiaInternet'],
-                ':giaVeSinh' => $formData['GiaVeSinh'],
                 ':trangThai' => $formData['TrangThaiHopDong'],
                 ':ghiChu' => ($formData['GhiChuHopDong'] !== '') ? $formData['GhiChuHopDong'] : null,
-                ':fileHd' => $fileHopDong,
-                ':cccdTruoc' => $fileCccdTruoc,
-                ':cccdSau' => $fileCccdSau,
                 ':id' => $id,
             ]);
 
