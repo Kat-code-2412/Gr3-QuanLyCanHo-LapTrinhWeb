@@ -24,8 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    if ($username === '' || $password === '') {
+    // 1. Chống Brute-force cơ bản (khóa 60s sau 5 lần nhập sai)
+    $failCount = (int)($_SESSION['login_fail_count'] ?? 0);
+    $lastFailTime = (int)($_SESSION['login_last_fail_time'] ?? 0);
+    $lockoutDuration = 60; // 60 giây
+
+    if ($failCount >= 5 && (time() - $lastFailTime) < $lockoutDuration) {
+        $waitSec = $lockoutDuration - (time() - $lastFailTime);
+        $error = "Bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau {$waitSec} giây.";
+    } elseif ($username === '' || $password === '') {
         $error = 'Vui lòng nhập tên đăng nhập và mật khẩu.';
+    } elseif (mb_strlen($username) > 50 || strlen($password) > 255) {
+        $error = 'Dữ liệu đăng nhập vượt quá độ dài quy định.';
     } else {
         try {
             $pdo = require __DIR__ . '/../config/database.php';
@@ -33,37 +43,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$username]);
             $user = $stmt->fetch();
 
-            // Mật khẩu mẫu 123456 hoặc kiểm tra password_verify
             $isValidPassword = false;
             if ($user) {
                 if (password_verify($password, $user['MatKhau'])) {
                     $isValidPassword = true;
-                } elseif ($password === '123456') {
-                    // Fallback cho tài khoản mẫu nếu hash không khớp
+                } elseif ($password === '123456' && (str_starts_with($user['MatKhau'], '$2y$10$Fq0X6nQY8') || $user['MatKhau'] === '123456')) {
+                    // Nâng cấp mật khẩu mẫu sang Bcrypt chuẩn an toàn
                     $isValidPassword = true;
+                    $upHash = password_hash('123456', PASSWORD_DEFAULT);
+                    $pdo->prepare('UPDATE NhanVien SET MatKhau = ? WHERE MaNV = ?')->execute([$upHash, $user['MaNV']]);
                 }
             }
 
             if ($user && $isValidPassword) {
-                session_regenerate_id(true);
-                unset($_SESSION['MaKhach'], $_SESSION['HoTenKhach']);
-                $_SESSION['MaNV'] = (int)$user['MaNV'];
-                $_SESSION['TenDangNhap'] = $user['TenDangNhap'];
-                $_SESSION['HoTen'] = $user['HoTen'];
-                $_SESSION['VaiTro'] = $user['VaiTro'];
-
-                setFlash('success', 'Đăng nhập thành công! Xin chào ' . $user['HoTen'] . '.');
-
-                if ($user['VaiTro'] === 'Admin') {
-                    redirect('/admin/index.php');
+                // 2. Kiểm tra trạng thái tài khoản (Nghỉ việc / Khóa)
+                if (($user['TrangThai'] ?? '') === 'Nghỉ việc') {
+                    $error = 'Tài khoản đã bị khóa/nghỉ việc, không thể đăng nhập.';
                 } else {
-                    redirect('/user/index.php');
+                    // Đăng nhập thành công -> Reset bộ đếm brute-force
+                    unset($_SESSION['login_fail_count'], $_SESSION['login_last_fail_time']);
+
+                    session_regenerate_id(true);
+                    unset($_SESSION['MaKhach'], $_SESSION['HoTenKhach']);
+                    $_SESSION['MaNV'] = (int)$user['MaNV'];
+                    $_SESSION['TenDangNhap'] = $user['TenDangNhap'];
+                    $_SESSION['HoTen'] = $user['HoTen'];
+                    $_SESSION['VaiTro'] = $user['VaiTro'];
+
+                    setFlash('success', 'Đăng nhập thành công! Xin chào ' . $user['HoTen'] . '.');
+
+                    if ($user['VaiTro'] === 'Admin') {
+                        redirect('/admin/index.php');
+                    } else {
+                        redirect('/user/index.php');
+                    }
                 }
             } else {
+                // Tăng biến đếm sai mật khẩu
+                $_SESSION['login_fail_count'] = $failCount + 1;
+                $_SESSION['login_last_fail_time'] = time();
                 $error = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
             }
         } catch (Throwable $ex) {
-            $error = 'Lỗi hệ thống: ' . $ex->getMessage();
+            error_log('Lỗi đăng nhập: ' . $ex->getMessage());
+            $error = 'Đã có lỗi xảy ra trong quá trình xử lý, vui lòng thử lại sau.';
         }
     }
 }

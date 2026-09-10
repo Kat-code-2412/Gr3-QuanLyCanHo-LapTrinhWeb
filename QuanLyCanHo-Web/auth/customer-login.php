@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $error = 'Số điện thoại hoặc CCCD không chính xác.';
         } catch (Throwable $exception) {
-            $error = 'Không thể đăng nhập lúc này: ' . $exception->getMessage();
+            error_log('Lỗi đăng nhập khách hàng: ' . $exception->getMessage());
+            $error = 'Đã có lỗi xảy ra trong quá trình xử lý, vui lòng thử lại sau.';
         }
     }
 }

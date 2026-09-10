@@ -114,8 +114,8 @@ Thanh cong: redirect ve danh sach va flash `success`. Loi validate: giu lai form
 
 ## 3. Module: Auth & Phan quyen
 
-**Trang thai:** Chua lam  
-**Nguoi phu trach:** ___
+**Trang thai:** Hoan thanh  
+**Nguoi phu trach:** Nguoi 1 (Auth & Phan quyen)
 
 ### Pham vi
 

@@ -167,7 +167,7 @@ $khachThueUrl = url(($role === 'Admin') ? '/admin/khach-thue' : '/user/khach-thu
                                         <a href="<?= $baseUrl ?>/edit.php?id=<?= $item['MaHopDong'] ?>" class="btn btn-sm btn-secondary" title="Sửa hợp đồng">
                                             ✏️ Sửa
                                         </a>
-                                        <?php if ($item['TrangThai'] === 'Đang hiệu lực' || $item['TrangThai'] === 'Chưa check-in'): ?>
+                                        <?php if ($role === 'Admin' && ($item['TrangThai'] === 'Đang hiệu lực' || $item['TrangThai'] === 'Chưa check-in')): ?>
                                             <a href="<?= $baseUrl ?>/thanh-ly.php?id=<?= $item['MaHopDong'] ?>" 
                                                class="btn btn-sm btn-danger" 
                                                onclick="return confirm('Bạn có chắc chắn muốn Thanh Lý hợp đồng #<?= $item['MaHopDong'] ?>? Phòng sẽ chuyển về trạng thái Trống.');" 

@@ -16,6 +16,7 @@ $loggedIn = !empty($maNv) || !empty($maKhach);
 
 $adminMenus = [
     ['label' => 'Dashboard', 'url' => '/admin/index.php'],
+    ['label' => 'Nhân viên', 'url' => '/admin/nhan-vien/index.php'],
     ['label' => 'Căn hộ', 'url' => '/admin/can-ho/index.php'],
     ['label' => 'Khách thuê', 'url' => '/admin/khach-thue/index.php'],
     ['label' => 'Hợp đồng', 'url' => '/admin/hop-dong/index.php'],
