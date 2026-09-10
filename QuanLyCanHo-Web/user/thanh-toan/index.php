@@ -19,7 +19,7 @@ $where = [];
 $params = [];
 
 if ($keyword !== '') {
-    $where[] = '(hd.KyThanhToan LIKE ? OR kt.HoTen LIKE ? OR ch.MaCanHoHienThi LIKE ? OR hp.MaHopDong LIKE ?)';
+    $where[] = '(hd.KyThanhToan LIKE ? OR kt.HoTen LIKE ? OR ch.SoPhong LIKE ? OR hp.MaHopDong LIKE ?)';
     $like = '%' . $keyword . '%';
     $params = [$like, $like, $like, $like];
 }
@@ -43,7 +43,7 @@ $totalRows = (int)$countStmt->fetchColumn();
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
 
 $sql = "SELECT hd.MaHoaDon, hd.KyThanhToan, hd.TrangThai, hd.TongTien, hd.NgayTao,
-              hp.MaHopDong, ch.MaCanHoHienThi AS SoPhong, kt.HoTen AS TenKhach
+              hp.MaHopDong, ch.SoPhong, kt.HoTen AS TenKhach
         FROM HoaDon hd
         JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong
         JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo

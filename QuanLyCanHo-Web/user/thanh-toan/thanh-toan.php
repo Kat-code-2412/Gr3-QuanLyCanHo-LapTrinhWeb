@@ -15,7 +15,7 @@ if ($id <= 0) {
     redirect($baseUrl . '/index.php');
 }
 
-$stmt = $pdo->prepare('SELECT hd.*, hp.MaHopDong, ch.MaCanHoHienThi AS SoPhong, kt.HoTen AS TenKhach FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach WHERE hd.MaHoaDon = ?');
+$stmt = $pdo->prepare('SELECT hd.*, hp.MaHopDong, ch.SoPhong, kt.HoTen AS TenKhach FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach WHERE hd.MaHoaDon = ?');
 $stmt->execute([$id]);
 $invoice = $stmt->fetch();
 

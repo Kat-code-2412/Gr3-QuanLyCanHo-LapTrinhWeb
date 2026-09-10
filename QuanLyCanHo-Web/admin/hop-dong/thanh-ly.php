@@ -17,7 +17,7 @@ if ($id <= 0) {
 }
 
 // 1. Kiểm tra tồn tại hợp đồng
-$stmt = $pdo->prepare('SELECT hp.*, ch.MaCanHoHienThi AS SoPhong FROM HopDong hp JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaHopDong = ?');
+$stmt = $pdo->prepare('SELECT hp.*, ch.SoPhong FROM HopDong hp JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaHopDong = ?');
 $stmt->execute([$id]);
 $contract = $stmt->fetch();
 

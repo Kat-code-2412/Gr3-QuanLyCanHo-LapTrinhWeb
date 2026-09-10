@@ -18,7 +18,7 @@ $whereClauses = [];
 $params = [];
 
 if ($keyword !== '') {
-    $whereClauses[] = '(kt.HoTen LIKE ? OR kt.CCCD LIKE ? OR kt.SoDienThoai LIKE ? OR ch.MaCanHoHienThi LIKE ? OR hp.MaHopDong LIKE ?)';
+    $whereClauses[] = '(kt.HoTen LIKE ? OR kt.CCCD LIKE ? OR kt.SoDienThoai LIKE ? OR ch.SoPhong LIKE ? OR hp.MaHopDong LIKE ?)';
     $k = '%' . $keyword . '%';
     $params = [$k, $k, $k, $k, $k];
 }
@@ -42,7 +42,7 @@ $totalRows = (int)$countStmt->fetchColumn();
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
 
 // Lấy danh sách hợp đồng JOIN CanHo, LoaiCanHo, KhachThue, NhanVien
-$sql = "SELECT hp.*, ch.MaCanHoHienThi AS SoPhong, ch.Tang, ch.DienTich, kt.HoTen AS TenKhach, kt.SoDienThoai, kt.CCCD, nv.HoTen AS TenNhanVien
+$sql = "SELECT hp.*, ch.SoPhong, ch.DienTich, kt.HoTen AS TenKhach, kt.SoDienThoai, kt.CCCD, nv.HoTen AS TenNhanVien
         FROM HopDong hp
         JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo
         JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach
@@ -143,7 +143,7 @@ $khachThueUrl = url(($role === 'Admin') ? '/admin/khach-thue' : '/user/khach-thu
                                         🏢 Phòng <?= e($item['SoPhong'] ?? ('#' . $item['MaCanHo'])) ?>
                                     </span>
                                     <br>
-                                    <small style="color: #475569; font-size: 0.8rem;">Tầng <?= e((string)($item['Tang'] ?? '-')) ?></small>
+                                    <small style="color: #475569; font-size: 0.8rem;">Mã căn hộ <?= e((string)$item['MaCanHo']) ?></small>
                                 </td>
                                 <td>
                                     <?= formatDate($item['NgayBatDau']) ?> → <?= formatDate($item['NgayKetThuc']) ?>
