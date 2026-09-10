@@ -70,36 +70,38 @@ $tongNam = array_sum($data);
 
 <?php if (!empty($rows)): ?>
 <script>
-try {
-    const ctx = document.getElementById('chartDoanhThu').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode($labels, JSON_UNESCAPED_UNICODE) ?>,
-            datasets: [{
-                label: 'Doanh thu (đ)',
-                data: <?= json_encode($data) ?>,
-                backgroundColor: '#2563eb'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: (item) => new Intl.NumberFormat('vi-VN').format(item.raw) + ' đ'
-                    }
-                }
+window.addEventListener('load', function () {
+    try {
+        const ctx = document.getElementById('chartDoanhThu').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode($labels, JSON_UNESCAPED_UNICODE) ?>,
+                datasets: [{
+                    label: 'Doanh thu (đ)',
+                    data: <?= json_encode($data) ?>,
+                    backgroundColor: '#2563eb'
+                }]
             },
-            scales: {
-                y: { ticks: { callback: (value) => new Intl.NumberFormat('vi-VN').format(value) } }
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (item) => new Intl.NumberFormat('vi-VN').format(item.raw) + ' đ'
+                        }
+                    }
+                },
+                scales: {
+                    y: { ticks: { callback: (value) => new Intl.NumberFormat('vi-VN').format(value) } }
+                }
             }
-        }
-    });
-} catch (e) {
-    document.getElementById('chartDoanhThu').style.display = 'none';
-    document.getElementById('chartError').style.display = 'block';
-}
+        });
+    } catch (e) {
+        document.getElementById('chartDoanhThu').style.display = 'none';
+        document.getElementById('chartError').style.display = 'block';
+    }
+});
 </script>
 <?php endif; ?>
 
