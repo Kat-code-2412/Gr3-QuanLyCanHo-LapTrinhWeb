@@ -32,7 +32,7 @@ if (!$contract) {
 }
 
 // Lấy danh sách tất cả các căn hộ
-$canHoList = $pdo->query('SELECT * FROM CanHo ORDER BY Tang ASC, MaCanHo ASC')->fetchAll();
+$canHoList = $pdo->query('SELECT * FROM CanHo ORDER BY SoPhong ASC, MaCanHo ASC')->fetchAll();
 
 // Lấy danh sách các Địa chỉ Tòa nhà độc bản
 $diaChiList = [];

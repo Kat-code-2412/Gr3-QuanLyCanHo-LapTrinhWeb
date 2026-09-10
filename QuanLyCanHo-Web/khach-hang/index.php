@@ -8,7 +8,7 @@ requireCustomerLogin();
 
 $pdo = require __DIR__ . '/../config/database.php';
 $customerId = currentCustomerId();
-$stmt = $pdo->prepare('SELECT hd.MaHoaDon, hd.KyThanhToan, hd.TongTien, hd.TrangThai, hd.NgayTao, ch.MaCanHoHienThi AS SoPhong FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaKhach = ? ORDER BY hd.MaHoaDon DESC');
+$stmt = $pdo->prepare('SELECT hd.MaHoaDon, hd.KyThanhToan, hd.TongTien, hd.TrangThai, hd.NgayTao, ch.SoPhong FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hp.MaKhach = ? ORDER BY hd.MaHoaDon DESC');
 $stmt->execute([$customerId]);
 $invoices = $stmt->fetchAll();
 ?>

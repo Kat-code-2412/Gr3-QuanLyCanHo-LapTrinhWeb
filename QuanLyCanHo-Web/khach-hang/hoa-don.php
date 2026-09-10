@@ -9,7 +9,7 @@ requireCustomerLogin();
 $pdo = require __DIR__ . '/../config/database.php';
 $customerId = currentCustomerId();
 $id = (int)($_GET['id'] ?? 0);
-$stmt = $pdo->prepare('SELECT hd.*, ch.MaCanHoHienThi AS SoPhong FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hd.MaHoaDon = ? AND hp.MaKhach = ?');
+$stmt = $pdo->prepare('SELECT hd.*, ch.SoPhong FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo WHERE hd.MaHoaDon = ? AND hp.MaKhach = ?');
 $stmt->execute([$id, $customerId]);
 $invoice = $stmt->fetch();
 

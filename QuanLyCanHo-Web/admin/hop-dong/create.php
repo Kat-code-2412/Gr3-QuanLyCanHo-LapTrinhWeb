@@ -12,7 +12,7 @@ $baseUrl = url(($role === 'Admin') ? '/admin/hop-dong' : '/user/hop-dong');
 $currentStaffId = $_SESSION['MaNV'] ?? null;
 
 // Lấy danh sách tất cả các Căn hộ kèm Loại căn hộ để đổ vào Dropdown
-$canHoStmt = $pdo->query('SELECT * FROM CanHo ORDER BY Tang ASC, MaCanHo ASC');
+$canHoStmt = $pdo->query('SELECT * FROM CanHo ORDER BY SoPhong ASC, MaCanHo ASC');
 $canHoList = $canHoStmt->fetchAll();
 
 // Lấy danh sách các Địa chỉ Tòa nhà độc bản
@@ -295,15 +295,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php foreach ($canHoList as $ch): ?>
                             <option value="<?= $ch['MaCanHo'] ?>" 
                                     data-building=""
-                                    data-so-phong="<?= e($ch['MaCanHoHienThi'] ?? ('#' . $ch['MaCanHo'])) ?>"
-                                    data-dia-chi="Tầng <?= e((string)($ch['Tang'] ?? '-')) ?>"
+                                    data-so-phong="<?= e($ch['SoPhong'] ?? ('#' . $ch['MaCanHo'])) ?>"
+                                    data-dia-chi="Phòng <?= e($ch['SoPhong'] ?? ('#' . $ch['MaCanHo'])) ?>"
                                     data-gia=""
                                     data-trang-thai="<?= e($ch['TrangThai']) ?>"
                                     data-loai="Căn hộ"
                                     data-dien-tich="<?= $ch['DienTich'] ?>"
                                     data-noi-that=""
                                     <?= ($formData['MaCanHo'] === (int)$ch['MaCanHo']) ? 'selected' : '' ?>>
-                                Phòng <?= e($ch['MaCanHoHienThi'] ?? ('#' . $ch['MaCanHo'])) ?> - [<?= e($ch['TrangThai']) ?>]
+                                Phòng <?= e($ch['SoPhong'] ?? ('#' . $ch['MaCanHo'])) ?> - [<?= e($ch['TrangThai']) ?>]
                             </option>
                         <?php endforeach; ?>
                     </select>

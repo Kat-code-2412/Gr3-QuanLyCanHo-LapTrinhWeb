@@ -15,7 +15,7 @@ if ($id <= 0) {
     redirect($baseUrl . '/index.php');
 }
 
-$sql = "SELECT hd.*, hp.MaHopDong, hp.MaCanHo, ch.MaCanHoHienThi AS SoPhong, CONCAT('Tầng ', ch.Tang) AS DiaChi,
+$sql = "SELECT hd.*, hp.MaHopDong, hp.MaCanHo, ch.SoPhong, CONCAT('Phòng ', ch.SoPhong) AS DiaChi,
               kt.HoTen AS TenKhach, kt.SoDienThoai, kt.CCCD
         FROM HoaDon hd
         JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong

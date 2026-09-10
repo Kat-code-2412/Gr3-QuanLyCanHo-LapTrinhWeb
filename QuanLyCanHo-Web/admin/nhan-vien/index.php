@@ -1,218 +1,277 @@
 <?php
+
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../auth/guard.php';
-requireRole('Admin');
-require_once __DIR__ . '/../../src/Repositories/NhanVienRepository.php';
+$title = 'Quản Lý Tài Khoản Nhân Viên';
+require_once __DIR__ . '/../../includes/header.php';
+requireAdmin();
 
+$pdo = require __DIR__ . '/../../config/database.php';
+$baseUrl = url('/admin/nhan-vien');
 $currentUserId = (int)($_SESSION['MaNV'] ?? 0);
 
-// Xử lý đổi nhanh trạng thái tài khoản nhân viên
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_status') {
+// Xử lý đổi nhanh trạng thái tài khoản (Đang làm việc / Nghỉ việc)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle_status') {
     verifyCsrf();
-    $id = (int)($_POST['id'] ?? 0);
+    $targetId = (int)($_POST['id'] ?? 0);
     $newStatus = trim((string)($_POST['trang_thai'] ?? ''));
 
-    if ($id === $currentUserId && $newStatus === 'Nghỉ việc') {
-        flash('error', 'Bạn không thể tự chuyển tài khoản của chính mình sang "Nghỉ việc".');
-    } elseif ($id > 0 && in_array($newStatus, ['Đang làm việc', 'Nghỉ việc'], true)) {
-        $stmtUp = $pdo->prepare('UPDATE NhanVien SET TrangThai = :st WHERE MaNV = :id');
-        $stmtUp->execute(['st' => $newStatus, 'id' => $id]);
-        flash('success', 'Đã đổi trạng thái tài khoản #' . $id . ' sang "' . $newStatus . '".');
+    if ($targetId === $currentUserId && $newStatus === 'Nghỉ việc') {
+        setFlash('error', 'Bạn không thể tự khóa tài khoản của chính mình khi đang đăng nhập!');
+    } elseif ($targetId > 0 && in_array($newStatus, ['Đang làm việc', 'Nghỉ việc'], true)) {
+        $stmtUp = $pdo->prepare('UPDATE NhanVien SET TrangThai = ? WHERE MaNV = ?');
+        $stmtUp->execute([$newStatus, $targetId]);
+        setFlash('success', 'Đã cập nhật trạng thái nhân viên #' . $targetId . ' sang "' . $newStatus . '".');
     }
-    redirect('index.php');
+    redirect('/admin/nhan-vien/index.php');
 }
 
-$repo = new NhanVienRepository($pdo);
-$keyword = trim((string)($_GET['q'] ?? ''));
+// Thống kê nhanh
+$totalCount = (int)$pdo->query('SELECT COUNT(*) FROM NhanVien')->fetchColumn();
+$activeCount = (int)$pdo->query("SELECT COUNT(*) FROM NhanVien WHERE TrangThai = 'Đang làm việc'")->fetchColumn();
+$inactiveCount = (int)$pdo->query("SELECT COUNT(*) FROM NhanVien WHERE TrangThai = 'Nghỉ việc'")->fetchColumn();
+
+// Lấy tham số tìm kiếm, lọc và phân trang
+$keyword = trim((string)($_GET['keyword'] ?? ''));
 $roleFilter = trim((string)($_GET['role'] ?? ''));
 $statusFilter = trim((string)($_GET['status'] ?? ''));
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 10;
+$offset = ($page - 1) * $perPage;
 
-$result = $repo->all(
-    $keyword,
-    $roleFilter !== '' ? $roleFilter : null,
-    $statusFilter !== '' ? $statusFilter : null,
-    $page,
-    $perPage
-);
+$whereClauses = [];
+$params = [];
 
-$totalPages = max(1, (int)ceil($result['total'] / $result['perPage']));
-$currentUserId = (int)($_SESSION['MaNV'] ?? 0);
-$title = 'Quản lý nhân viên';
-$flashes = pullFlashes();
+if ($keyword !== '') {
+    $whereClauses[] = '(HoTen LIKE ? OR TenDangNhap LIKE ? OR Email LIKE ? OR SoDienThoai LIKE ?)';
+    $kw = '%' . $keyword . '%';
+    $params[] = $kw;
+    $params[] = $kw;
+    $params[] = $kw;
+    $params[] = $kw;
+}
 
-// Thống kê số lượng theo trạng thái
-$cntTotal = (int)$pdo->query('SELECT COUNT(*) FROM NhanVien')->fetchColumn();
-$cntActive = (int)$pdo->query("SELECT COUNT(*) FROM NhanVien WHERE TrangThai = 'Đang làm việc'")->fetchColumn();
-$cntInactive = (int)$pdo->query("SELECT COUNT(*) FROM NhanVien WHERE TrangThai = 'Nghỉ việc'")->fetchColumn();
+if ($roleFilter !== '') {
+    $whereClauses[] = 'VaiTro = ?';
+    $params[] = $roleFilter;
+}
 
-require_once __DIR__ . '/../../includes/header.php';
+if ($statusFilter !== '') {
+    $whereClauses[] = 'TrangThai = ?';
+    $params[] = $statusFilter;
+}
+
+$whereSql = !empty($whereClauses) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
+
+// Đếm tổng số bản ghi phù hợp
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM NhanVien $whereSql");
+$countStmt->execute($params);
+$totalMatching = (int)$countStmt->fetchColumn();
+$totalPages = max(1, (int)ceil($totalMatching / $perPage));
+
+if ($page > $totalPages) {
+    $page = $totalPages;
+    $offset = ($page - 1) * $perPage;
+}
+
+// Truy vấn danh sách nhân viên
+$sql = "SELECT * FROM NhanVien $whereSql ORDER BY MaNV ASC LIMIT $perPage OFFSET $offset";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$employees = $stmt->fetchAll();
 ?>
 
-<section class="page-header">
+<div class="page-header">
     <div>
-        <h1>Quản lý nhân viên</h1>
-        <p class="muted">Danh sách tài khoản hệ thống và phân quyền truy cập (Chỉ Admin).</p>
+        <h1 class="page-title">Quản Lý Tài Khoản Nhân Viên</h1>
+        <p class="page-subtitle">Danh sách tài khoản hệ thống và phân quyền truy cập (Chỉ Admin)</p>
     </div>
-    <a class="button" href="create.php">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 4px;">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Thêm nhân viên mới
-    </a>
-</section>
-
-<?php foreach ($flashes as $flash): ?>
-    <div class="alert <?= e($flash['type']) ?>"><?= e($flash['message']) ?></div>
-<?php endforeach; ?>
-
-<!-- Nút lọc nhanh theo trạng thái -->
-<div class="status-pills">
-    <a class="pill <?= $statusFilter === '' ? 'active' : '' ?>" href="?<?= http_build_query(array_filter(['q' => $keyword, 'role' => $roleFilter])) ?>">
-        Tất cả <span class="pill-badge"><?= $cntTotal ?></span>
-    </a>
-    <a class="pill <?= $statusFilter === 'Đang làm việc' ? 'active' : '' ?>" href="?<?= http_build_query(array_filter(['q' => $keyword, 'role' => $roleFilter, 'status' => 'Đang làm việc'])) ?>">
-        Đang làm việc <span class="pill-badge"><?= $cntActive ?></span>
-    </a>
-    <a class="pill <?= $statusFilter === 'Nghỉ việc' ? 'active' : '' ?>" href="?<?= http_build_query(array_filter(['q' => $keyword, 'role' => $roleFilter, 'status' => 'Nghỉ việc'])) ?>">
-        Nghỉ việc <span class="pill-badge"><?= $cntInactive ?></span>
-    </a>
+    <div>
+        <a href="<?= $baseUrl ?>/create.php" class="btn btn-primary">
+            + Thêm nhân viên
+        </a>
+    </div>
 </div>
 
-<!-- Bộ lọc tìm kiếm & trạng thái -->
-<form class="filter-card" method="get">
-    <div class="filter-row">
-        <div class="filter-col flex-2">
-            <label for="q" class="sr-only">Tìm kiếm</label>
-            <input id="q" name="q" value="<?= e($keyword) ?>" maxlength="100" placeholder="Tìm theo họ tên, tài khoản, email, SĐT...">
+<!-- 3 THẺ THỐNG KÊ (ĐỒNG BỘ THEO DESIGN CHUNG) -->
+<div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+    <div class="detail-item" style="border-left: 4px solid var(--primary-color);">
+        <div class="detail-label">👥 TỔNG SỐ TÀI KHOẢN</div>
+        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">
+            <?= $totalCount ?> <span style="font-size: 1rem; font-weight: 500; color: #64748b;">tài khoản</span>
         </div>
-        <div class="filter-col">
-            <select name="role" onchange="this.form.submit()">
+    </div>
+
+    <div class="detail-item" style="border-left: 4px solid var(--success-color);">
+        <div class="detail-label">🟢 ĐANG LÀM VIỆC</div>
+        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--success-color);">
+            <?= $activeCount ?> <span style="font-size: 1rem; font-weight: 500; color: #64748b;">tài khoản</span>
+        </div>
+    </div>
+
+    <div class="detail-item" style="border-left: 4px solid var(--danger-color);">
+        <div class="detail-label">🔴 NGHỈ VIỆC / KHÓA</div>
+        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--danger-color);">
+            <?= $inactiveCount ?> <span style="font-size: 1rem; font-weight: 500; color: #64748b;">tài khoản</span>
+        </div>
+    </div>
+</div>
+
+<!-- BỘ LỌC VÀ TÌM KIẾM -->
+<div class="filter-card mb-3">
+    <form method="GET" action="" class="filter-form">
+        <div class="filter-group" style="flex: 2; min-width: 250px;">
+            <label for="keyword">🔍 Tìm kiếm nhân viên...</label>
+            <input type="text" 
+                   id="keyword" 
+                   name="keyword" 
+                   class="form-control" 
+                   placeholder="Nhập Họ tên, Tên đăng nhập, Email, SĐT..." 
+                   value="<?= e($keyword) ?>">
+        </div>
+
+        <div class="filter-group" style="flex: 1; min-width: 160px;">
+            <label for="role">Vai trò</label>
+            <select name="role" id="role" class="form-control" onchange="this.form.submit()">
                 <option value="">-- Tất cả vai trò --</option>
-                <option value="Admin" <?= $roleFilter === 'Admin' ? 'selected' : '' ?>>Admin (Chủ nhà)</option>
-                <option value="NhanVien" <?= $roleFilter === 'NhanVien' ? 'selected' : '' ?>>NhanVien</option>
+                <option value="Admin" <?= ($roleFilter === 'Admin') ? 'selected' : '' ?>>Admin (Chủ nhà)</option>
+                <option value="NhanVien" <?= ($roleFilter === 'NhanVien') ? 'selected' : '' ?>>Nhân viên (NhanVien)</option>
             </select>
         </div>
-        <div class="filter-col">
-            <select name="status" onchange="this.form.submit()">
+
+        <div class="filter-group" style="flex: 1; min-width: 160px;">
+            <label for="status">Trạng thái</label>
+            <select name="status" id="status" class="form-control" onchange="this.form.submit()">
                 <option value="">-- Tất cả trạng thái --</option>
-                <option value="Đang làm việc" <?= $statusFilter === 'Đang làm việc' ? 'selected' : '' ?>>Đang làm việc</option>
-                <option value="Nghỉ việc" <?= $statusFilter === 'Nghỉ việc' ? 'selected' : '' ?>>Nghỉ việc</option>
+                <option value="Đang làm việc" <?= ($statusFilter === 'Đang làm việc') ? 'selected' : '' ?>>Đang làm việc</option>
+                <option value="Nghỉ việc" <?= ($statusFilter === 'Nghỉ việc') ? 'selected' : '' ?>>Nghỉ việc</option>
             </select>
         </div>
-        <div class="filter-actions">
-            <button type="submit" class="button">Lọc dữ liệu</button>
+
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <button type="submit" class="btn btn-primary">Lọc dữ liệu</button>
             <?php if ($keyword !== '' || $roleFilter !== '' || $statusFilter !== ''): ?>
-                <a class="button secondary" href="index.php">Xóa lọc</a>
+                <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline">Xóa lọc</a>
             <?php endif; ?>
         </div>
+    </form>
+</div>
+
+<!-- BẢNG DANH SÁCH NHÂN VIÊN -->
+<div class="card">
+    <div class="card-header" style="background-color: #fafafa;">
+        <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary);">
+            📋 Danh Sách Tài Khoản (<?= $totalMatching ?>)
+        </h3>
     </div>
-</form>
-
-<div class="table-summary">
-    Tổng số: <strong><?= (int)$result['total'] ?></strong> tài khoản
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">Mã NV</th>
+                    <th>Họ và tên</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Vai trò</th>
+                    <th>Số điện thoại</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th style="text-align: right; width: 160px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($employees)): ?>
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: 2.5rem 1rem; color: var(--text-muted);">
+                            Không tìm thấy nhân viên nào phù hợp với điều kiện tìm kiếm.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($employees as $row): ?>
+                        <?php $isSelf = ($currentUserId === (int)$row['MaNV']); ?>
+                        <tr>
+                            <td><strong>#<?= (int)$row['MaNV'] ?></strong></td>
+                            <td>
+                                <strong><?= e($row['HoTen']) ?></strong>
+                                <?php if ($isSelf): ?>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; background-color: #dbeafe; color: #1d4ed8; margin-left: 6px;">(Bạn)</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><code><?= e($row['TenDangNhap']) ?></code></td>
+                            <td>
+                                <?php if ($row['VaiTro'] === 'Admin'): ?>
+                                    <span class="badge badge-info">Admin</span>
+                                <?php else: ?>
+                                    <span class="badge badge-secondary">Nhân viên</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= e($row['SoDienThoai'] ?: '-') ?></td>
+                            <td><?= e($row['Email'] ?: '-') ?></td>
+                            <td>
+                                <?php if ($isSelf): ?>
+                                    <span class="badge badge-success" title="Tài khoản bạn đang đăng nhập">Đang làm việc</span>
+                                <?php else: ?>
+                                    <form method="POST" action="" style="display: inline-block; margin: 0;">
+                                        <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
+                                        <input type="hidden" name="action" value="toggle_status">
+                                        <input type="hidden" name="id" value="<?= (int)$row['MaNV'] ?>">
+                                        <select name="trang_thai" 
+                                                class="form-control" 
+                                                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto; font-weight: 600; display: inline-block; border-color: <?= ($row['TrangThai'] === 'Đang làm việc') ? '#a7f3d0' : '#fecaca' ?>; background-color: <?= ($row['TrangThai'] === 'Đang làm việc') ? '#f0fdf4' : '#fef2f2' ?>; color: <?= ($row['TrangThai'] === 'Đang làm việc') ? '#166534' : '#991b1b' ?>;"
+                                                onchange="this.form.submit()">
+                                            <option value="Đang làm việc" <?= ($row['TrangThai'] === 'Đang làm việc') ? 'selected' : '' ?>>Đang làm việc</option>
+                                            <option value="Nghỉ việc" <?= ($row['TrangThai'] === 'Nghỉ việc') ? 'selected' : '' ?>>Nghỉ việc</option>
+                                        </select>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <div style="display: inline-flex; gap: 0.35rem;">
+                                    <a href="<?= $baseUrl ?>/edit.php?id=<?= (int)$row['MaNV'] ?>" class="btn btn-sm btn-outline">
+                                        Sửa
+                                    </a>
+                                    <?php if ($isSelf): ?>
+                                        <button type="button" class="btn btn-sm btn-outline" style="opacity: 0.4; cursor: not-allowed;" title="Không thể xóa tài khoản của chính bạn" disabled>
+                                            Xóa
+                                        </button>
+                                    <?php else: ?>
+                                        <a href="<?= $baseUrl ?>/delete.php?id=<?= (int)$row['MaNV'] ?>" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Bạn có chắc chắn muốn xóa nhân viên &quot;<?= e($row['HoTen']) ?>&quot;?');">
+                                            Xóa
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 60px;">Mã</th>
-                <th>Họ tên</th>
-                <th>Tài khoản</th>
-                <th>Vai trò</th>
-                <th>Số điện thoại</th>
-                <th>Email</th>
-                <th>Trạng thái</th>
-                <th style="text-align: right;">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($result['items'] as $row): ?>
-                <?php $isSelf = ($currentUserId === (int)$row['MaNV']); ?>
-                <tr>
-                    <td><strong>#<?= (int)$row['MaNV'] ?></strong></td>
-                    <td>
-                        <strong><?= e($row['HoTen']) ?></strong>
-                        <?php if ($isSelf): ?>
-                            <span class="badge-self" title="Tài khoản bạn đang đăng nhập">(Bạn)</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><code><?= e($row['TenDangNhap']) ?></code></td>
-                    <td>
-                        <?php if ($row['VaiTro'] === 'Admin'): ?>
-                            <span class="badge badge-admin">Admin</span>
-                        <?php else: ?>
-                            <span class="badge badge-staff">Nhân viên</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= e($row['SoDienThoai'] ?: '-') ?></td>
-                    <td><?= e($row['Email'] ?: '-') ?></td>
-                    <td>
-                        <?php if ($isSelf): ?>
-                            <span class="badge badge-active" title="Tài khoản của bạn">Đang làm việc</span>
-                        <?php else: ?>
-                            <form method="post" style="display: inline-block;">
-                                <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
-                                <input type="hidden" name="action" value="toggle_status">
-                                <input type="hidden" name="id" value="<?= (int)$row['MaNV'] ?>">
-                                <select name="trang_thai" style="padding: 3px 6px; font-size: 12px; width: auto; font-weight: 600; border-radius: 6px; border: 1px solid <?= $row['TrangThai'] === 'Đang làm việc' ? '#bbf7d0' : '#fecaca' ?>; background: <?= $row['TrangThai'] === 'Đang làm việc' ? '#f0fdf4' : '#fef2f2' ?>; color: <?= $row['TrangThai'] === 'Đang làm việc' ? '#166534' : '#991b1b' ?>;" onchange="this.form.submit()">
-                                    <option value="Đang làm việc" <?= $row['TrangThai'] === 'Đang làm việc' ? 'selected' : '' ?>>Đang làm việc</option>
-                                    <option value="Nghỉ việc" <?= $row['TrangThai'] === 'Nghỉ việc' ? 'selected' : '' ?>>Nghỉ việc</option>
-                                </select>
-                            </form>
-                        <?php endif; ?>
-                    </td>
-                    <td style="text-align: right;">
-                        <a class="btn-action btn-edit" href="edit.php?id=<?= (int)$row['MaNV'] ?>" title="Chỉnh sửa">
-                            Sửa
-                        </a>
-                        <?php if ($isSelf): ?>
-                            <span class="btn-action btn-disabled" title="Không thể xóa tài khoản của chính mình">Xóa</span>
-                        <?php else: ?>
-                            <a class="btn-action btn-danger" href="delete.php?id=<?= (int)$row['MaNV'] ?>" title="Xóa tài khoản">
-                                Xóa
-                            </a>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-
-            <?php if (empty($result['items'])): ?>
-                <tr>
-                    <td colspan="8" class="empty-cell">
-                        <p>Không tìm thấy nhân viên nào phù hợp với điều kiện tìm kiếm.</p>
-                    </td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
-
+<!-- PHÂN TRANG -->
 <?php if ($totalPages > 1): ?>
     <div class="pagination">
         <?php
-        $queryParams = [];
-        if ($keyword !== '') $queryParams['q'] = $keyword;
-        if ($roleFilter !== '') $queryParams['role'] = $roleFilter;
-        if ($statusFilter !== '') $queryParams['status'] = $statusFilter;
+        $pageParams = [];
+        if ($keyword !== '') $pageParams['keyword'] = $keyword;
+        if ($roleFilter !== '') $pageParams['role'] = $roleFilter;
+        if ($statusFilter !== '') $pageParams['status'] = $statusFilter;
         ?>
 
         <?php if ($page > 1): ?>
-            <a href="?<?= http_build_query($queryParams + ['page' => $page - 1]) ?>">&laquo; Trước</a>
+            <a href="?<?= http_build_query($pageParams + ['page' => $page - 1]) ?>">&laquo; Trước</a>
         <?php endif; ?>
 
         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <a class="<?= $i === $page ? 'active' : '' ?>" href="?<?= http_build_query($queryParams + ['page' => $i]) ?>">
+            <a class="<?= ($i === $page) ? 'active' : '' ?>" href="?<?= http_build_query($pageParams + ['page' => $i]) ?>">
                 <?= $i ?>
             </a>
         <?php endfor; ?>
 
         <?php if ($page < $totalPages): ?>
-            <a href="?<?= http_build_query($queryParams + ['page' => $page + 1]) ?>">Sau &raquo;</a>
+            <a href="?<?= http_build_query($pageParams + ['page' => $page + 1]) ?>">Sau &raquo;</a>
         <?php endif; ?>
     </div>
 <?php endif; ?>

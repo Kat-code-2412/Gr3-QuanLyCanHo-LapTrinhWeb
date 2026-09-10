@@ -164,3 +164,40 @@ function redirect(string $path): void
     header('Location: ' . url($path));
     exit;
 }
+
+/**
+ * CSRF Protection Token
+ */
+if (!function_exists('csrfToken')) {
+    function csrfToken(): string
+    {
+        if (empty($_SESSION['_csrf'])) {
+            $_SESSION['_csrf'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['_csrf'];
+    }
+}
+
+/**
+ * Xác thực CSRF Token cho form POST
+ */
+if (!function_exists('verifyCsrf')) {
+    function verifyCsrf(): void
+    {
+        $token = $_POST['_csrf'] ?? '';
+        if (!is_string($token) || empty($_SESSION['_csrf']) || !hash_equals((string)$_SESSION['_csrf'], $token)) {
+            http_response_code(419);
+            exit('Yêu cầu không hợp lệ (CSRF). Vui lòng tải lại trang.');
+        }
+    }
+}
+
+/**
+ * Alias cho setFlash
+ */
+if (!function_exists('flash')) {
+    function flash(string $type, string $message): void
+    {
+        setFlash($type, $message);
+    }
+}

@@ -18,7 +18,7 @@ if ($id <= 0) {
 }
 
 // Fetch chi tiết Hợp đồng JOIN CanHo, LoaiCanHo, KhachThue, NhanVien
-$sql = "SELECT hp.*, ch.MaCanHoHienThi AS SoPhong, CONCAT('Tầng ', ch.Tang) AS DiaChiCanHo, ch.DienTich, '' AS NoiThatCanHo, 'Căn hộ' AS TenLoai,
+$sql = "SELECT hp.*, ch.SoPhong, CONCAT('Phòng ', ch.SoPhong) AS DiaChiCanHo, ch.DienTich, '' AS NoiThatCanHo, 'Căn hộ' AS TenLoai,
          kt.HoTen AS TenKhach, kt.SoDienThoai, kt.Email, kt.CCCD, NULL AS GioiTinh, NULL AS NgaySinh, NULL AS DiaChiThuongTru, NULL AS NgheNghiep, NULL AS GhiChuKhach,
                nv.HoTen AS TenNhanVien
         FROM HopDong hp
