@@ -30,10 +30,6 @@ if ($trangThai !== '') {
         $where[] = $paidTotalSql . ' >= hd.TongTien';
     } elseif ($trangThai === 'Chưa TT') {
         $where[] = $paidTotalSql . ' < hd.TongTien';
-    } elseif ($trangThai === 'Quá hạn') {
-        $periodDateSql = "CASE WHEN hd.KyThanhToan LIKE '____-__' THEN STR_TO_DATE(CONCAT(hd.KyThanhToan, '-01'), '%Y-%m-%d') ELSE STR_TO_DATE(CONCAT('01/', hd.KyThanhToan), '%d/%m/%Y') END";
-        $where[] = $paidTotalSql . ' < hd.TongTien';
-        $where[] = $periodDateSql . " < STR_TO_DATE(DATE_FORMAT(CURDATE(), '%Y-%m-01'), '%Y-%m-%d')";
     } else {
         $where[] = 'hd.TrangThai = ?';
         $params[] = $trangThai;
@@ -95,7 +91,6 @@ $invoices = $stmt->fetchAll();
                 <option value="">Tất cả</option>
                 <option value="Chưa TT" <?= $trangThai === 'Chưa TT' ? 'selected' : '' ?>>Chưa TT</option>
                 <option value="Đã TT" <?= $trangThai === 'Đã TT' ? 'selected' : '' ?>>Đã TT</option>
-                <option value="Quá hạn" <?= $trangThai === 'Quá hạn' ? 'selected' : '' ?>>Quá hạn</option>
             </select>
         </div>
         <div class="filter-group" style="display: flex; gap: 0.5rem;">
@@ -135,13 +130,12 @@ $invoices = $stmt->fetchAll();
                         <?php foreach ($invoices as $invoice): ?>
                             <?php $daThanhToan = (float)$invoice['DaThanhToan']; ?>
                             <?php
-                            $periodDate = DateTime::createFromFormat('Y-m-d', (string)$invoice['KyThanhToan'] . '-01');
-                            if (!$periodDate) {
-                                $periodDate = DateTime::createFromFormat('m/Y', (string)$invoice['KyThanhToan']);
-                            }
+                            $kyThanhToan = (string)$invoice['KyThanhToan'];
+                            $kyDate = DateTime::createFromFormat('Y-m-d', $kyThanhToan . '-01')
+                                ?: DateTime::createFromFormat('m/Y', $kyThanhToan);
                             $isOverdue = $daThanhToan < (float)$invoice['TongTien']
-                                && $periodDate instanceof DateTime
-                                && $periodDate < new DateTime('first day of this month');
+                                && $kyDate instanceof DateTime
+                                && $kyDate < new DateTime('first day of this month');
                             ?>
                             <tr>
                                 <td><strong>#<?= e((string)$invoice['MaHoaDon']) ?></strong></td>

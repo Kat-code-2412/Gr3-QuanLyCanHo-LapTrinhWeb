@@ -80,6 +80,29 @@ try {
                     $pdo->exec($sqlCmd);
                 }
             }
+
+            $dateColumns = [
+                'NgayTao' => "ALTER TABLE HoaDon MODIFY COLUMN NgayTao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
+                'NgayThanhToan' => "ALTER TABLE HoaDon MODIFY COLUMN NgayThanhToan DATETIME NULL",
+            ];
+            $invoiceColumns = $pdo->query("SHOW COLUMNS FROM HoaDon")->fetchAll(PDO::FETCH_ASSOC);
+            $invoiceColumnTypes = [];
+            foreach ($invoiceColumns as $column) {
+                $invoiceColumnTypes[$column['Field']] = strtolower((string)$column['Type']);
+            }
+            foreach ($dateColumns as $columnName => $sqlCmd) {
+                if (($invoiceColumnTypes[$columnName] ?? '') === 'date') {
+                    $pdo->exec($sqlCmd);
+                }
+            }
+
+            $paymentColumns = $pdo->query("SHOW COLUMNS FROM LichSuThanhToan")->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($paymentColumns as $column) {
+                if ($column['Field'] === 'NgayThanhToan' && strtolower((string)$column['Type']) === 'date') {
+                    $pdo->exec("ALTER TABLE LichSuThanhToan MODIFY COLUMN NgayThanhToan DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+                    break;
+                }
+            }
         } catch (Throwable $t) {
             // Ignore if tables don't exist yet
         }

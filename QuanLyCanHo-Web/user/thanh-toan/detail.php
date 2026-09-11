@@ -39,6 +39,12 @@ $paymentStmt->execute([$id]);
 $paymentHistory = $paymentStmt->fetchAll();
 $totalPaid = array_sum(array_map(static fn(array $payment): float => (float)$payment['SoTien'], $paymentHistory));
 $isPaid = $totalPaid >= (float)$invoice['TongTien'];
+$kyThanhToan = (string)$invoice['KyThanhToan'];
+$kyDate = DateTime::createFromFormat('Y-m-d', $kyThanhToan . '-01')
+    ?: DateTime::createFromFormat('m/Y', $kyThanhToan);
+$isOverdue = !$isPaid
+    && $kyDate instanceof DateTime
+    && $kyDate < new DateTime('first day of this month');
 ?>
 
 <div class="page-header">
@@ -75,15 +81,23 @@ $isPaid = $totalPaid >= (float)$invoice['TongTien'];
             </div>
             <div class="detail-item">
                 <div class="detail-label">Trạng thái</div>
-                <div class="detail-value"><?= renderStatusBadge((string)$invoice['TrangThai']) ?></div>
+                <div class="detail-value">
+                    <?php if ($isPaid): ?>
+                        <span class="badge badge-success">✓ Đã thanh toán</span>
+                    <?php elseif ($isOverdue): ?>
+                        <span class="badge badge-danger">⚠ Quá hạn</span>
+                    <?php else: ?>
+                        <?= renderStatusBadge('Chưa TT') ?>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Ngày tạo</div>
-                <div class="detail-value"><?= formatDateTime((string)$invoice['NgayTao']) ?></div>
+                <div class="detail-value"><?= formatDate((string)$invoice['NgayTao']) ?></div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Ngày thanh toán</div>
-                <div class="detail-value"><?= formatDateTime((string)$invoice['NgayThanhToan']) ?></div>
+                <div class="detail-value"><?= formatDate((string)$invoice['NgayThanhToan']) ?></div>
             </div>
         </div>
     </div>
@@ -145,7 +159,7 @@ $isPaid = $totalPaid >= (float)$invoice['TongTien'];
                     <tbody>
                         <?php foreach ($paymentHistory as $item): ?>
                             <tr>
-                                <td><?= formatDateTime((string)$item['NgayThanhToan']) ?></td>
+                                <td><?= formatDate((string)$item['NgayThanhToan']) ?></td>
                                 <td><?= formatMoney($item['SoTien']) ?></td>
                                 <td><?= e($item['HinhThuc']) ?></td>
                             </tr>
