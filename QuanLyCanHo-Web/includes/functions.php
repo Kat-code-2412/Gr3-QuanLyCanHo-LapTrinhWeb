@@ -148,12 +148,17 @@ function url(string $path = ''): string
     $projectFolder = '/QuanLyCanHo-Web';
     $projectPosition = strpos($scriptName, $projectFolder);
 
-    if ($projectPosition !== false && !str_starts_with($path, $projectFolder)) {
-        $basePath = substr($scriptName, 0, $projectPosition + strlen($projectFolder));
-        return $basePath . $path;
+    if ($projectPosition === false) {
+        return $path;
     }
 
-    return $path;
+    $basePath = substr($scriptName, 0, $projectPosition + strlen($projectFolder));
+
+    if (str_starts_with($path, $basePath) || str_contains($path, $projectFolder)) {
+        return $path;
+    }
+
+    return $basePath . $path;
 }
 
 /**
