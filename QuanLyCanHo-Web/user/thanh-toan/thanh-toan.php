@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 $title = 'Thanh toán hóa đơn';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
@@ -24,6 +25,11 @@ if (!$invoice) {
     redirect($baseUrl . '/index.php');
 }
 
+$paidStmt = $pdo->prepare('SELECT COALESCE(SUM(SoTien), 0) FROM LichSuThanhToan WHERE MaHoaDon = ?');
+$paidStmt->execute([$id]);
+$totalPaid = (float)$paidStmt->fetchColumn();
+$isPaid = $totalPaid >= (float)$invoice['TongTien'];
+
 $qrBankId = $_ENV['QR_BANK_ID'] ?? '';
 $qrBankAccount = $_ENV['QR_BANK_ACCOUNT'] ?? '';
 $qrAccountName = $_ENV['QR_ACCOUNT_NAME'] ?? '';
@@ -41,6 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($maHoaDon <= 0) {
         $error = 'Mã hóa đơn không hợp lệ.';
+    } elseif ($maHoaDon !== $id) {
+        $error = 'Mã hóa đơn không khớp với trang thanh toán.';
+    } elseif ($isPaid) {
+        $error = 'Hóa đơn này đã thanh toán đủ và không thể thanh toán thêm.';
     } elseif ($soTien <= 0) {
         $error = 'Số tiền thanh toán phải lớn hơn 0.';
     } elseif (!in_array($hinhThuc, ['Tiền mặt', 'Chuyển khoản'], true)) {
@@ -61,6 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="page-header">

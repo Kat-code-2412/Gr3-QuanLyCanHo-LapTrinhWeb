@@ -346,21 +346,30 @@ DELIMITER $$
 -- tránh tạo trùng nhờ NOT EXISTS.
 CREATE PROCEDURE SP_TaoHoaDonHangThang (IN p_KyThanhToan VARCHAR(7))
 BEGIN
+    DECLARE v_KyThanhToan DATE;
+
+    IF p_KyThanhToan REGEXP '^[0-9]{4}-[0-9]{2}$' THEN
+        SET v_KyThanhToan = STR_TO_DATE(CONCAT(p_KyThanhToan, '-01'), '%Y-%m-%d');
+    ELSE
+        SET v_KyThanhToan = STR_TO_DATE(CONCAT('01/', p_KyThanhToan), '%d/%m/%Y');
+    END IF;
+
     INSERT INTO HoaDon (MaHopDong, NgayTao, KyThanhToan, TienThue, TienDien, TienNuoc, TienDichVu, TongTien, TrangThai)
     SELECT
         hp.MaHopDong,
         NOW(),
-        p_KyThanhToan,
+        DATE_FORMAT(v_KyThanhToan, '%Y-%m'),
         hp.GiaThueThoaThuan,
         0, 0, 0,
         hp.GiaThueThoaThuan,
         'Chưa TT'
     FROM HopDong hp
-    WHERE hp.TrangThai = 'Đang hiệu lực'
+    WHERE hp.NgayBatDau <= LAST_DAY(v_KyThanhToan)
+      AND hp.NgayKetThuc >= v_KyThanhToan
       AND NOT EXISTS (
           SELECT 1 FROM HoaDon hd
           WHERE hd.MaHopDong = hp.MaHopDong
-            AND hd.KyThanhToan = p_KyThanhToan COLLATE utf8mb4_unicode_ci
+            AND hd.KyThanhToan = DATE_FORMAT(v_KyThanhToan, '%Y-%m')
       );
 END$$
 

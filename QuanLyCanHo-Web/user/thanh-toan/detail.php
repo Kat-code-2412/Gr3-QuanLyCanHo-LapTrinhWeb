@@ -35,6 +35,8 @@ if (!$invoice) {
 $paymentStmt = $pdo->prepare('SELECT * FROM LichSuThanhToan WHERE MaHoaDon = ? ORDER BY NgayThanhToan DESC');
 $paymentStmt->execute([$id]);
 $paymentHistory = $paymentStmt->fetchAll();
+$totalPaid = array_sum(array_map(static fn(array $payment): float => (float)$payment['SoTien'], $paymentHistory));
+$isPaid = $totalPaid >= (float)$invoice['TongTien'];
 ?>
 
 <div class="page-header">
@@ -43,8 +45,10 @@ $paymentHistory = $paymentStmt->fetchAll();
     </div>
     <div>
         <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline">← Quay lại</a>
-        <?php if ((string)$invoice['TrangThai'] !== 'Đã TT'): ?>
+        <?php if (!$isPaid): ?>
             <a href="<?= $baseUrl ?>/thanh-toan.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-primary">Thanh toán</a>
+        <?php else: ?>
+            <span class="badge badge-success">✓ Đã thanh toán</span>
         <?php endif; ?>
     </div>
 </div>

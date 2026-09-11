@@ -25,8 +25,19 @@ if ($keyword !== '') {
 }
 
 if ($trangThai !== '') {
-    $where[] = 'hd.TrangThai = ?';
-    $params[] = $trangThai;
+    $paidTotalSql = '(SELECT COALESCE(SUM(lst_filter.SoTien), 0) FROM LichSuThanhToan lst_filter WHERE lst_filter.MaHoaDon = hd.MaHoaDon)';
+    if ($trangThai === 'Đã TT') {
+        $where[] = $paidTotalSql . ' >= hd.TongTien';
+    } elseif ($trangThai === 'Chưa TT') {
+        $where[] = $paidTotalSql . ' < hd.TongTien';
+    } elseif ($trangThai === 'Quá hạn') {
+        $periodDateSql = "CASE WHEN hd.KyThanhToan LIKE '____-__' THEN STR_TO_DATE(CONCAT(hd.KyThanhToan, '-01'), '%Y-%m-%d') ELSE STR_TO_DATE(CONCAT('01/', hd.KyThanhToan), '%d/%m/%Y') END";
+        $where[] = $paidTotalSql . ' < hd.TongTien';
+        $where[] = $periodDateSql . " < STR_TO_DATE(DATE_FORMAT(CURDATE(), '%Y-%m-01'), '%Y-%m-%d')";
+    } else {
+        $where[] = 'hd.TrangThai = ?';
+        $params[] = $trangThai;
+    }
 }
 
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -43,6 +54,7 @@ $totalRows = (int)$countStmt->fetchColumn();
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
 
 $sql = "SELECT hd.MaHoaDon, hd.KyThanhToan, hd.TrangThai, hd.TongTien, hd.NgayTao,
+              COALESCE((SELECT SUM(lst.SoTien) FROM LichSuThanhToan lst WHERE lst.MaHoaDon = hd.MaHoaDon), 0) AS DaThanhToan,
               hp.MaHopDong, ch.MaCanHoHienThi AS SoPhong, kt.HoTen AS TenKhach
         FROM HoaDon hd
         JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong
@@ -121,18 +133,40 @@ $invoices = $stmt->fetchAll();
                     </thead>
                     <tbody>
                         <?php foreach ($invoices as $invoice): ?>
+                            <?php $daThanhToan = (float)$invoice['DaThanhToan']; ?>
+                            <?php
+                            $periodDate = DateTime::createFromFormat('Y-m-d', (string)$invoice['KyThanhToan'] . '-01');
+                            if (!$periodDate) {
+                                $periodDate = DateTime::createFromFormat('m/Y', (string)$invoice['KyThanhToan']);
+                            }
+                            $isOverdue = $daThanhToan < (float)$invoice['TongTien']
+                                && $periodDate instanceof DateTime
+                                && $periodDate < new DateTime('first day of this month');
+                            ?>
                             <tr>
                                 <td><strong>#<?= e((string)$invoice['MaHoaDon']) ?></strong></td>
                                 <td><?= e($invoice['KyThanhToan']) ?></td>
                                 <td><?= e($invoice['TenKhach']) ?></td>
                                 <td><?= e($invoice['SoPhong']) ?></td>
                                 <td><?= formatMoney($invoice['TongTien']) ?></td>
-                                <td><?= renderStatusBadge((string)$invoice['TrangThai']) ?></td>
-                                <td><?= formatDateTime((string)$invoice['NgayTao']) ?></td>
+                                <td>
+                                    <?php if ($daThanhToan >= (float)$invoice['TongTien']): ?>
+                                        <span class="badge badge-success">✓ Đã thanh toán</span>
+                                    <?php elseif ($isOverdue): ?>
+                                        <span class="badge badge-danger">⚠ Quá hạn</span>
+                                    <?php else: ?>
+                                        <?= renderStatusBadge((string)$invoice['TrangThai']) ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="white-space: nowrap;"><?= formatDate((string)$invoice['NgayTao']) ?></td>
                                 <td class="text-center">
                                     <div class="actions-cell" style="justify-content: center; gap: 0.35rem;">
                                         <a href="<?= $baseUrl ?>/detail.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-outline">Chi tiết</a>
-                                        <a href="<?= $baseUrl ?>/thanh-toan.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-primary">Thanh toán</a>
+                                        <?php if ($daThanhToan < (float)$invoice['TongTien']): ?>
+                                            <a href="<?= $baseUrl ?>/thanh-toan.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-primary">Thanh toán</a>
+                                        <?php else: ?>
+                                            <span class="text-muted">Đã hoàn tất</span>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
