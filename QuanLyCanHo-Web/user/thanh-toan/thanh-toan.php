@@ -8,6 +8,7 @@ require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
+markOverdueInvoices($pdo);
 $returnPath = currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan';
 $baseUrl = url($returnPath);
 
@@ -49,12 +50,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Hình thức thanh toán không hợp lệ.';
     } else {
         try {
+            $wasOverdue = $invoice['TrangThai'] === 'Quá hạn';
             $call = $pdo->prepare('CALL SP_ThanhToanHoaDon(:maHoaDon, :soTien, :hinhThuc)');
             $call->execute([
                 ':maHoaDon' => $maHoaDon,
                 ':soTien' => $soTien,
                 ':hinhThuc' => $hinhThuc,
             ]);
+
+            if ($wasOverdue) {
+                $restoreOverdue = $pdo->prepare("UPDATE HoaDon
+                    SET TrangThai = 'Quá hạn'
+                    WHERE MaHoaDon = ? AND TrangThai = 'Chưa TT'");
+                $restoreOverdue->execute([$maHoaDon]);
+            }
 
             setFlash('success', 'Thanh toán hóa đơn thành công.');
             redirect($returnPath . '/detail.php?id=' . $maHoaDon);

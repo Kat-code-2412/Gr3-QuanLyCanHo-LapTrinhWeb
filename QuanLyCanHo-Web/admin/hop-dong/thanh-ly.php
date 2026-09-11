@@ -28,25 +28,15 @@ if (!$contract) {
 
 // 2. Thực hiện Thanh lý hợp đồng trong DB Transaction
 try {
-    $pdo->beginTransaction();
-
-    // A. Cập nhật Hợp đồng -> Đã thanh lý, lưu ngày Check-out thực tế
-    $today = date('Y-m-d');
-    $timeNow = date('H:i');
-    $updateHd = $pdo->prepare("UPDATE HopDong SET TrangThai = 'Đã thanh lý' WHERE MaHopDong = ?");
-    $updateHd->execute([$id]);
-
-    // B. Cập nhật Căn hộ -> Trống
-    $updateCh = $pdo->prepare("UPDATE CanHo SET TrangThai = 'Trống' WHERE MaCanHo = ?");
-    $updateCh->execute([$contract['MaCanHo']]);
-
-    $pdo->commit();
+    $pdo->exec("UPDATE HoaDon
+        SET TrangThai = 'Quá hạn'
+        WHERE TrangThai = 'Chưa TT'
+          AND NgayTao < DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $call = $pdo->prepare('CALL SP_ThanhLyHopDong(:maHopDong)');
+    $call->execute([':maHopDong' => $id]);
 
     setFlash('success', 'Thanh lý Hợp đồng #' . $id . ' thành công! Phòng ' . $contract['SoPhong'] . ' đã chuyển về trạng thái Trống.');
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     setFlash('error', 'Lỗi khi thanh lý hợp đồng: ' . $e->getMessage());
 }
 

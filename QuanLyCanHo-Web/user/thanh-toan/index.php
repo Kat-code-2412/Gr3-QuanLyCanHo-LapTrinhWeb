@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 $title = 'Quản lý hóa đơn thanh toán';
+require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
+markOverdueInvoices($pdo);
 $baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
 
 $keyword = trim((string)($_GET['keyword'] ?? ''));

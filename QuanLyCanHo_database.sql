@@ -408,7 +408,7 @@ BEGIN
         WHERE MaHoaDon = p_MaHoaDon;
     ELSE
         UPDATE HoaDon
-        SET TrangThai = 'Chưa TT', NgayThanhToan = NULL
+        SET TrangThai = IF(TrangThai = 'Quá hạn', 'Quá hạn', 'Chưa TT'), NgayThanhToan = NULL
         WHERE MaHoaDon = p_MaHoaDon;
     END IF;
 END$$

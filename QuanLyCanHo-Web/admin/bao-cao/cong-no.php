@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 $title = 'Báo cáo Công nợ - Quản lý Căn dịch vụ';
+require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/header.php';
 requireAdmin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
+markOverdueInvoices($pdo);
 
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 10;
