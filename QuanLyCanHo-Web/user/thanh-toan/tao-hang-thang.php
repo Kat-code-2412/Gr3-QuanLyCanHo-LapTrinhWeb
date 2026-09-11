@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = url('/user/thanh-toan');
+$baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
 
 $error = null;
 $success = null;
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $success = 'Đã tạo hóa đơn cho kỳ ' . $kyThanhToan . ' thành công.';
                 setFlash('success', $success);
-                redirect($baseUrl . '/index.php');
+                redirect(currentUserRole() === 'Admin' ? '/admin/hoa-don/index.php' : '/user/thanh-toan/index.php');
             }
         } catch (Throwable $e) {
             $error = 'Lỗi khi tạo hóa đơn: ' . $e->getMessage();

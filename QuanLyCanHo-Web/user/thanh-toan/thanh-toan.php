@@ -8,12 +8,14 @@ require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
+$isAdmin = currentUserRole() === 'Admin';
+$redirectBase = $isAdmin ? '/admin/hoa-don' : '/user/thanh-toan';
+$baseUrl = url($redirectBase);
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
     setFlash('error', 'Không tìm thấy hóa đơn cần thanh toán.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectBase . '/index.php');
 }
 
 $stmt = $pdo->prepare('SELECT hd.*, hp.MaHopDong, ch.MaCanHoHienThi AS SoPhong, kt.HoTen AS TenKhach FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach WHERE hd.MaHoaDon = ?');
@@ -22,7 +24,7 @@ $invoice = $stmt->fetch();
 
 if (!$invoice) {
     setFlash('error', 'Hóa đơn không tồn tại.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectBase . '/index.php');
 }
 
 $paidStmt = $pdo->prepare('SELECT COALESCE(SUM(SoTien), 0) FROM LichSuThanhToan WHERE MaHoaDon = ?');
@@ -65,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             setFlash('success', 'Thanh toán hóa đơn thành công.');
-            redirect($baseUrl . '/detail.php?id=' . $maHoaDon);
+            redirect($redirectBase . '/detail.php?id=' . $maHoaDon);
         } catch (Throwable $e) {
             $error = 'Lỗi thanh toán: ' . $e->getMessage();
         }

@@ -7,12 +7,14 @@ require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
+$isAdmin = currentUserRole() === 'Admin';
+$redirectBase = $isAdmin ? '/admin/hoa-don' : '/user/thanh-toan';
+$baseUrl = url($redirectBase);
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
     setFlash('error', 'Không tìm thấy hóa đơn cần xem.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectBase . '/index.php');
 }
 
 $sql = "SELECT hd.*, hp.MaHopDong, hp.MaCanHo, ch.MaCanHoHienThi AS SoPhong, CONCAT('Tầng ', ch.Tang) AS DiaChi,
@@ -29,7 +31,7 @@ $invoice = $stmt->fetch();
 
 if (!$invoice) {
     setFlash('error', 'Hóa đơn không tồn tại hoặc đã bị xóa.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectBase . '/index.php');
 }
 
 $paymentStmt = $pdo->prepare('SELECT * FROM LichSuThanhToan WHERE MaHoaDon = ? ORDER BY NgayThanhToan DESC');
