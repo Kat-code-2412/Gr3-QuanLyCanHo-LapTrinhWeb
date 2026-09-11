@@ -97,6 +97,9 @@ function renderStatusBadge(string $status): string
         'Đã trả phòng'   => 'badge-secondary',
         'Chưa thuê'       => 'badge-warning',
         'Bảo trì'         => 'badge-warning',
+        'Đã TT'           => 'badge-success',
+        'Chưa TT'         => 'badge-warning',
+        'Quá hạn'         => 'badge-danger',
     ];
 
     $badgeClass = $classMap[$status] ?? 'badge-secondary';

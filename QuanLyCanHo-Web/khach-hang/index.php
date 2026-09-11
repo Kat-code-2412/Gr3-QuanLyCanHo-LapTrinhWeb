@@ -38,7 +38,11 @@ $invoices = $stmt->fetchAll();
                             <td><?= formatMoney($invoice['TongTien']) ?></td>
                             <td><?= renderStatusBadge((string)$invoice['TrangThai']) ?></td>
                             <td>
-                                <a class="btn btn-sm btn-outline" href="<?= url('/khach-hang/hoa-don.php?id=' . (int)$invoice['MaHoaDon']) ?>">Xem / thanh toán</a>
+                                <?php if ((string)$invoice['TrangThai'] === 'Đã TT'): ?>
+                                    <span class="btn btn-sm" style="opacity: 0.6; cursor: not-allowed;">✓ Đã thanh toán</span>
+                                <?php else: ?>
+                                    <a class="btn btn-sm btn-outline" href="<?= url('/khach-hang/hoa-don.php?id=' . (int)$invoice['MaHoaDon']) ?>">Xem / thanh toán</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

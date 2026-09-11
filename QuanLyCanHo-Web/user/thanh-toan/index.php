@@ -132,7 +132,11 @@ $invoices = $stmt->fetchAll();
                                 <td class="text-center">
                                     <div class="actions-cell" style="justify-content: center; gap: 0.35rem;">
                                         <a href="<?= $baseUrl ?>/detail.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-outline">Chi tiết</a>
-                                        <a href="<?= $baseUrl ?>/thanh-toan.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-primary">Thanh toán</a>
+                                        <?php if ($invoice['TrangThai'] === 'Đã TT'): ?>
+                                            <span class="btn btn-sm" style="opacity: 0.6; cursor: not-allowed;">✓ Đã thanh toán</span>
+                                        <?php else: ?>
+                                            <a href="<?= $baseUrl ?>/thanh-toan.php?id=<?= (int)$invoice['MaHoaDon'] ?>" class="btn btn-sm btn-primary">Thanh toán</a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

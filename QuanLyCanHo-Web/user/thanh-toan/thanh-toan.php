@@ -3,16 +3,18 @@
 declare(strict_types=1);
 
 $title = 'Thanh toán hóa đơn';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
+$returnPath = currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan';
+$baseUrl = url($returnPath);
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
     setFlash('error', 'Không tìm thấy hóa đơn cần thanh toán.');
-    redirect($baseUrl . '/index.php');
+    redirect($returnPath . '/index.php');
 }
 
 $stmt = $pdo->prepare('SELECT hd.*, hp.MaHopDong, ch.SoPhong, kt.HoTen AS TenKhach FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach WHERE hd.MaHoaDon = ?');
@@ -21,7 +23,7 @@ $invoice = $stmt->fetch();
 
 if (!$invoice) {
     setFlash('error', 'Hóa đơn không tồn tại.');
-    redirect($baseUrl . '/index.php');
+    redirect($returnPath . '/index.php');
 }
 
 $qrBankId = $_ENV['QR_BANK_ID'] ?? '';
@@ -55,12 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             setFlash('success', 'Thanh toán hóa đơn thành công.');
-            redirect($baseUrl . '/detail.php?id=' . $maHoaDon);
+            redirect($returnPath . '/detail.php?id=' . $maHoaDon);
         } catch (Throwable $e) {
             $error = 'Lỗi thanh toán: ' . $e->getMessage();
         }
     }
 }
+
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="page-header">

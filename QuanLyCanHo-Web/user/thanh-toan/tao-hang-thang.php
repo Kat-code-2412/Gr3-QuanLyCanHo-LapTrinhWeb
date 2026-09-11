@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 $title = 'Tạo hóa đơn hàng tháng';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
@@ -23,12 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':ky' => $kyThanhToan]);
             $success = 'Đã tạo hóa đơn cho kỳ ' . $kyThanhToan . ' thành công.';
             setFlash('success', $success);
-            redirect($baseUrl . '/index.php');
+            redirect('/user/thanh-toan/index.php');
         } catch (Throwable $e) {
             $error = 'Lỗi khi tạo hóa đơn: ' . $e->getMessage();
         }
     }
 }
+
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="page-header">
