@@ -146,8 +146,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
             }
 
+            $pdo->beginTransaction();
             $stmtUpdate = $pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
+
+            // Cập nhật tòa nhà phân công
+            $stmtDelBld = $pdo->prepare('DELETE FROM nhanvien_toanha WHERE MaNV = ?');
+            $stmtDelBld->execute([$id]);
+
+            if ($formData['VaiTro'] === 'NhanVien') {
+                $selectedBuildings = $_POST['buildings'] ?? [];
+                if (is_array($selectedBuildings) && !empty($selectedBuildings)) {
+                    $stmtInsBld = $pdo->prepare('INSERT INTO nhanvien_toanha (MaNV, DiaChi) VALUES (?, ?)');
+                    foreach ($selectedBuildings as $bld) {
+                        $bld = trim((string)$bld);
+                        if ($bld !== '') {
+                            $stmtInsBld->execute([$id, $bld]);
+                        }
+                    }
+                }
+            }
+
+            $pdo->commit();
+            refreshStaffBuildingSession();
 
             // Cập nhật lại session nếu tự sửa họ tên chính mình
             if ($isSelf) {
@@ -158,16 +179,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlash('success', 'Cập nhật thông tin nhân viên "' . $formData['HoTen'] . '" thành công!');
             redirect('/admin/nhan-vien/index.php');
         } catch (Throwable $ex) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $errors['general'] = 'Lỗi CSDL: ' . $ex->getMessage();
         }
     }
 }
+
+// Lấy danh sách tòa nhà nhân viên hiện đang được phân công
+$stmtBldCurrent = $pdo->prepare('SELECT DiaChi FROM nhanvien_toanha WHERE MaNV = ?');
+$stmtBldCurrent->execute([$id]);
+$currentAssignedBuildings = $stmtBldCurrent->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+$selectedBuildings = ($_SERVER['REQUEST_METHOD'] === 'POST')
+    ? ($_POST['buildings'] ?? [])
+    : $currentAssignedBuildings;
+if (!is_array($selectedBuildings)) {
+    $selectedBuildings = [];
+}
+
+// Lấy danh sách tất cả các tòa nhà kèm số lượng phòng
+$allBuildingsWithCount = $pdo->query('
+    SELECT DiaChi, COUNT(*) as SoLuongPhong 
+    FROM CanHo 
+    WHERE DiaChi IS NOT NULL AND TRIM(DiaChi) <> "" 
+    GROUP BY DiaChi 
+    ORDER BY DiaChi ASC
+')->fetchAll();
 ?>
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Sửa Nhân Viên #<?= (int)$employee['MaNV'] ?>: <?= e($employee['HoTen']) ?></h1>
-        <p class="page-subtitle">Cập nhật thông tin cá nhân, quyền hạn và trạng thái hoạt động</p>
     </div>
     <div>
         <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline">
@@ -178,12 +222,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if (!empty($errors['general'])): ?>
     <div class="alert alert-danger mb-3">
-        <span class="alert-icon">✕</span>
+        <span class="alert-icon"><?= svgIcon('alert-triangle', '', 16) ?></span>
         <div><?= e($errors['general']) ?></div>
     </div>
 <?php elseif (!empty($errors)): ?>
     <div class="alert alert-danger mb-3">
-        <span class="alert-icon">✕</span>
+        <span class="alert-icon"><?= svgIcon('alert-triangle', '', 16) ?></span>
         <div>Vui lòng kiểm tra lại các trường thông tin có báo lỗi màu đỏ bên dưới.</div>
     </div>
 <?php endif; ?>
@@ -191,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <div class="card-header" style="background-color: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 1.05rem; font-weight: 600;">
-            ✏️ Chỉnh Sửa Thông Tin
+            Chỉnh Sửa Thông Tin
             <?php if ($isSelf): ?>
                 <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; background-color: #dbeafe; color: #1d4ed8; margin-left: 6px;">(Tài khoản của bạn)</span>
             <?php endif; ?>
@@ -270,18 +314,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         Vai trò hệ thống <span class="required">*</span>
                     </label>
                     <?php if ($isSelf): ?>
-                        <input type="text" class="form-control" value="Admin (Chủ nhà)" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+                        <input type="text" class="form-control" value="Chủ Nhà" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
                         <input type="hidden" name="VaiTro" value="Admin">
                         <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                            🔒 Bạn đang đăng nhập bằng tài khoản này, không thể tự hạ quyền.
+                            Bạn đang đăng nhập bằng tài khoản này, không thể tự đổi vai trò.
                         </small>
                     <?php else: ?>
                         <select id="VaiTro" name="VaiTro" class="form-control">
                             <option value="NhanVien" <?= ($formData['VaiTro'] === 'NhanVien') ? 'selected' : '' ?>>
-                                Nhân viên (Quyền vận hành)
+                                Nhân Viên
                             </option>
                             <option value="Admin" <?= ($formData['VaiTro'] === 'Admin') ? 'selected' : '' ?>>
-                                Admin (Chủ nhà - Toàn quyền)
+                                Chủ Nhà
                             </option>
                         </select>
                     <?php endif; ?>
@@ -296,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" class="form-control" value="Đang làm việc" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
                         <input type="hidden" name="TrangThai" value="Đang làm việc">
                         <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                            🔒 Bạn không thể tự khóa tài khoản của chính mình.
+                            Bạn không thể tự khóa tài khoản của chính mình.
                         </small>
                     <?php else: ?>
                         <select id="TrangThai" name="TrangThai" class="form-control" style="<?= isset($errors['TrangThai']) ? 'border-color: var(--danger-color);' : '' ?>">
@@ -352,12 +396,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </small>
                     <?php endif; ?>
                 </div>
+
+                <!-- Chỉ định Tòa nhà quản lý (Chỉ áp dụng cho Nhân viên) -->
+                <div id="building_assignment_section" style="grid-column: span 2; margin-top: 0.5rem; padding-top: 1.25rem; border-top: 1px dashed #cbd5e1; <?= ($formData['VaiTro'] === 'Admin') ? 'display: none;' : '' ?>">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <label style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <span style="color: #2563eb; display: flex;"><?= svgIcon('building', '', 17) ?></span>
+                                <span>Chỉ định Tòa nhà / Căn hộ quản lý</span>
+                            </label>
+                            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                                Nhân viên này chỉ có quyền xem và xử lý các phòng, khách thuê, hợp đồng thuộc tòa nhà được chọn.
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-outline" style="padding: 0.25rem 0.65rem; font-size: 0.78rem; font-weight: 600;" onclick="toggleAllBuildings(true)">Chọn tất cả</button>
+                            <button type="button" class="btn btn-outline" style="padding: 0.25rem 0.65rem; font-size: 0.78rem; font-weight: 600;" onclick="toggleAllBuildings(false)">Bỏ chọn</button>
+                        </div>
+                    </div>
+
+                    <?php if (empty($allBuildingsWithCount)): ?>
+                        <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; color: #64748b; font-size: 0.85rem;">
+                            Chưa có dữ liệu căn hộ / tòa nhà nào trong hệ thống.
+                        </div>
+                    <?php else: ?>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.75rem;">
+                            <?php foreach ($allBuildingsWithCount as $bld): ?>
+                                <?php $isChecked = in_array($bld['DiaChi'], $selectedBuildings, true); ?>
+                                <label style="display: flex; align-items: flex-start; gap: 10px; padding: 0.85rem 1rem; border: 1px solid <?= $isChecked ? '#3b82f6' : '#e2e8f0' ?>; background: <?= $isChecked ? '#eff6ff' : '#ffffff' ?>; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;" class="building-card-label">
+                                    <input type="checkbox" name="buildings[]" value="<?= e($bld['DiaChi']) ?>" <?= $isChecked ? 'checked' : '' ?> class="building-checkbox" style="margin-top: 3px; accent-color: #2563eb; width: 16px; height: 16px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; font-size: 0.88rem; color: #1e293b; line-height: 1.35;">
+                                            <?= e($bld['DiaChi']) ?>
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 4px;">
+                                            <span style="font-weight: 700; color: #2563eb;"><?= (int)$bld['SoLuongPhong'] ?></span> phòng trực thuộc
+                                        </div>
+                                    </div>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <!-- Nút bấm thao tác -->
             <div style="margin-top: 2rem; display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
                 <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600;">
-                    💾 Cập nhật nhân viên
+                    Cập nhật nhân viên
                 </button>
                 <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline" style="padding: 0.65rem 1.5rem;">
                     Hủy bỏ
@@ -366,5 +452,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 </div>
+
+<script>
+document.getElementById('VaiTro')?.addEventListener('change', function() {
+    const section = document.getElementById('building_assignment_section');
+    if (section) {
+        section.style.display = (this.value === 'Admin') ? 'none' : 'block';
+    }
+});
+function toggleAllBuildings(checked) {
+    document.querySelectorAll('.building-checkbox').forEach(cb => {
+        cb.checked = checked;
+        const card = cb.closest('.building-card-label');
+        if (card) {
+            card.style.borderColor = checked ? '#3b82f6' : '#e2e8f0';
+            card.style.background = checked ? '#eff6ff' : '#ffffff';
+        }
+    });
+}
+document.querySelectorAll('.building-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const card = this.closest('.building-card-label');
+        if (card) {
+            card.style.borderColor = this.checked ? '#3b82f6' : '#e2e8f0';
+            card.style.background = this.checked ? '#eff6ff' : '#ffffff';
+        }
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

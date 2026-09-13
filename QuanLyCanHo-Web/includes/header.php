@@ -10,38 +10,24 @@ require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/../auth/guard.php';
 
 $maNv = $_SESSION['MaNV'] ?? null;
-$maKhach = $_SESSION['MaKhach'] ?? null;
-$vaiTro = $_SESSION['VaiTro'] ?? null;
-$loggedIn = !empty($maNv) || !empty($maKhach);
+$vaiTro = $_SESSION['VaiTro'] ?? 'NhanVien';
+$hoTen = $_SESSION['HoTen'] ?? 'Nhân viên';
+$loggedIn = !empty($maNv);
 
-$adminMenus = [
-    ['label' => 'Dashboard', 'url' => '/admin/index.php'],
-    ['label' => 'Nhân viên', 'url' => '/admin/nhan-vien/index.php'],
-    ['label' => 'Căn hộ', 'url' => '/admin/can-ho/index.php'],
-    ['label' => 'Khách thuê', 'url' => '/admin/khach-thue/index.php'],
-    ['label' => 'Hợp đồng', 'url' => '/admin/hop-dong/index.php'],
-    ['label' => 'Hóa đơn', 'url' => '/admin/hoa-don/index.php'],
-    ['label' => 'Bảo trì', 'url' => '/admin/bao-tri/index.php'],
-    ['label' => 'Doanh thu', 'url' => '/admin/bao-cao/doanh-thu.php'],
-    ['label' => 'Công nợ', 'url' => '/admin/bao-cao/cong-no.php'],
-    ['label' => 'Lịch sử thuê', 'url' => '/admin/bao-cao/lich-su-thue.php'],
-];
-
-$staffMenus = [
-    ['label' => 'Dashboard', 'url' => '/user/index.php'],
-    ['label' => 'Căn hộ', 'url' => '/user/can-ho/index.php'],
-    ['label' => 'Khách thuê', 'url' => '/user/khach-thue/index.php'],
-    ['label' => 'Hợp đồng', 'url' => '/user/hop-dong/index.php'],
-    ['label' => 'Hóa đơn', 'url' => '/user/hoa-don/index.php'],
-    ['label' => 'Bảo trì', 'url' => '/user/bao-tri/index.php'],
-];
-
-$customerMenus = [
-    ['label' => 'Thanh toán', 'url' => '/khach-hang/index.php'],
-];
-
-$menuItems = !empty($maKhach) ? $customerMenus : (($vaiTro === 'Admin') ? $adminMenus : $staffMenus);
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+
+// Đếm số thông báo chưa đọc
+$unreadCount = 0;
+if ($loggedIn) {
+    try {
+        $pdoNotif = require __DIR__ . '/../config/database.php';
+        $stmtNotif = $pdoNotif->prepare("SELECT COUNT(*) FROM thongbao WHERE (MaNV = ? OR MaNV IS NULL) AND DaDoc = 0");
+        $stmtNotif->execute([(int)$maNv]);
+        $unreadCount = (int)$stmtNotif->fetchColumn();
+    } catch (Throwable $t) {
+        $unreadCount = 0;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -51,66 +37,114 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
     <title><?= e($title ?? 'Hệ Thống Quản Lý Căn Hộ Dịch Vụ') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= url('/assets/css/style.css?v=' . (file_exists(__DIR__ . '/../assets/css/style.css') ? filemtime(__DIR__ . '/../assets/css/style.css') : time())) ?>">
     <link rel="stylesheet" href="<?= url('/assets/css/module2.css') ?>">
     <link rel="stylesheet" href="<?= url('/assets/css/module2-lightbox.css') ?>">
 </head>
-<body>
-    <header class="navbar-header">
-        <nav class="container nav-container">
-            <div class="brand">
-                <a href="<?= url(!empty($maKhach) ? '/khach-hang/index.php' : (($vaiTro === 'Admin') ? '/admin/index.php' : '/user/index.php')) ?>">
-                    🏢 <span>Hệ Thống Quản Lý Căn Hộ Dịch Vụ</span>
-                </a>
-            </div>
+<body class="app-body">
+    <div class="app-layout">
+        <!-- SIDEBAR DỌC BÊN TRÁI -->
+        <?php require_once __DIR__ . '/sidebar.php'; ?>
 
-            <?php if ($loggedIn): ?>
-                <ul class="menu-list">
-                    <?php foreach ($menuItems as $item): 
-                        $targetUrl = url($item['url']);
-                        $isActive = (str_contains($currentUri, parse_url($item['url'], PHP_URL_PATH)));
-                    ?>
-                        <li>
-                            <a href="<?= e($targetUrl) ?>" class="<?= $isActive ? 'active' : '' ?>">
-                                <?= e($item['label']) ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-
-                <div class="user-box">
-                    <span class="user-role-badge role-<?= strtolower(e((string)($vaiTro ?: 'KhachHang'))) ?>">
-                        👤 <?= e((string)($vaiTro ?: ($_SESSION['HoTenKhach'] ?? 'Khách hàng'))) ?>
-                    </span>
-                    <a href="<?= url(!empty($maKhach) ? '/auth/customer-logout.php' : '/auth/logout.php') ?>" class="btn-logout">Đăng xuất</a>
+        <!-- KHU VỰC NỘI DUNG CHÍNH BÊN PHẢI -->
+        <div class="app-main-wrapper">
+            <!-- HEADER CỐ ĐỊNH TRÊN CÙNG -->
+            <header class="app-header">
+                <div class="header-left">
+                    <button type="button" class="btn-sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Ẩn/Hiện Sidebar">
+                        <?= svgIcon('menu', '', 18) ?>
+                    </button>
+                    <div class="header-breadcrumb">
+                        <span style="color: #64748b;">Hệ Thống</span>
+                        <span style="color: #cbd5e1;">/</span>
+                        <span style="font-weight: 600; color: #0f172a;"><?= e($title ?? 'Dashboard') ?></span>
+                    </div>
                 </div>
-            <?php else: ?>
-                <div class="guest-box">
-                    <a href="<?= url('/auth/login.php') ?>" class="btn-login">Đăng nhập</a>
+
+                <div class="header-right">
+                    <!-- CHUÔNG THÔNG BÁO -->
+                    <a href="<?= url('/admin/thong-bao/index.php') ?>" class="header-icon-btn" title="Trung tâm thông báo">
+                        <?= svgIcon('bell', '', 18) ?>
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="notification-badge">
+                                <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+
+                    <!-- USER INFO & ROLE BADGE WITH DROPDOWN -->
+                    <div class="user-dropdown-container" style="position: relative;">
+                        <div class="user-profile-badge" onclick="toggleUserDropdown(event)" style="cursor: pointer;" title="Tùy chọn tài khoản">
+                            <div class="user-avatar-circle">
+                                <?= mb_substr($hoTen, 0, 1, 'UTF-8') ?>
+                            </div>
+                            <div class="user-info-text">
+                                <span class="user-name"><?= e($hoTen) ?></span>
+                                <span class="user-role <?= ($vaiTro === 'Admin') ? 'role-admin' : 'role-staff' ?>">
+                                    <?= ($vaiTro === 'Admin') ? 'Chủ nhà (Admin)' : 'Nhân viên' ?>
+                                </span>
+                            </div>
+                            <span style="color: #94a3b8; margin-left: 0.25rem; display: flex; align-items: center;"><?= svgIcon('chevron-down', '', 14) ?></span>
+                        </div>
+
+                        <!-- DROPDOWN MENU -->
+                        <div id="userDropdownMenu" class="user-dropdown-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #ffffff; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0; min-width: 220px; z-index: 1000; overflow: hidden;">
+                            <div style="padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+                                <div style="font-weight: 700; color: #0f172a; font-size: 0.875rem;"><?= e($hoTen) ?></div>
+                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;"><?= e($_SESSION['TenDangNhap'] ?? '') ?> • <?= ($vaiTro === 'Admin') ? 'Chủ nhà' : 'Nhân viên' ?></div>
+                            </div>
+                            <div style="padding: 0.35rem 0;">
+                                <a href="<?= url('/auth/profile.php') ?>" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #334155; text-decoration: none; font-size: 0.875rem; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <?= svgIcon('user', '', 16) ?> <span>Cài đặt thông tin cá nhân</span>
+                                </a>
+                                <a href="<?= url('/auth/change-password.php') ?>" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #334155; text-decoration: none; font-size: 0.875rem; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <?= svgIcon('lock', '', 16) ?> <span>Đổi mật khẩu</span>
+                                </a>
+                                <?php if ($vaiTro === 'Admin'): ?>
+                                    <a href="<?= url('/admin/nhan-vien/index.php') ?>" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #334155; text-decoration: none; font-size: 0.875rem; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                        <?= svgIcon('shield', '', 16) ?> <span>Quản lý nhân sự</span>
+                                    </a>
+                                    <a href="<?= url('/admin/audit-log/index.php') ?>" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #334155; text-decoration: none; font-size: 0.875rem; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                        <?= svgIcon('audit', '', 16) ?> <span>Nhật ký Audit Log</span>
+                                    </a>
+                                <?php endif; ?>
+                                <hr style="margin: 0.35rem 0; border: none; border-top: 1px solid #f1f5f9;">
+                                <button type="button" onclick="confirmLogout()" style="width: 100%; display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #ef4444; background: none; border: none; font-size: 0.875rem; cursor: pointer; text-align: left; transition: background 0.15s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+                                    <?= svgIcon('logout', '', 16) ?> <span>Đăng xuất</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            <?php endif; ?>
-        </nav>
-    </header>
+            </header>
 
-    <main class="container main-content">
-        <?php if ($flashSuccess = getFlash('success')): ?>
-            <div class="alert alert-success">
-                <span class="alert-icon">✓</span>
-                <div class="alert-text"><?= e($flashSuccess) ?></div>
-            </div>
-        <?php endif; ?>
+            <!-- NỘI DUNG CHÍNH CÓ SCROLL DỌC -->
+            <main class="app-content-body">
+                <?php if ($flashSuccess = getFlash('success')): ?>
+                    <div class="alert alert-success">
+                        <span class="alert-icon"><?= svgIcon('check', '', 18) ?></span>
+                        <div class="alert-text"><?= e($flashSuccess) ?></div>
+                    </div>
+                <?php endif; ?>
 
-        <?php if ($flashError = getFlash('error')): ?>
-            <div class="alert alert-danger">
-                <span class="alert-icon">✕</span>
-                <div class="alert-text"><?= e($flashError) ?></div>
-            </div>
-        <?php endif; ?>
+                <?php if ($flashError = getFlash('error')): ?>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon"><?= svgIcon('x', '', 18) ?></span>
+                        <div class="alert-text"><?= e($flashError) ?></div>
+                    </div>
+                <?php endif; ?>
 
-        <?php if ($flashWarning = getFlash('warning')): ?>
-            <div class="alert alert-warning">
-                <span class="alert-icon">⚠️</span>
-                <div class="alert-text"><?= e($flashWarning) ?></div>
-            </div>
-        <?php endif; ?>
+                <?php if ($flashWarning = getFlash('warning')): ?>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon"><?= svgIcon('alert-triangle', '', 18) ?></span>
+                        <div class="alert-text"><?= e($flashWarning) ?></div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($flashInfo = getFlash('info')): ?>
+                    <div class="alert alert-info">
+                        <span class="alert-icon"><?= svgIcon('info', '', 18) ?></span>
+                        <div class="alert-text"><?= e($flashInfo) ?></div>
+                    </div>
+                <?php endif; ?>

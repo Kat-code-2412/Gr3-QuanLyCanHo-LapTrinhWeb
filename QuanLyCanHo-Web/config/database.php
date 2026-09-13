@@ -28,31 +28,35 @@ if (file_exists($envFile)) {
 }
 
 $dbHost = $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? '127.0.0.1';
+$dbPort = (int)($_ENV['DB_PORT'] ?? $_SERVER['DB_PORT'] ?? 3307);
 $dbUser = $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? 'root';
 $dbPass = $_ENV['DB_PASSWORD'] ?? $_SERVER['DB_PASSWORD'] ?? '';
-$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycanho';
+$dbName = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'quanlycandichvu';
 $dbCharset = $_ENV['DB_CHARSET'] ?? $_SERVER['DB_CHARSET'] ?? 'utf8mb4';
 
 $pdo = null;
 $candidates = array_unique(array_filter([$dbName, 'quanlycandichvu', 'quanlycanho']));
+$candidatePorts = array_unique(array_filter([$dbPort, 3307, 3306, 3308]));
 $lastException = null;
 
-foreach ($candidates as $candDb) {
-    try {
-        $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $dbHost, $candDb, $dbCharset);
-        $pdo = new PDO(
-            $dsn,
-            $dbUser,
-            $dbPass,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]
-        );
-        break;
-    } catch (PDOException $e) {
-        $lastException = $e;
+foreach ($candidatePorts as $port) {
+    foreach ($candidates as $candDb) {
+        try {
+            $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $dbHost, $port, $candDb, $dbCharset);
+            $pdo = new PDO(
+                $dsn,
+                $dbUser,
+                $dbPass,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
+            break 2;
+        } catch (PDOException $e) {
+            $lastException = $e;
+        }
     }
 }
 
@@ -95,6 +99,17 @@ try {
                     $pdo->exec($sqlCmd);
                 }
             }
+
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS nhanvien_toanha (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    MaNV INT NOT NULL,
+                    DiaChi VARCHAR(255) NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY uq_nhanvien_diachi (MaNV, DiaChi),
+                    CONSTRAINT fk_nvtoanha_nhanvien FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
         } catch (Throwable $t) {
             // Ignore if tables don't exist yet
         }

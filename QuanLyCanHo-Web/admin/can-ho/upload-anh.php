@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/../../includes/functions.php'; require_once __DIR__ . '/../../auth/guard.php'; require_once __DIR__ . '/../../config/database.php'; require_once __DIR__ . '/../../includes/module2_helpers.php'; requireAdmin();
+require_once __DIR__ . '/../../includes/functions.php'; require_once __DIR__ . '/../../auth/guard.php'; require_once __DIR__ . '/../../config/database.php'; require_once __DIR__ . '/../../includes/module2_helpers.php'; requirePermission('CANHO_MANAGE');
 if($_SERVER['REQUEST_METHOD']!=='POST')redirect('/admin/can-ho/index.php'); module2_require_csrf(); $id=(int)($_POST['ma_can_ho']??0); if($id<=0){setFlash('error','Căn hộ không hợp lệ.');redirect('/admin/can-ho/index.php');}
-$s=$pdo->prepare('SELECT COUNT(*) FROM CanHo WHERE MaCanHo=:id');$s->execute([':id'=>$id]);if(!(int)$s->fetchColumn()){setFlash('error','Không tìm thấy căn hộ.');redirect('/admin/can-ho/index.php');}
+$s=$pdo->prepare('SELECT DiaChi FROM CanHo WHERE MaCanHo=:id');$s->execute([':id'=>$id]);$diaChi=$s->fetchColumn();if($diaChi===false){setFlash('error','Không tìm thấy căn hộ.');redirect('/admin/can-ho/index.php');}
+if(!isStaffAssignedBuilding((string)$diaChi)){setFlash('error','Bạn không có quyền upload ảnh cho tòa nhà này.');redirect('/admin/can-ho/index.php');}
 try{$pdo->beginTransaction();module2_upload_images($_FILES['images']??[],$id,$pdo,dirname(__DIR__,2).'/uploads/can-ho','uploads/can-ho');module2_repair_cover($pdo,$id);$pdo->commit();setFlash('success','Upload ảnh thành công.');}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();error_log($e->getMessage());setFlash('error','Upload ảnh thất bại. Kiểm tra định dạng/dung lượng.');} redirect('/admin/can-ho/detail.php?id='.$id);

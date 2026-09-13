@@ -25,6 +25,22 @@ if (!$tenant) {
     redirect($baseUrl . '/index.php');
 }
 
+$staffAssigned = getStaffAssignedBuildings();
+if ($staffAssigned !== null) {
+    $chkStmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM HopDong hp 
+        JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo 
+        WHERE hp.MaKhach = ? AND ch.DiaChi IN (" . implode(',', array_fill(0, count($staffAssigned) ?: 1, '?')) . ")
+    ");
+    $chkParams = array_merge([$id], !empty($staffAssigned) ? $staffAssigned : ['__NONE__']);
+    $chkStmt->execute($chkParams);
+    if ((int)$chkStmt->fetchColumn() === 0) {
+        setFlash('error', 'Bạn không có quyền chỉnh sửa hồ sơ khách thuê này (không thuộc tòa nhà bạn phụ trách).');
+        redirect($baseUrl . '/index.php');
+    }
+}
+
 $errors = [];
 $formData = [
     'HoTen' => $tenant['HoTen'],
@@ -137,14 +153,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if (!empty($errors['general'])): ?>
     <div class="alert alert-danger mb-3">
-        <span class="alert-icon">✕</span>
+        <span class="alert-icon"><?= svgIcon('alert-triangle', '', 16) ?></span>
         <div><?= e($errors['general']) ?></div>
     </div>
 <?php endif; ?>
 
 <div class="card" style="max-width: 850px; margin: 0 auto;">
     <div class="card-header" style="background-color: #f8fafc;">
-        <h3>✏️ Chỉnh Sửa Thông Tin Hồ Sơ #<?= e((string)$tenant['MaKhach']) ?></h3>
+        <h3>Chỉnh Sửa Thông Tin Hồ Sơ #<?= e((string)$tenant['MaKhach']) ?></h3>
     </div>
     <div class="card-body">
         <form method="POST" action="">
@@ -260,14 +276,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Địa chỉ thường trú -->
-                <div class="form-group" style="grid-column: span 2;">
-                    <label for="DiaChiThuongTru" style="font-weight: 600; display: block; margin-bottom: 0.35rem;">
-                        Địa chỉ thường trú
-                    </label>
+                <div class="form-group" style="grid-column: span 2; position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="DiaChiThuongTru" style="font-weight: 600; margin-bottom: 0;">Địa chỉ thường trú</label>
+                        <span style="font-size: 0.75rem; color: #2563eb; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Gợi ý địa chỉ chuẩn Google Maps
+                        </span>
+                    </div>
                     <input type="text" 
                            id="DiaChiThuongTru" 
                            name="DiaChiThuongTru" 
-                           class="form-control" 
+                           class="form-control address-autocomplete" 
+                           placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện để chọn..."
                            value="<?= e($formData['DiaChiThuongTru']) ?>">
                 </div>
 

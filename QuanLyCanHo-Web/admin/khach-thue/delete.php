@@ -11,9 +11,39 @@ $baseUrl = url((currentUserRole() === 'Admin') ? '/admin/khach-thue' : '/user/kh
 
 $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 
+$page = (int)($_GET['page'] ?? 0);
+$keyword = trim($_GET['keyword'] ?? '');
+$trangThai = trim($_GET['trang_thai'] ?? '');
+$returnUrl = trim($_GET['return_url'] ?? '');
+
+$redirectUrl = $baseUrl . '/index.php';
+if (!empty($returnUrl) && (str_starts_with($returnUrl, '/') || str_starts_with($returnUrl, $baseUrl))) {
+    $redirectUrl = $returnUrl;
+} else {
+    $queryParams = [];
+    if ($page > 1) {
+        $queryParams['page'] = $page;
+    }
+    if ($keyword !== '') {
+        $queryParams['keyword'] = $keyword;
+    }
+    if ($trangThai !== '') {
+        $queryParams['trang_thai'] = $trangThai;
+    }
+    if (!empty($queryParams)) {
+        $redirectUrl .= '?' . http_build_query($queryParams);
+    } elseif (!empty($_SERVER['HTTP_REFERER'])) {
+        $ref = $_SERVER['HTTP_REFERER'];
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (!empty($host) && str_contains($ref, $host) && str_contains($ref, 'khach-thue/index.php')) {
+            $redirectUrl = $ref;
+        }
+    }
+}
+
 if ($id <= 0) {
     setFlash('error', 'Mã khách thuê không hợp lệ.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectUrl);
 }
 
 // 1. Kiểm tra tồn tại khách thuê
@@ -23,16 +53,33 @@ $tenant = $stmt->fetch();
 
 if (!$tenant) {
     setFlash('error', 'Không tìm thấy thông tin khách thuê cần xóa.');
-    redirect($baseUrl . '/index.php');
+    redirect($redirectUrl);
 }
 
-// 2. Kiểm tra ràng buộc dữ liệu: Hợp đồng đang hiệu lực
+// 2. Kiểm tra quyền quản lý của nhân viên
+$staffAssigned = getStaffAssignedBuildings();
+if ($staffAssigned !== null) {
+    $chkStmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM HopDong hp 
+        JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo 
+        WHERE hp.MaKhach = ? AND ch.DiaChi IN (" . implode(',', array_fill(0, count($staffAssigned) ?: 1, '?')) . ")
+    ");
+    $chkParams = array_merge([$id], !empty($staffAssigned) ? $staffAssigned : ['__NONE__']);
+    $chkStmt->execute($chkParams);
+    if ((int)$chkStmt->fetchColumn() === 0) {
+        setFlash('error', 'Bạn không có quyền xóa hồ sơ khách thuê này (không thuộc tòa nhà bạn phụ trách).');
+        redirect($redirectUrl);
+    }
+}
+
+// 3. Kiểm tra ràng buộc dữ liệu: Hợp đồng đang hiệu lực
 $checkHopDong = $pdo->prepare("SELECT COUNT(*) FROM HopDong WHERE MaKhach = ? AND TrangThai = 'Đang hiệu lực'");
 $checkHopDong->execute([$id]);
 $countHopDongActive = (int)$checkHopDong->fetchColumn();
 
 if ($countHopDongActive > 0) {
-    setFlash('error', 'Khách thuê đang có hợp đồng hiệu lực. Vui lòng kết thúc hợp đồng trước khi xóa.');
+    setFlash('error', 'Khách thuê đang có hợp đồng hiệu lực. Vui lòng kết thúc hoặc thanh lý hợp đồng trước khi xóa.');
     redirect($baseUrl . '/index.php');
 }
 
@@ -86,5 +133,5 @@ try {
     setFlash('error', 'Lỗi khi xóa khách thuê: ' . $ex->getMessage());
 }
 
-redirect($baseUrl . '/index.php');
+redirect($redirectUrl);
 

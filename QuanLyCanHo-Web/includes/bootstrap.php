@@ -13,9 +13,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../config/database.php';
 
-function e(?string $value): string
+function e(string|int|float|null $value): string
 {
-    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 function appBaseUrl(): string
@@ -89,10 +89,11 @@ function csrfToken(): string
 
 function verifyCsrf(): void
 {
-    $token = $_POST['_csrf'] ?? '';
-    if (!is_string($token) || !hash_equals((string)($_SESSION['_csrf'] ?? ''), $token)) {
+    $token = $_POST['_csrf'] ?? $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    $sessionToken = (string)($_SESSION['_csrf'] ?? $_SESSION['csrf_token'] ?? '');
+    if (!is_string($token) || $token === '' || $sessionToken === '' || !hash_equals($sessionToken, $token)) {
         http_response_code(419);
-        exit('Yêu cầu không hợp lệ (CSRF).');
+        exit('Yêu cầu không hợp lệ (CSRF). Vui lòng tải lại trang.');
     }
 }
 
@@ -107,3 +108,49 @@ function pullOldInput(): array
     unset($_SESSION['_old']);
     return is_array($old) ? $old : [];
 }
+
+if (!function_exists('normalizeServiceFee')) {
+    function normalizeServiceFee(float|int|string|null $fee, string $type = 'other'): float
+    {
+        if ($fee === null || $fee === '') {
+            return 0.0;
+        }
+
+        if (is_numeric($fee)) {
+            $val = (float)$fee;
+        } elseif (is_string($fee)) {
+            $clean = trim($fee);
+            if (preg_match('/^\d+\.\d{1,2}$/', $clean)) {
+                $val = (float)$clean;
+            } else {
+                $clean = str_replace('.', '', $clean);
+                $clean = str_replace(',', '.', $clean);
+                $val = (float)$clean;
+            }
+        } else {
+            $val = (float)$fee;
+        }
+
+        if ($val <= 0) {
+            return 0.0;
+        }
+
+        $type = strtolower($type);
+        if ($type === 'dien' || $type === 'giadien') {
+            if ($val < 100) {
+                $val *= 1000;
+            }
+        } elseif ($type === 'oto' || $type === 'giaoto') {
+            if ($val < 5000) {
+                $val *= 1000;
+            }
+        } else {
+            if ($val < 1000) {
+                $val *= 1000;
+            }
+        }
+
+        return $val;
+    }
+}
+

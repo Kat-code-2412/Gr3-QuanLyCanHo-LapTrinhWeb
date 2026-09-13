@@ -72,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card" style="max-width: 650px; margin: 0 auto; border-top: 4px solid <?= ($contractCount > 0) ? 'var(--warning-color)' : 'var(--danger-color)' ?>;">
     <div class="card-header" style="background-color: #f8fafc;">
         <h3 style="font-size: 1.05rem; font-weight: 600; color: <?= ($contractCount > 0) ? 'var(--warning-color)' : 'var(--danger-color)' ?>;">
-            <?= ($contractCount > 0) ? '⚠️ Cảnh Báo Ràng Buộc Dữ Liệu' : '🗑️ Xác Nhận Xóa Nhân Viên' ?>
+            <?= ($contractCount > 0) ? 'Cảnh Báo Ràng Buộc Dữ Liệu' : 'Xác Nhận Xóa Nhân Viên' ?>
         </h3>
     </div>
     <div class="card-body">
         <?php if ($contractCount > 0): ?>
             <div class="alert alert-warning mb-3">
-                <span class="alert-icon">⚠️</span>
+                <span class="alert-icon"><?= svgIcon('alert-triangle', '', 16) ?></span>
                 <div>
                     Nhân viên <strong><?= e($employee['HoTen']) ?></strong> hiện đang đứng tên phụ trách 
                     <strong><?= $contractCount ?></strong> hợp đồng thuê căn hộ.
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                👉 <strong>Giải pháp an toàn đề xuất:</strong> Chuyển trạng thái của nhân viên sang 
+                <strong>Giải pháp an toàn đề xuất:</strong> Chuyển trạng thái của nhân viên sang 
                 <span class="badge badge-danger">Nghỉ việc</span> để vô hiệu hóa tài khoản và ngăn nhân viên đăng nhập.
             </p>
 
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="detail-label">Vai trò</div>
                     <div class="detail-value">
                         <span class="badge <?= ($employee['VaiTro'] === 'Admin') ? 'badge-info' : 'badge-secondary' ?>">
-                            <?= e($employee['VaiTro']) ?>
+                            <?= ($employee['VaiTro'] === 'Admin') ? 'Chủ Nhà' : 'Nhân Viên' ?>
                         </span>
                     </div>
                 </div>
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
                 <div style="display: flex; gap: 0.75rem;">
                     <button type="submit" class="btn btn-danger" style="font-weight: 600;">
-                        🗑️ Đồng ý xóa vĩnh viễn
+                        Đồng ý xóa vĩnh viễn
                     </button>
                     <a href="<?= $baseUrl ?>/index.php" class="btn btn-outline">
                         Hủy bỏ

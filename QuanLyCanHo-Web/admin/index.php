@@ -2,90 +2,374 @@
 
 declare(strict_types=1);
 
-$title = 'Dashboard Admin - Quản lý Căn dịch vụ';
+$title = 'Dashboard - Hệ Thống Căn Hộ Dịch Vụ';
 require_once __DIR__ . '/../includes/header.php';
 requireAdmin();
 
 $pdo = require __DIR__ . '/../config/database.php';
 
-// 4 KPI theo PROJECT.md mục 7
+// 1. TỔNG QUAN KPI VẬN HÀNH (Dữ liệu động 100% từ Database)
 $countCanHo        = (int)$pdo->query('SELECT COUNT(*) FROM CanHo')->fetchColumn();
-$countCanDangThue  = (int)$pdo->query("SELECT COUNT(*) FROM CanHo WHERE TrangThai = 'Đang thuê'")->fetchColumn();
-$countHoaDonChuaTT = (int)$pdo->query('SELECT COUNT(*) FROM View_HoaDonChuaThanhToan')->fetchColumn();
-$countBaoTri       = (int)$pdo->query("SELECT COUNT(*) FROM YeuCauBaoTri WHERE TrangThai <> 'Hoàn thành'")->fetchColumn();
+$countPhongDangThue = (int)$pdo->query("SELECT COUNT(*) FROM CanHo WHERE TrangThai = 'Đang thuê'")->fetchColumn();
+$countPhongTrong    = (int)$pdo->query("SELECT COUNT(*) FROM CanHo WHERE TrangThai = 'Trống'")->fetchColumn();
+$countPhongBaoTri   = (int)$pdo->query("SELECT COUNT(*) FROM CanHo WHERE TrangThai = 'Bảo trì'")->fetchColumn();
+$countKhachThue     = (int)$pdo->query('SELECT COUNT(*) FROM KhachThue')->fetchColumn();
+$countHopDongActive = (int)$pdo->query("SELECT COUNT(*) FROM HopDong WHERE TrangThai = 'Đang hiệu lực'")->fetchColumn();
+
+// Tỷ lệ lấp đầy
+$occupancyRate = ($countCanHo > 0) ? round(($countPhongDangThue / $countCanHo) * 100, 1) : 0;
+
+// Công nợ theo tháng: tính tháng nào theo tháng đó (Tháng hiện tại + nợ cũ quá hạn)
+$curKyMM = date('m/Y');
+$stmtCurDebt = $pdo->prepare("
+    SELECT COUNT(*) AS Cnt, COALESCE(SUM(TongTien), 0) AS Total 
+    FROM HoaDon 
+    WHERE KyThanhToan = ? AND (TrangThaiThanhToan <> 'Đã thanh toán' AND TrangThai <> 'Đã TT')
+");
+$stmtCurDebt->execute([$curKyMM]);
+$curDebt = $stmtCurDebt->fetch(PDO::FETCH_ASSOC);
+$congNoThangNay    = (float)($curDebt['Total'] ?? 0);
+$soPhongNoThangNay = (int)($curDebt['Cnt'] ?? 0);
+
+// Công nợ quá hạn tồn đọng từ các tháng trước (STR_TO_DATE < kỳ hiện tại)
+$stmtPastDebt = $pdo->prepare("
+    SELECT COUNT(*) AS Cnt, COALESCE(SUM(TongTien), 0) AS Total 
+    FROM HoaDon 
+    WHERE STR_TO_DATE(CONCAT('01/', KyThanhToan), '%d/%m/%Y') < STR_TO_DATE(CONCAT('01/', ?), '%d/%m/%Y')
+      AND (TrangThaiThanhToan <> 'Đã thanh toán' AND TrangThai <> 'Đã TT')
+");
+$stmtPastDebt->execute([$curKyMM]);
+$pastDebt = $stmtPastDebt->fetch(PDO::FETCH_ASSOC);
+$congNoTonDong  = (float)($pastDebt['Total'] ?? 0);
+$soPhongTonDong = (int)($pastDebt['Cnt'] ?? 0);
+
+// 2. DOANH THU THỰC THU THÁNG HIỆN TẠI
+$curKyMM = date('m/Y');
+$stmtCurRev = $pdo->prepare("
+    SELECT 
+        COALESCE(SUM(TongTien), 0) AS TongThucThu,
+        COALESCE(SUM(TienThue), 0) AS TienPhongThucThu,
+        COUNT(*) AS SoPhongDaThu
+    FROM HoaDon 
+    WHERE (TrangThaiThanhToan = 'Đã thanh toán' OR TrangThai = 'Đã TT') 
+      AND KyThanhToan = ?
+");
+$stmtCurRev->execute([$curKyMM]);
+$curRevData = $stmtCurRev->fetch(PDO::FETCH_ASSOC);
+
+$doanhThuThangNay = (float)($curRevData['TongThucThu'] ?? 0);
+$doanhThuTienPhong = (float)($curRevData['TienPhongThucThu'] ?? 0);
+$soPhongDaThu      = (int)($curRevData['SoPhongDaThu'] ?? 0);
+
+// 3. DOANH THU THỰC THU TOÀN BỘ 12 THÁNG CỦA NĂM HIỆN TẠI
+$curYear = (int)date('Y');
+$stmtYearRev = $pdo->prepare("
+    SELECT 
+        hd.KyThanhToan,
+        COUNT(*) AS SoHoaDon,
+        COALESCE(SUM(hd.TongTien), 0) AS TongDoanhThu
+    FROM HoaDon hd
+    WHERE (hd.TrangThaiThanhToan = 'Đã thanh toán' OR hd.TrangThai = 'Đã TT')
+      AND RIGHT(hd.KyThanhToan, 4) = :year
+    GROUP BY hd.KyThanhToan
+    ORDER BY STR_TO_DATE(CONCAT('01/', hd.KyThanhToan), '%d/%m/%Y') ASC
+");
+$stmtYearRev->execute(['year' => (string)$curYear]);
+$yearRevRows = $stmtYearRev->fetchAll(PDO::FETCH_ASSOC);
+
+$all12MonthsRev = [];
+for ($m = 1; $m <= 12; $m++) {
+    $k = sprintf('%02d/%04d', $m, $curYear);
+    $all12MonthsRev[$k] = 0.0;
+}
+$tongDoanhThuNamHienTai = 0.0;
+foreach ($yearRevRows as $r) {
+    if (isset($all12MonthsRev[$r['KyThanhToan']])) {
+        $all12MonthsRev[$r['KyThanhToan']] = (float)$r['TongDoanhThu'];
+        $tongDoanhThuNamHienTai += (float)$r['TongDoanhThu'];
+    }
+}
+
+$chartRevLabels = [];
+$chartRevValues = [];
+$chartRevColors = [];
+$chartKyMap     = [];
+
+foreach ($all12MonthsRev as $k => $val) {
+    $mNum = substr($k, 0, 2);
+    $chartRevLabels[] = 'Tháng ' . $mNum;
+    $chartRevValues[] = $val;
+    $chartKyMap[]     = $k;
+    if ($k === $curKyMM) {
+        $chartRevColors[] = '#0284c7'; // Nổi bật tháng hiện tại
+    } elseif ($val > 0) {
+        $chartRevColors[] = '#38bdf8'; // Tháng có doanh thu
+    } else {
+        $chartRevColors[] = '#e2e8f0'; // Tháng chưa có doanh thu
+    }
+}
 ?>
 
-<div class="page-header">
+<!-- ========================================================================
+     HEADER & CÁC NÚT TÁC NGHIỆP NHANH
+     ======================================================================== -->
+<div class="page-header" style="margin-bottom: 1.5rem;">
     <div>
-        <h1 class="page-title">Dashboard Tổng Quan (Admin)</h1>
+        <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #0f172a;">
+            Dashboard
+        </h1>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.25rem;">
+            Tổng quan hiệu suất vận hành chuỗi căn hộ và doanh thu
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: center;">
+        <a href="<?= url('/admin/bao-cao/doanh-thu.php') ?>" 
+           class="btn btn-primary">
+            <?= svgIcon('chart', '', 16) ?> <span>Báo Cáo Doanh Thu 12 Tháng</span>
+        </a>
+        <a href="<?= url('/admin/bao-cao/export-excel.php?type=doanh_thu&nam=' . $curYear) ?>" 
+           class="btn btn-excel" 
+           title="Xuất báo cáo Excel tổng hợp cả năm <?= $curYear ?>">
+            <?= svgIcon('download', '', 16) ?> <span>Xuất Excel Năm <?= $curYear ?></span>
+        </a>
     </div>
 </div>
 
-<div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 2rem;">
-    <div class="detail-item" style="border-left: 4px solid var(--primary-color);">
-        <div class="detail-label">Tổng số căn hộ</div>
-        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">
-            <?= $countCanHo ?>
+<!-- ========================================================================
+     SECTION: TỔNG QUAN KPI THỐNG KÊ (GRID 4 CARD CAO CẤP)
+     ======================================================================== -->
+<div class="detail-grid">
+    <!-- CARD 1: CĂN HỘ -->
+    <div class="detail-item" style="border-top: 3px solid #2563eb;">
+        <div class="detail-label">
+            <span>TỔNG CĂN HỘ VẬN HÀNH</span>
+            <?= svgIcon('building', '', 18) ?>
         </div>
-        <a href="<?= url('/admin/can-ho/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem danh sách →</a>
+        <div class="detail-value" style="color: #1e293b;">
+            <?= $countCanHo ?> <span style="font-size: 1rem; font-weight: 600; color: #64748b;">căn</span>
+        </div>
+        <div style="font-size: 0.825rem; color: #64748b; margin-top: 0.35rem;">
+            <strong style="color: #10b981;"><?= $countPhongDangThue ?></strong> đang thuê &bull; 
+            <strong style="color: #3b82f6;"><?= $countPhongTrong ?></strong> trống &bull; 
+            <strong style="color: #f59e0b;"><?= $countPhongBaoTri ?></strong> bảo trì
+        </div>
     </div>
 
-    <div class="detail-item" style="border-left: 4px solid var(--success-color);">
-        <div class="detail-label">Căn đang thuê</div>
-        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--success-color);">
-            <?= $countCanDangThue ?>
+    <!-- CARD 2: TỶ LỆ LẤP ĐẦY -->
+    <div class="detail-item" style="border-top: 3px solid #10b981;">
+        <div class="detail-label">
+            <span>TỶ LỆ LẤP ĐẦY PHÒNG</span>
+            <?= svgIcon('trend-up', '', 18) ?>
         </div>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">/ <?= $countCanHo ?> căn</span>
+        <div class="detail-value" style="color: #059669;">
+            <?= $occupancyRate ?>%
+        </div>
+        <div style="font-size: 0.825rem; color: #64748b; margin-top: 0.35rem;">
+            <strong><?= $countHopDongActive ?></strong> hợp đồng thuê đang có hiệu lực
+        </div>
     </div>
 
-    <div class="detail-item" style="border-left: 4px solid var(--danger-color);">
-        <div class="detail-label">Hóa đơn chưa thanh toán</div>
-        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--danger-color);">
-            <?= $countHoaDonChuaTT ?>
+    <!-- CARD 3: DOANH THU NĂM (CLICKABLE) -->
+    <div class="detail-item" 
+         style="border-top: 3px solid #0284c7; cursor: pointer;" 
+         onclick="window.location.href='<?= url('/admin/bao-cao/doanh-thu.php') ?>'" 
+         title="Bấm để xem bóc tách doanh thu chi tiết 12 tháng">
+        <div class="detail-label">
+            <span>DOANH THU NĂM <?= $curYear ?></span>
+            <?= svgIcon('invoice', '', 18) ?>
         </div>
-        <a href="<?= url('/admin/hoa-don/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Xem công nợ →</a>
+        <div class="detail-value" style="color: #0284c7;">
+            <?= formatMoney($tongDoanhThuNamHienTai) ?>
+        </div>
+        <div style="font-size: 0.825rem; color: #64748b; margin-top: 0.35rem;">
+            Tháng <?= date('m/Y') ?>: <strong style="color: #0369a1;"><?= formatMoney($doanhThuThangNay) ?></strong> (<?= $soPhongDaThu ?> phòng)
+        </div>
+        <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.25rem;">
+            <span>Xem chi tiết 12 tháng</span> &rarr;
+        </div>
     </div>
 
-    <div class="detail-item" style="border-left: 4px solid var(--warning-color);">
-        <div class="detail-label">Bảo trì đang chờ/xử lý</div>
-        <div class="detail-value" style="font-size: 1.8rem; font-weight: 700; color: var(--warning-color);">
-            <?= $countBaoTri ?>
+    <!-- CARD 4: CÔNG NỢ THEO THÁNG (CLICKABLE) -->
+    <div class="detail-item" 
+         style="border-top: 3px solid #ef4444; cursor: pointer;" 
+         onclick="window.location.href='<?= url('/admin/bao-cao/cong-no.php?ky=' . urlencode($curKyMM)) ?>'" 
+         title="Bấm để xem danh sách công nợ chi tiết tháng <?= $curKyMM ?>">
+        <div class="detail-label">
+            <span>CÔNG NỢ THÁNG <?= $curKyMM ?></span>
+            <?= svgIcon('trend-down', '', 18) ?>
         </div>
-        <a href="<?= url('/admin/bao-tri/index.php') ?>" style="font-size: 0.85rem; font-weight: 500;">Quản lý bảo trì →</a>
+        <div class="detail-value" style="color: #dc2626;">
+            <?= formatMoney($congNoThangNay) ?>
+        </div>
+        <div style="font-size: 0.825rem; color: #b91c1c; margin-top: 0.35rem;">
+            <strong><?= $soPhongNoThangNay ?></strong> phòng chưa thu kỳ này &bull; Nợ cũ tồn: <strong><?= formatMoney($congNoTonDong) ?></strong>
+        </div>
+        <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.25rem;">
+            <span>Xem công nợ tháng <?= $curKyMM ?></span> &rarr;
+        </div>
     </div>
 </div>
 
-<!-- Truy cập nhanh 2 Module chính -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-    <div class="card">
-        <div class="card-header">
-            <h3>👤 Quản Lý Khách Thuê</h3>
+<!-- ========================================================================
+     SECTION: BIỂU ĐỒ DOANH THU NĂM (12 THÁNG) & TỶ LỆ PHÒNG
+     ======================================================================== -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+    <!-- BIỂU ĐỒ DOANH THU 12 THÁNG CỦA NĂM -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1.05rem;">
+                    <?= svgIcon('chart', '', 18) ?>
+                    <span>Biểu Đồ Doanh Thu Thực Thu Năm <?= $curYear ?> (12 Tháng)</span>
+                </h3>
+                <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">
+                    Bấm vào cột tháng bất kỳ để xem bảng chi tiết từng hóa đơn của tháng đó
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">
+                    Tổng: <span style="color: #0284c7; font-weight: 700;"><?= formatMoney($tongDoanhThuNamHienTai) ?></span>
+                </span>
+                <a href="<?= url('/admin/bao-cao/doanh-thu.php') ?>" class="btn btn-sm btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #0284c7; border-color: #cbd5e1;">
+                    Xem chi tiết &rarr;
+                </a>
+            </div>
         </div>
         <div class="card-body">
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                Quản lý danh sách hồ sơ khách thuê, tìm kiếm theo Tên / CCCD / SĐT và xem yêu cầu bảo trì.
-            </p>
-            <div style="display: flex; gap: 0.5rem;">
-                <a href="<?= url('/admin/khach-thue/index.php') ?>" class="btn btn-primary">Xem danh sách</a>
-                <a href="<?= url('/admin/khach-thue/create.php') ?>" class="btn btn-outline">+ Thêm khách mới</a>
+            <div style="position: relative; height: 280px; width: 100%;">
+                <canvas id="chartRevenueYear"></canvas>
+            </div>
+
+            <!-- Dải nút chọn nhanh 12 tháng -->
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 0.85rem; border-top: 1px dashed var(--border-color, #e2e8f0); align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-right: 0.25rem;">Tháng:</span>
+                <?php foreach ($all12MonthsRev as $k => $v): 
+                    $mNum = substr($k, 0, 2);
+                    $hasRev = ($v > 0);
+                    $isCur = ($k === $curKyMM);
+                ?>
+                    <a href="<?= url('/admin/bao-cao/doanh-thu.php?ky=' . urlencode($k)) ?>" 
+                       style="display: inline-flex; align-items: center; gap: 0.25rem; text-decoration: none; padding: 0.3rem 0.55rem; font-size: 0.78rem; font-weight: <?= $isCur ? '700' : '600' ?>; border-radius: 6px; transition: all 0.2s; border: 1px solid <?= $isCur ? '#0284c7' : ($hasRev ? '#cbd5e1' : '#e2e8f0') ?>; <?= $isCur ? 'background: #0284c7; color: #fff;' : ($hasRev ? 'background: #f8fafc; color: #1e293b;' : 'background: #fafafa; color: #94a3b8;') ?>"
+                       onmouseover="<?= $isCur ? '' : "this.style.background='#0284c7';this.style.color='#fff';this.style.borderColor='#0284c7';" ?>"
+                       onmouseout="<?= $isCur ? '' : ($hasRev ? "this.style.background='#f8fafc';this.style.color='#1e293b';this.style.borderColor='#cbd5e1';" : "this.style.background='#fafafa';this.style.color='#94a3b8';this.style.borderColor='#e2e8f0';") ?>">
+                        T.<?= $mNum ?>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
 
-    <div class="card">
+    <!-- TỶ LỆ TRẠNG THÁI PHÒNG (DONUT CHART) -->
+    <div class="card" style="margin-bottom: 0;">
         <div class="card-header">
-            <h3>🛠️ Quản Lý Bảo Trì</h3>
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1.05rem;">
+                <?= svgIcon('door', '', 18) ?>
+                <span>Tình Trạng Lấp Đầy Phòng</span>
+            </h3>
+            <span class="badge badge-success" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;"><?= $occupancyRate ?>% Đầy</span>
         </div>
         <div class="card-body">
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                Tiếp nhận sự cố sửa chữa từ khách thuê, phân công tiến độ, cập nhật chi phí và xác nhận hoàn thành.
-            </p>
-            <div style="display: flex; gap: 0.5rem;">
-                <a href="<?= url('/admin/bao-tri/index.php') ?>" class="btn btn-primary">Xem danh sách bảo trì</a>
-                <a href="<?= url('/admin/bao-tri/create.php') ?>" class="btn btn-outline">+ Tạo yêu cầu mới</a>
+            <div style="position: relative; height: 210px; width: 100%;">
+                <canvas id="chartOccupancy"></canvas>
+            </div>
+            <div style="display: flex; justify-content: space-around; margin-top: 1.25rem; font-size: 0.825rem; text-align: center;">
+                <div>
+                    <span style="color: #10b981; font-weight: 700;">●</span> Đang thuê: <strong><?= $countPhongDangThue ?></strong>
+                </div>
+                <div>
+                    <span style="color: #3b82f6; font-weight: 700;">●</span> Trống: <strong><?= $countPhongTrong ?></strong>
+                </div>
+                <div>
+                    <span style="color: #f59e0b; font-weight: 700;">●</span> Bảo trì: <strong><?= $countPhongBaoTri ?></strong>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ========================================================================
+     JAVASCRIPT CHARTS (CHART.JS)
+     ======================================================================== -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Biểu đồ Doanh thu 12 Tháng của năm
+    const ctxRev = document.getElementById('chartRevenueYear');
+    if (ctxRev) {
+        const revLabels = <?= json_encode($chartRevLabels, JSON_UNESCAPED_UNICODE) ?>;
+        const revKyMap  = <?= json_encode($chartKyMap, JSON_UNESCAPED_UNICODE) ?>;
+        const revColors = <?= json_encode($chartRevColors, JSON_UNESCAPED_UNICODE) ?>;
+
+        new Chart(ctxRev, {
+            type: 'bar',
+            data: {
+                labels: revLabels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: <?= json_encode($chartRevValues) ?>,
+                    backgroundColor: revColors,
+                    borderRadius: 6,
+                    maxBarThickness: 45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) {
+                                return ' Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(c.raw) + ' đ';
+                            },
+                            afterLabel: function(c) {
+                                return (c.raw > 0) ? ' (Nhấn vào cột để xem chi tiết tháng)' : ' (Chưa phát sinh doanh thu)';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(v) { return (v / 1000000).toLocaleString('vi-VN') + ' tr'; }
+                        }
+                    }
+                },
+                onClick: function(evt, elements) {
+                    if (elements && elements.length > 0) {
+                        const idx = elements[0].index;
+                        const ky = revKyMap[idx]; // "09/2026"
+                        window.location.href = '<?= url('/admin/bao-cao/doanh-thu.php?ky=') ?>' + encodeURIComponent(ky);
+                    }
+                },
+                onHover: function(evt, elements) {
+                    evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            }
+        });
+    }
+
+    // 2. Biểu đồ Tỷ lệ phòng
+    const ctxOcc = document.getElementById('chartOccupancy');
+    if (ctxOcc) {
+        new Chart(ctxOcc, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đang thuê', 'Trống', 'Bảo trì'],
+                datasets: [{
+                    data: [<?= (int)$countPhongDangThue ?>, <?= (int)$countPhongTrong ?>, <?= (int)$countPhongBaoTri ?>],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../auth/guard.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/module2_helpers.php';
 
-requireAdmin();
+requirePermission('CANHO_MANAGE');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/admin/can-ho/index.php');
@@ -19,11 +19,16 @@ if ($id <= 0) {
     redirect('/admin/can-ho/index.php');
 }
 
-$stmt = $pdo->prepare('SELECT MaCanHo, SoPhong FROM CanHo WHERE MaCanHo = :id');
+$stmt = $pdo->prepare('SELECT MaCanHo, SoPhong, DiaChi FROM CanHo WHERE MaCanHo = :id');
 $stmt->execute([':id' => $id]);
 $apartment = $stmt->fetch();
 if (!$apartment) {
     setFlash('error', 'Không tìm thấy căn hộ.');
+    redirect('/admin/can-ho/index.php');
+}
+
+if (!isStaffAssignedBuilding((string)($apartment['DiaChi'] ?? ''))) {
+    setFlash('error', 'Bạn không có quyền xóa căn hộ thuộc tòa nhà này.');
     redirect('/admin/can-ho/index.php');
 }
 
