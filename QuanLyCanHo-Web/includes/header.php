@@ -44,6 +44,9 @@ if ($loggedIn) {
 </head>
 <body class="app-body">
     <div class="app-layout">
+        <!-- OVERLAY BẢO VỆ CHO MOBILE SIDEBAR -->
+        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
         <!-- SIDEBAR DỌC BÊN TRÁI -->
         <?php require_once __DIR__ . '/sidebar.php'; ?>
 

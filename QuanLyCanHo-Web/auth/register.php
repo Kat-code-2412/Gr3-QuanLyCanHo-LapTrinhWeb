@@ -223,9 +223,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #2563eb;
         }
         @media (max-width: 768px) {
-            .auth-wrapper { flex-direction: column; margin: 1rem; }
-            .auth-brand-panel { padding: 2.25rem 2rem; }
-            .auth-form-panel { padding: 2.25rem 2rem; }
+            .auth-wrapper { flex-direction: column; margin: 0.75rem auto; width: calc(100% - 1.25rem); border-radius: 16px; }
+            .auth-brand-panel { display: none; }
+            .auth-form-panel { padding: 1.75rem 1.15rem; }
+            .form-control { font-size: 16px !important; }
         }
     </style>
 </head>

@@ -486,6 +486,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             .slide-title { font-size: 1.4rem; }
             .auth-form-panel { padding: 2.25rem 2rem; }
         }
+
+        @media (max-width: 640px) {
+            .auth-container {
+                margin: 0.65rem auto !important;
+                width: calc(100% - 1.25rem) !important;
+                border-radius: 16px !important;
+            }
+            .auth-slider-panel {
+                display: none !important;
+            }
+            .auth-form-panel {
+                padding: 1.75rem 1.15rem !important;
+            }
+            .auth-title {
+                font-size: 1.5rem !important;
+            }
+            .vip-input {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body>

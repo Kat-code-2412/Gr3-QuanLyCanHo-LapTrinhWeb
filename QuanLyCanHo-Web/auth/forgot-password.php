@@ -118,6 +118,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             margin-bottom: 1rem;
         }
+        @media (max-width: 540px) {
+            .auth-card {
+                padding: 1.5rem 1.15rem !important;
+                margin: 0.75rem auto !important;
+                width: calc(100% - 1.25rem) !important;
+                border-radius: 16px !important;
+            }
+            .form-control-dark {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body>

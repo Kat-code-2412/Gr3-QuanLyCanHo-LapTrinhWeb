@@ -178,6 +178,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             margin-bottom: 1rem;
         }
+        @media (max-width: 540px) {
+            .auth-card {
+                padding: 1.5rem 1rem !important;
+                margin: 0.75rem auto !important;
+                width: calc(100% - 1.25rem) !important;
+                border-radius: 16px !important;
+            }
+            .otp-inputs {
+                gap: 0.35rem !important;
+                margin: 1.15rem 0 !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+            .otp-digit {
+                width: calc((100% - 25px) / 6) !important;
+                max-width: 44px !important;
+                height: 48px !important;
+                font-size: 1.2rem !important;
+                padding: 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
