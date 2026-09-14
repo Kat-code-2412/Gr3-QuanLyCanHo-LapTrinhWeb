@@ -100,7 +100,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1200, user-scalable=yes, maximum-scale=5.0">
     <title>Đăng nhập VIP - Hệ Thống Quản Lý Căn Hộ Dịch Vụ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,7 +131,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             color: #f8fafc;
             position: relative;
-            overflow-x: hidden;
+            min-width: 1200px;
         }
 
         /* AMBIENT GLOW */
@@ -468,43 +468,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         .auth-footer-links a:hover {
             color: #93c5fd;
             text-decoration: underline;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .auth-container {
-                flex-direction: column;
-                margin: 1rem;
-                max-width: 520px;
-                min-height: auto;
-            }
-            .auth-slider-panel {
-                padding: 2.25rem 2rem;
-                min-height: 280px;
-            }
-            .slider-texts { min-height: 110px; margin-bottom: 1rem; }
-            .slide-title { font-size: 1.4rem; }
-            .auth-form-panel { padding: 2.25rem 2rem; }
-        }
-
-        @media (max-width: 640px) {
-            .auth-container {
-                margin: 0.65rem auto !important;
-                width: calc(100% - 1.25rem) !important;
-                border-radius: 16px !important;
-            }
-            .auth-slider-panel {
-                display: none !important;
-            }
-            .auth-form-panel {
-                padding: 1.75rem 1.15rem !important;
-            }
-            .auth-title {
-                font-size: 1.5rem !important;
-            }
-            .vip-input {
-                font-size: 16px !important;
-            }
         }
     </style>
 </head>

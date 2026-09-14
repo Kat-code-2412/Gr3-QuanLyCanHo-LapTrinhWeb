@@ -26,9 +26,6 @@ function isMenuActive(string $path, string $currentUri): bool {
                 <span class="brand-sub">Quản Lý & Vận Hành</span>
             </div>
         </a>
-        <button type="button" class="btn-sidebar-close" id="sidebarCloseBtn" onclick="toggleSidebar()" title="Đóng Menu">
-            <?= svgIcon('x', '', 20) ?>
-        </button>
     </div>
 
     <!-- MENU ĐIỀU HƯỚNG DỌC -->

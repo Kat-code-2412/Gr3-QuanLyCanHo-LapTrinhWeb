@@ -132,7 +132,7 @@ try {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280, user-scalable=yes, maximum-scale=5.0">
     <title>Căn Hộ Dịch Vụ - Hệ Thống Quản Trị & Vận Hành Đẳng Cấp VIP</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -164,7 +164,7 @@ try {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
+            min-width: 1280px;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -1289,60 +1289,6 @@ try {
         .footer-links a:hover {
             color: #38bdf8;
             padding-left: 4px;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .hero-slider-wrap {
-                min-height: 680px;
-            }
-            .hero-title { font-size: 2.75rem; }
-            .hero-slide-container { padding: 0 2rem; }
-            .hero-bottom-strip { gap: 1.25rem; padding: 0.65rem 1.5rem; bottom: 1.25rem; }
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .benefits-grid { grid-template-columns: repeat(2, 1fr); }
-            .step-tabs-nav { grid-template-columns: 1fr 1fr; }
-            .step-content-pane { grid-template-columns: 1fr; gap: 2rem; padding: 2rem; }
-            .footer-grid { grid-template-columns: 1fr 1fr; }
-            .vip-nav-links { display: none; }
-        }
-
-        @media (max-width: 768px) {
-            .hero-slider-wrap {
-                min-height: 600px;
-            }
-            .hero-slide { padding-bottom: 3.5rem; }
-            .hero-title { font-size: 2.2rem; }
-            .hero-desc { font-size: 1rem; margin-bottom: 1.75rem; }
-            .hero-bottom-strip {
-                display: none;
-            }
-            .hero-nav-arrow { display: none; }
-            .hero-dots-wrap {
-                top: auto;
-                bottom: 1.5rem;
-                right: 50%;
-                transform: translateX(50%);
-            }
-            .features-grid { grid-template-columns: 1fr; }
-            .benefits-grid { grid-template-columns: 1fr; }
-            .features-section { padding: 4.5rem 1.5rem 3rem; }
-            .benefits-section { padding: 1rem 1.5rem 4rem; }
-            .workflow-section { padding: 4.5rem 1.5rem; }
-            .cta-section { padding: 2rem 1.5rem 5rem; }
-            .cta-box { padding: 3rem 1.5rem; }
-            .cta-title { font-size: 2rem; }
-            .section-title { font-size: 2.1rem; }
-        }
-
-        @media (max-width: 640px) {
-            .vip-nav { padding: 0 1.25rem; }
-            .hero-title { font-size: 1.85rem; }
-            .hero-desc { font-size: 0.925rem; }
-            .hero-btn-group { flex-direction: column; align-items: stretch; width: 100%; max-width: 320px; }
-            .step-tabs-nav { grid-template-columns: 1fr; }
-            .widget-grid-2col { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>

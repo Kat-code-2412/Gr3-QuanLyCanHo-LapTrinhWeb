@@ -20,49 +20,10 @@ declare(strict_types=1);
     <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('appSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const isMobile = window.innerWidth <= 992;
-
         if (sidebar) {
-            if (isMobile) {
-                const isOpen = sidebar.classList.toggle('show-mobile');
-                if (overlay) {
-                    overlay.classList.toggle('active', isOpen);
-                }
-                document.body.style.overflow = isOpen ? 'hidden' : '';
-            } else {
-                sidebar.classList.toggle('collapsed');
-            }
+            sidebar.classList.toggle('collapsed');
         }
     }
-
-    // Tự động đóng sidebar mobile khi resize về màn hình lớn
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 992) {
-            const sidebar = document.getElementById('appSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar) sidebar.classList.remove('show-mobile');
-            if (overlay) overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Đóng sidebar khi click vào link trên mobile
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.getElementById('appSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        if (sidebar) {
-            sidebar.querySelectorAll('.nav-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('show-mobile');
-                        if (overlay) overlay.classList.remove('active');
-                        document.body.style.overflow = '';
-                    }
-                });
-            });
-        }
-    });
 
     function toggleUserDropdown(event) {
         event.stopPropagation();

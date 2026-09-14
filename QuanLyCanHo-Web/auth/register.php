@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1200, user-scalable=yes, maximum-scale=5.0">
     <title>Đăng ký tài khoản - Hệ Thống Quản Lý Căn Hộ Dịch Vụ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -134,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            min-width: 1200px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -221,12 +222,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .pwd-toggle:hover {
             color: #2563eb;
-        }
-        @media (max-width: 768px) {
-            .auth-wrapper { flex-direction: column; margin: 0.75rem auto; width: calc(100% - 1.25rem); border-radius: 16px; }
-            .auth-brand-panel { display: none; }
-            .auth-form-panel { padding: 1.75rem 1.15rem; }
-            .form-control { font-size: 16px !important; }
         }
     </style>
 </head>

@@ -33,7 +33,7 @@ if ($loggedIn) {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280, user-scalable=yes, maximum-scale=5.0">
     <title><?= e($title ?? 'Hệ Thống Quản Lý Căn Hộ Dịch Vụ') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,8 +44,6 @@ if ($loggedIn) {
 </head>
 <body class="app-body">
     <div class="app-layout">
-        <!-- OVERLAY BẢO VỆ CHO MOBILE SIDEBAR -->
-        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <!-- SIDEBAR DỌC BÊN TRÁI -->
         <?php require_once __DIR__ . '/sidebar.php'; ?>
