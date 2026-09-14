@@ -22,7 +22,9 @@ if (file_exists($envFile)) {
 
             $_ENV[$key] = $value;
             $_SERVER[$key] = $value;
-            putenv("{$key}={$value}");
+            if (function_exists('putenv')) {
+                @putenv("{$key}={$value}");
+            }
         }
     }
 }
