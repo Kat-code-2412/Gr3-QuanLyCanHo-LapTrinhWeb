@@ -8,12 +8,14 @@ require_once __DIR__ . '/../../auth/guard.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
-$baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
+markOverdueInvoices($pdo);
+$returnPath = currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan';
+$baseUrl = url($returnPath);
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
     setFlash('error', 'Không tìm thấy hóa đơn cần thanh toán.');
-    redirect($baseUrl . '/index.php');
+    redirect($returnPath . '/index.php');
 }
 
 $stmt = $pdo->prepare('SELECT hd.*, hp.MaHopDong, ch.SoPhong, ch.DiaChi, kt.HoTen AS TenKhach FROM HoaDon hd JOIN HopDong hp ON hd.MaHopDong = hp.MaHopDong JOIN CanHo ch ON hp.MaCanHo = ch.MaCanHo JOIN KhachThue kt ON hp.MaKhach = kt.MaKhach WHERE hd.MaHoaDon = ?');
@@ -22,7 +24,7 @@ $invoice = $stmt->fetch();
 
 if (!$invoice) {
     setFlash('error', 'Hóa đơn không tồn tại.');
-    redirect($baseUrl . '/index.php');
+    redirect($returnPath . '/index.php');
 }
 
 if (!isStaffAssignedBuilding((string)($invoice['DiaChi'] ?? ''))) {

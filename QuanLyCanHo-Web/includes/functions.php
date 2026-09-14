@@ -150,6 +150,20 @@ function formatSoPhong(?string $soPhong): string
 }
 
 /**
+ * Đồng bộ trạng thái các hóa đơn chưa thanh toán đã quá 30 ngày.
+ */
+function markOverdueInvoices(PDO $pdo): int
+{
+    $stmt = $pdo->prepare("UPDATE HoaDon
+        SET TrangThai = 'Quá hạn'
+        WHERE TrangThai = 'Chưa TT'
+          AND NgayTao < DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $stmt->execute();
+
+    return $stmt->rowCount();
+}
+
+/**
  * Hiển thị Badge trạng thái Bảo trì hoặc Hợp đồng
  */
 function renderStatusBadge(string $status): string
@@ -169,6 +183,9 @@ function renderStatusBadge(string $status): string
         'Đã trả phòng'   => 'badge-secondary',
         'Chưa thuê'       => 'badge-warning',
         'Bảo trì'         => 'badge-warning',
+        'Đã TT'           => 'badge-success',
+        'Chưa TT'         => 'badge-warning',
+        'Quá hạn'         => 'badge-danger',
     ];
 
     $badgeClass = $classMap[$status] ?? 'badge-secondary';

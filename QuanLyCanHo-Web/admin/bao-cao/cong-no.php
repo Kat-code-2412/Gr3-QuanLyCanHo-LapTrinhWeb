@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 $title = 'Báo Cáo Công Nợ - Hệ Thống Căn Hộ Dịch Vụ';
+require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/header.php';
 requirePermission('BAOCAO_VIEW');
 
 $pdo = require __DIR__ . '/../../config/database.php';
+markOverdueInvoices($pdo);
 
 // Kỳ thanh toán mặc định là tháng hiện tại (MM/YYYY)
 $curKyMM = date('m/Y');

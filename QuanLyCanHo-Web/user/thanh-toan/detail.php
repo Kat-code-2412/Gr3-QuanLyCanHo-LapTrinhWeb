@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../includes/header.php';
 requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
+markOverdueInvoices($pdo);
 $baseUrl = url(currentUserRole() === 'Admin' ? '/admin/hoa-don' : '/user/thanh-toan');
 
 $id = (int)($_GET['id'] ?? 0);
