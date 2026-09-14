@@ -189,7 +189,9 @@ $recentMaintenance = $stmtRecentBt->fetchAll();
                 <?= svgIcon('tool', '', 18) ?>
                 <span>Danh Sách Sự Cố Cần Xử Lý</span>
             </h3>
+            <?php if ($isAdmin || hasPermission('BAOTRI_MANAGE')): ?>
             <a href="<?= url('/admin/bao-tri/index.php') ?>" class="btn btn-sm btn-outline">Xem tất cả &raquo;</a>
+            <?php endif; ?>
         </div>
         <div class="card-body" style="padding: 0;">
             <?php if (empty($recentMaintenance)): ?>

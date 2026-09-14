@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->commit();
 
         refreshStaffBuildingSession();
+        refreshUserPermissionsSession($id);
         logAudit('GRANT_PERMISSIONS', 'NhanVien', (string)$id, 'Cập nhật phân quyền & tòa nhà cho nhân viên: ' . $employee['HoTen']);
         setFlash('success', 'Đã cập nhật phân quyền và tòa nhà thành công cho nhân viên "' . e($employee['HoTen']) . '".');
         redirect('/admin/nhan-vien/index.php');

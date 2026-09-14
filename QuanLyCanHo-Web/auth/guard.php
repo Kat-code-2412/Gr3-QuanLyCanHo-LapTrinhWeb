@@ -99,13 +99,42 @@ function hasPermission(string $permissionCode): bool
 }
 
 /**
- * Yêu cầu phải có quyền cụ thể, nếu không có sẽ từ chối truy cập
+ * Làm mới cache quyền của người dùng trong Session
+ */
+function refreshUserPermissionsSession(?int $maNV = null): void
+{
+    $targetMaNV = $maNV ?? (int)($_SESSION['MaNV'] ?? 0);
+    if ($targetMaNV <= 0) {
+        return;
+    }
+    try {
+        $pdo = require __DIR__ . '/../config/database.php';
+        $stmt = $pdo->prepare("
+            SELECT q.MaCode 
+            FROM phanquyen pq 
+            JOIN quyen q ON pq.MaQuyen = q.MaQuyen 
+            WHERE pq.MaNV = ?
+        ");
+        $stmt->execute([$targetMaNV]);
+        $perms = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        if ($maNV === null || $maNV === (int)($_SESSION['MaNV'] ?? 0)) {
+            $_SESSION['user_permissions'] = $perms;
+        }
+    } catch (Throwable $t) {
+        if ($maNV === null || $maNV === (int)($_SESSION['MaNV'] ?? 0)) {
+            $_SESSION['user_permissions'] = [];
+        }
+    }
+}
+
+/**
+ * Yêu cầu phải có quyền cụ thể, nếu không có sẽ từ chối truy cập mà không hiện thông báo lỗi mất thẩm mỹ
  */
 function requirePermission(string $permissionCode): void
 {
     requireLogin();
     if (!hasPermission($permissionCode)) {
-        setFlash('error', 'Bạn không có quyền truy cập chức năng này (' . e($permissionCode) . ').');
+        // Tự động chuyển hướng về trang chủ nội bộ tương ứng mà không hiện thông báo thô
         if (($_SESSION['VaiTro'] ?? '') === 'Admin') {
             redirect('/admin/index.php');
         } else {

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../auth/guard.php';
+
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 $userRole = $_SESSION['VaiTro'] ?? 'NhanVien';
 $isAdmin = ($userRole === 'Admin');
@@ -41,54 +43,79 @@ function isMenuActive(string $path, string $currentUri): bool {
         </ul>
 
         <!-- NHÓM QUẢN LÝ -->
+        <?php 
+        $canCanHo = $isAdmin || hasPermission('CANHO_MANAGE');
+        $canKhachThue = $isAdmin || hasPermission('KHACHTHUE_MANAGE');
+        $canHopDong = $isAdmin || hasPermission('HOPDONG_MANAGE');
+        if ($canCanHo || $canKhachThue || $canHopDong): 
+        ?>
         <div class="nav-section-title">QUẢN LÝ</div>
         <ul class="nav-menu">
+            <?php if ($canCanHo): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/can-ho/index.php') ?>" class="nav-link <?= isMenuActive('/admin/can-ho/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('door', 'nav-icon', 18) ?>
                     <span class="nav-label">Hệ Thống Căn Hộ</span>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if ($canKhachThue): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/khach-thue/index.php') ?>" class="nav-link <?= isMenuActive('/admin/khach-thue/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('users', 'nav-icon', 18) ?>
                     <span class="nav-label">Khách thuê</span>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if ($canHopDong): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/hop-dong/index.php') ?>" class="nav-link <?= isMenuActive('/admin/hop-dong/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('contract', 'nav-icon', 18) ?>
                     <span class="nav-label">Hợp đồng</span>
                 </a>
             </li>
+            <?php endif; ?>
         </ul>
+        <?php endif; ?>
 
         <!-- NHÓM TÀI CHÍNH -->
+        <?php 
+        $canDienNuoc = $isAdmin || hasPermission('DIENNUOC_MANAGE');
+        $canHoaDon = $isAdmin || hasPermission('HOADON_MANAGE');
+        if ($canDienNuoc || $canHoaDon): 
+        ?>
         <div class="nav-section-title">TÀI CHÍNH</div>
         <ul class="nav-menu">
+            <?php if ($canDienNuoc): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/dien-nuoc/index.php') ?>" class="nav-link <?= isMenuActive('/admin/dien-nuoc/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('electric', 'nav-icon', 18) ?>
                     <span class="nav-label">Điện nước</span>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if ($canHoaDon): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/hoa-don/index.php') ?>" class="nav-link <?= isMenuActive('/admin/hoa-don/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('invoice', 'nav-icon', 18) ?>
                     <span class="nav-label">Hóa đơn</span>
                 </a>
             </li>
+            <?php endif; ?>
         </ul>
+        <?php endif; ?>
 
         <!-- NHÓM VẬN HÀNH -->
         <div class="nav-section-title">VẬN HÀNH</div>
         <ul class="nav-menu">
+            <?php if ($isAdmin || hasPermission('BAOTRI_MANAGE')): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/bao-tri/index.php') ?>" class="nav-link <?= isMenuActive('/admin/bao-tri/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('tool', 'nav-icon', 18) ?>
                     <span class="nav-label">Bảo trì sự cố</span>
                 </a>
             </li>
+            <?php endif; ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/thong-bao/index.php') ?>" class="nav-link <?= isMenuActive('/admin/thong-bao/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('bell', 'nav-icon', 18) ?>
