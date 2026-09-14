@@ -68,6 +68,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     $_SESSION['HoTen'] = $user['HoTen'];
                     $_SESSION['VaiTro'] = $user['VaiTro'];
                     $_SESSION['Email'] = $user['Email'];
+                    $_SESSION['Avatar'] = $user['Avatar'] ?? null;
 
                     // Ghi audit log đăng nhập
                     try {

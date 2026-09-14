@@ -76,8 +76,12 @@ if ($loggedIn) {
                     <!-- USER INFO & ROLE BADGE WITH DROPDOWN -->
                     <div class="user-dropdown-container" style="position: relative;">
                         <div class="user-profile-badge" onclick="toggleUserDropdown(event)" style="cursor: pointer;" title="Tùy chọn tài khoản">
-                            <div class="user-avatar-circle">
-                                <?= mb_substr($hoTen, 0, 1, 'UTF-8') ?>
+                            <div class="user-avatar-circle" style="<?= !empty($_SESSION['Avatar']) ? 'overflow: hidden; padding: 0; background: transparent;' : '' ?>">
+                                <?php if (!empty($_SESSION['Avatar'])): ?>
+                                    <img src="<?= e(url($_SESSION['Avatar'])) ?>" alt="<?= e($hoTen) ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                <?php else: ?>
+                                    <?= mb_substr($hoTen, 0, 1, 'UTF-8') ?>
+                                <?php endif; ?>
                             </div>
                             <div class="user-info-text">
                                 <span class="user-name"><?= e($hoTen) ?></span>
@@ -89,10 +93,19 @@ if ($loggedIn) {
                         </div>
 
                         <!-- DROPDOWN MENU -->
-                        <div id="userDropdownMenu" class="user-dropdown-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #ffffff; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0; min-width: 220px; z-index: 1000; overflow: hidden;">
-                            <div style="padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
-                                <div style="font-weight: 700; color: #0f172a; font-size: 0.875rem;"><?= e($hoTen) ?></div>
-                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;"><?= e($_SESSION['TenDangNhap'] ?? '') ?> • <?= ($vaiTro === 'Admin') ? 'Chủ nhà' : 'Nhân viên' ?></div>
+                        <div id="userDropdownMenu" class="user-dropdown-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #ffffff; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0; min-width: 230px; z-index: 1000; overflow: hidden;">
+                            <div style="padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9; background: #f8fafc; display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #e2e8f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #1e293b;">
+                                    <?php if (!empty($_SESSION['Avatar'])): ?>
+                                        <img src="<?= e(url($_SESSION['Avatar'])) ?>" alt="<?= e($hoTen) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <?php else: ?>
+                                        <?= mb_substr($hoTen, 0, 1, 'UTF-8') ?>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="min-width: 0; flex: 1;">
+                                    <div style="font-weight: 700; color: #0f172a; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?= e($hoTen) ?></div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?= e($_SESSION['TenDangNhap'] ?? '') ?> • <?= ($vaiTro === 'Admin') ? 'Chủ nhà' : 'Nhân viên' ?></div>
+                                </div>
                             </div>
                             <div style="padding: 0.35rem 0;">
                                 <a href="<?= url('/auth/profile.php') ?>" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: #334155; text-decoration: none; font-size: 0.875rem; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">

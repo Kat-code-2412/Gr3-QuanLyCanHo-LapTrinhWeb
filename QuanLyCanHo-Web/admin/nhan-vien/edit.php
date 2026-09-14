@@ -107,6 +107,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['TrangThai'] = 'Bạn không thể tự chuyển tài khoản của chính mình sang "Nghỉ việc".';
     }
 
+    // Xử lý upload Avatar
+    $newAvatarPath = $employee['Avatar'] ?? null;
+    if (!empty($_POST['remove_avatar'])) {
+        if (!empty($employee['Avatar']) && file_exists(__DIR__ . '/../../' . $employee['Avatar'])) {
+            @unlink(__DIR__ . '/../../' . $employee['Avatar']);
+        }
+        $newAvatarPath = null;
+    }
+
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['avatar'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+        ];
+
+        if ($file['size'] > $maxSize) {
+            $errors['avatar'] = 'Kích thước ảnh đại diện không được vượt quá 5MB.';
+        } else {
+            $imgInfo = @getimagesize($file['tmp_name']);
+            $mimeType = $imgInfo['mime'] ?? '';
+
+            if (!$imgInfo || !isset($allowedTypes[$mimeType])) {
+                $errors['avatar'] = 'Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, WEBP, GIF.';
+            } else {
+                $ext = $allowedTypes[$mimeType];
+                $uploadDir = __DIR__ . '/../../uploads/avatars';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = 'avatar_' . $id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $targetFile = $uploadDir . '/' . $fileName;
+
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    if (!empty($employee['Avatar']) && file_exists(__DIR__ . '/../../' . $employee['Avatar'])) {
+                        @unlink(__DIR__ . '/../../' . $employee['Avatar']);
+                    }
+                    $newAvatarPath = 'uploads/avatars/' . $fileName;
+                } else {
+                    $errors['avatar'] = 'Không thể lưu file ảnh lên máy chủ.';
+                }
+            }
+        }
+    }
+
     // Nếu hợp lệ -> Cập nhật CSDL
     if (empty($errors)) {
         try {
@@ -115,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updateSql = '
                     UPDATE NhanVien 
                     SET HoTen = :hoTen, TenDangNhap = :tenDangNhap, MatKhau = :matKhau, 
-                        VaiTro = :vaiTro, SoDienThoai = :sdt, Email = :email, TrangThai = :trangThai
+                        VaiTro = :vaiTro, SoDienThoai = :sdt, Email = :email, TrangThai = :trangThai, Avatar = :avatar
                     WHERE MaNV = :id
                 ';
                 $params = [
@@ -126,13 +175,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':sdt'         => ($formData['SoDienThoai'] !== '') ? $formData['SoDienThoai'] : null,
                     ':email'       => ($formData['Email'] !== '') ? $formData['Email'] : null,
                     ':trangThai'   => $formData['TrangThai'],
+                    ':avatar'      => $newAvatarPath,
                     ':id'          => $id,
                 ];
             } else {
                 $updateSql = '
                     UPDATE NhanVien 
                     SET HoTen = :hoTen, TenDangNhap = :tenDangNhap, 
-                        VaiTro = :vaiTro, SoDienThoai = :sdt, Email = :email, TrangThai = :trangThai
+                        VaiTro = :vaiTro, SoDienThoai = :sdt, Email = :email, TrangThai = :trangThai, Avatar = :avatar
                     WHERE MaNV = :id
                 ';
                 $params = [
@@ -142,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':sdt'         => ($formData['SoDienThoai'] !== '') ? $formData['SoDienThoai'] : null,
                     ':email'       => ($formData['Email'] !== '') ? $formData['Email'] : null,
                     ':trangThai'   => $formData['TrangThai'],
+                    ':avatar'      => $newAvatarPath,
                     ':id'          => $id,
                 ];
             }
@@ -170,10 +221,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             refreshStaffBuildingSession();
 
-            // Cập nhật lại session nếu tự sửa họ tên chính mình
+            // Cập nhật lại session nếu tự sửa họ tên hoặc avatar chính mình
             if ($isSelf) {
                 $_SESSION['HoTen'] = $formData['HoTen'];
                 $_SESSION['TenDangNhap'] = $formData['TenDangNhap'];
+                $_SESSION['Avatar'] = $newAvatarPath;
             }
 
             setFlash('success', 'Cập nhật thông tin nhân viên "' . $formData['HoTen'] . '" thành công!');
@@ -243,10 +295,48 @@ $allBuildingsWithCount = $pdo->query('
         <span style="font-size: 0.85rem; color: var(--text-muted);">Mã: <strong>#<?= (int)$employee['MaNV'] ?></strong></span>
     </div>
     <div class="card-body">
-        <form method="POST" action="">
+        <form method="POST" action="" enctype="multipart/form-data">
             <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Upload Avatar -->
+                <div class="form-group" style="grid-column: span 2; padding: 1.1rem 1.25rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem; color: #1e293b;">
+                        <?= svgIcon('camera', '', 15) ?> Ảnh đại diện (Avatar)
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                        <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid #e2e8f0; background: #ffffff; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                            <img id="empAvatarPreview" src="<?= !empty($employee['Avatar']) ? e(url($employee['Avatar'])) : '' ?>" 
+                                 alt="Avatar" 
+                                 style="width: 100%; height: 100%; object-fit: cover; <?= empty($employee['Avatar']) ? 'display: none;' : '' ?>">
+                            <div id="empAvatarPlaceholder" style="width: 100%; height: 100%; display: <?= !empty($employee['Avatar']) ? 'none' : 'flex' ?>; align-items: center; justify-content: center; background: #eff6ff; color: #2563eb; font-size: 1.5rem; font-weight: 700;">
+                                <?= e(getInitials($employee['HoTen'])) ?>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 220px;">
+                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                                <label for="empAvatarInput" class="btn btn-outline" style="cursor: pointer; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff;">
+                                    <?= svgIcon('upload', '', 14) ?> Chọn ảnh mới
+                                </label>
+                                <input type="file" id="empAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewEmpAvatar(this)">
+                                
+                                <?php if (!empty($employee['Avatar'])): ?>
+                                    <label style="font-size: 0.825rem; color: #dc2626; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; margin: 0; background: #fff; padding: 0.4rem 0.75rem; border: 1px solid #fecaca; border-radius: 6px;">
+                                        <input type="checkbox" name="remove_avatar" value="1" onchange="toggleRemoveEmpAvatar(this)">
+                                        Xóa ảnh hiện tại
+                                    </label>
+                                <?php endif; ?>
+                            </div>
+                            <div style="font-size: 0.775rem; color: #64748b;">
+                                Định dạng: JPG, PNG, WEBP, GIF (tối đa 5MB).
+                            </div>
+                            <?php if (isset($errors['avatar'])): ?>
+                                <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.25rem; display: block;"><?= e($errors['avatar']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Họ tên -->
                 <div class="form-group" style="grid-column: span 2;">
                     <label for="HoTen" style="font-weight: 600; display: block; margin-bottom: 0.35rem;">
@@ -479,6 +569,40 @@ document.querySelectorAll('.building-checkbox').forEach(cb => {
         }
     });
 });
+
+function previewEmpAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('empAvatarPreview');
+            var placeholder = document.getElementById('empAvatarPlaceholder');
+            if (img) {
+                img.src = e.target.result;
+                img.style.display = 'block';
+                img.style.opacity = '1';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleRemoveEmpAvatar(checkbox) {
+    var img = document.getElementById('empAvatarPreview');
+    var placeholder = document.getElementById('empAvatarPlaceholder');
+    if (checkbox.checked) {
+        if (img) img.style.opacity = '0.25';
+        if (placeholder) placeholder.style.display = 'flex';
+    } else {
+        if (img) {
+            img.style.opacity = '1';
+            img.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+    }
+}
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

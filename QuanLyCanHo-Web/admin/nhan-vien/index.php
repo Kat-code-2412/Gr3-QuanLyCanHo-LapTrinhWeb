@@ -445,8 +445,12 @@ while ($bRow = $bldStmt->fetch(PDO::FETCH_ASSOC)) {
                             <td><strong style="color: #64748b;">#<?= (int)$row['MaNV'] ?></strong></td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: <?= ($row['VaiTro'] === 'Admin') ? '#e0e7ff' : '#f1f5f9' ?>; color: <?= ($row['VaiTro'] === 'Admin') ? '#4338ca' : '#475569' ?>; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; border: 1px solid <?= ($row['VaiTro'] === 'Admin') ? '#c7d2fe' : '#e2e8f0' ?>;">
-                                        <?= e(getInitials($row['HoTen'])) ?>
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: <?= ($row['VaiTro'] === 'Admin') ? '#e0e7ff' : '#f1f5f9' ?>; color: <?= ($row['VaiTro'] === 'Admin') ? '#4338ca' : '#475569' ?>; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; border: 1px solid <?= ($row['VaiTro'] === 'Admin') ? '#c7d2fe' : '#e2e8f0' ?>;">
+                                        <?php if (!empty($row['Avatar'])): ?>
+                                            <img src="<?= e(url($row['Avatar'])) ?>" alt="<?= e($row['HoTen']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <?php else: ?>
+                                            <?= e(getInitials($row['HoTen'])) ?>
+                                        <?php endif; ?>
                                     </div>
                                     <div>
                                         <div style="font-weight: 600; color: #1e293b; font-size: 0.92rem; white-space: nowrap;">

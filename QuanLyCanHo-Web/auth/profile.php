@@ -103,6 +103,56 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         }
     }
 
+    // Xử lý Upload Avatar
+    $newAvatarPath = $user['Avatar'] ?? null;
+    if (!empty($_POST['remove_avatar'])) {
+        if (!empty($user['Avatar']) && file_exists(__DIR__ . '/../' . $user['Avatar'])) {
+            @unlink(__DIR__ . '/../' . $user['Avatar']);
+        }
+        $newAvatarPath = null;
+    }
+
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['avatar'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+        ];
+
+        if ($file['size'] > $maxSize) {
+            $errors['avatar'] = 'Kích thước ảnh đại diện không được vượt quá 5MB.';
+        } else {
+            $imgInfo = @getimagesize($file['tmp_name']);
+            $mimeType = $imgInfo['mime'] ?? '';
+
+            if (!$imgInfo || !isset($allowedTypes[$mimeType])) {
+                $errors['avatar'] = 'Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, WEBP, GIF.';
+            } else {
+                $ext = $allowedTypes[$mimeType];
+                $uploadDir = __DIR__ . '/../uploads/avatars';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = 'avatar_' . $maNv . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $targetFile = $uploadDir . '/' . $fileName;
+
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    // Xóa ảnh cũ nếu có
+                    if (!empty($user['Avatar']) && file_exists(__DIR__ . '/../' . $user['Avatar'])) {
+                        @unlink(__DIR__ . '/../' . $user['Avatar']);
+                    }
+                    $newAvatarPath = 'uploads/avatars/' . $fileName;
+                } else {
+                    $errors['avatar'] = 'Không thể lưu file ảnh vào máy chủ.';
+                }
+            }
+        }
+    }
+
     // Nếu không có lỗi -> cập nhật cơ sở dữ liệu
     if (empty($errors)) {
         try {
@@ -113,7 +163,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     SoDienThoai = :sdt, 
                     Email = :email,
                     VaiTro = :vaiTro,
-                    TrangThai = :trangThai
+                    TrangThai = :trangThai,
+                    Avatar = :avatar
                 WHERE MaNV = :id
             ';
             $updateStmt = $pdo->prepare($updateSql);
@@ -124,6 +175,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 ':email'       => ($formData['Email'] !== '') ? $formData['Email'] : null,
                 ':vaiTro'      => $formData['VaiTro'],
                 ':trangThai'   => $formData['TrangThai'],
+                ':avatar'      => $newAvatarPath,
                 ':id'          => $maNv,
             ]);
 
@@ -132,9 +184,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $_SESSION['TenDangNhap'] = $formData['TenDangNhap'];
             $_SESSION['Email'] = $formData['Email'];
             $_SESSION['VaiTro'] = $formData['VaiTro'];
+            $_SESSION['Avatar'] = $newAvatarPath;
 
-            logAudit('UPDATE_PROFILE', 'NhanVien', (string)$maNv, "Cập nhật thông tin cá nhân: {$formData['HoTen']} ({$formData['TenDangNhap']})");
-            setFlash('success', 'Cập nhật thông tin cá nhân thành công!');
+            logAudit('UPDATE_PROFILE', 'NhanVien', (string)$maNv, "Cập nhật thông tin cá nhân & avatar: {$formData['HoTen']} ({$formData['TenDangNhap']})");
+            setFlash('success', 'Cập nhật thông tin cá nhân và ảnh đại diện thành công!');
             redirect('/auth/profile.php');
         } catch (PDOException $ex) {
             $errors['general'] = 'Lỗi hệ thống: ' . $ex->getMessage();
@@ -177,8 +230,12 @@ $dashboardUrl = url($isAdmin ? '/admin/index.php' : '/user/index.php');
     <div style="display: flex; flex-direction: column; gap: 1.25rem;">
         <div class="card" style="padding: 1.5rem; text-align: center; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
             <!-- AVATAR CIRCLE -->
-            <div style="width: 84px; height: 84px; margin: 0 auto 1rem; border-radius: 50%; background: <?= $isAdmin ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' ?>; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
-                <?= e($avatarInitial) ?>
+            <div style="width: 88px; height: 88px; margin: 0 auto 1rem; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); background: <?= $isAdmin ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' ?>; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800;">
+                <?php if (!empty($user['Avatar'])): ?>
+                    <img src="<?= e(url($user['Avatar'])) ?>" alt="<?= e($user['HoTen']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                <?php else: ?>
+                    <?= e($avatarInitial) ?>
+                <?php endif; ?>
             </div>
 
             <h2 style="font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.3;">
@@ -243,10 +300,48 @@ $dashboardUrl = url($isAdmin ? '/admin/index.php' : '/user/index.php');
             </span>
         </div>
 
-        <form method="POST" action="" style="padding: 1.5rem;">
+        <form method="POST" action="" enctype="multipart/form-data" style="padding: 1.5rem;">
             <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- UPLOAD ẢNH ĐẠI DIỆN -->
+                <div class="form-group" style="grid-column: span 2; padding: 1.25rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                    <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <?= svgIcon('camera', '', 16) ?> Ảnh Đại Diện (Avatar)
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                        <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #e2e8f0; background: #ffffff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <img id="avatarPreview" src="<?= !empty($user['Avatar']) ? e(url($user['Avatar'])) : '' ?>" 
+                                 alt="Preview" 
+                                 style="width: 100%; height: 100%; object-fit: cover; <?= empty($user['Avatar']) ? 'display: none;' : '' ?>">
+                            <div id="avatarPlaceholder" style="width: 100%; height: 100%; display: <?= !empty($user['Avatar']) ? 'none' : 'flex' ?>; align-items: center; justify-content: center; background: <?= $isAdmin ? '#fef2f2' : '#eff6ff' ?>; color: <?= $isAdmin ? '#dc2626' : '#2563eb' ?>; font-size: 1.75rem; font-weight: 800;">
+                                <?= e($avatarInitial) ?>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 240px;">
+                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.4rem;">
+                                <label for="avatarInput" class="btn btn-outline" style="cursor: pointer; font-size: 0.825rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 7px; display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff;">
+                                    <?= svgIcon('upload', '', 14) ?> Chọn ảnh tải lên
+                                </label>
+                                <input type="file" id="avatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewAvatar(this)">
+                                
+                                <?php if (!empty($user['Avatar'])): ?>
+                                    <label style="font-size: 0.825rem; color: #dc2626; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; margin: 0; background: #fff; padding: 0.45rem 0.75rem; border: 1px solid #fecaca; border-radius: 7px;">
+                                        <input type="checkbox" name="remove_avatar" value="1" onchange="toggleRemoveAvatar(this)">
+                                        Xóa ảnh hiện tại
+                                    </label>
+                                <?php endif; ?>
+                            </div>
+                            <div style="font-size: 0.775rem; color: #64748b;">
+                                Hỗ trợ: JPG, PNG, WEBP, GIF. Dung lượng tối đa: 5MB. Ảnh sẽ được tự động co giãn vừa vặn.
+                            </div>
+                            <?php if (isset($errors['avatar'])): ?>
+                                <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.35rem; display: block;"><?= e($errors['avatar']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- HỌ VÀ TÊN -->
                 <div class="form-group" style="grid-column: span 2;">
                     <label for="HoTen" style="font-weight: 600; font-size: 0.875rem; color: #334155; margin-bottom: 0.4rem; display: block;">
@@ -369,7 +464,42 @@ $dashboardUrl = url($isAdmin ? '/admin/index.php' : '/user/index.php');
     div[style*="grid-template-columns: 320px 1fr"] {
         grid-template-columns: 1fr !important;
     }
-}
 </style>
+
+<script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('avatarPreview');
+            var placeholder = document.getElementById('avatarPlaceholder');
+            if (img) {
+                img.src = e.target.result;
+                img.style.display = 'block';
+                img.style.opacity = '1';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleRemoveAvatar(checkbox) {
+    var img = document.getElementById('avatarPreview');
+    var placeholder = document.getElementById('avatarPlaceholder');
+    if (checkbox.checked) {
+        if (img) img.style.opacity = '0.25';
+        if (placeholder) placeholder.style.display = 'flex';
+    } else {
+        if (img) {
+            img.style.opacity = '1';
+            img.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+    }
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

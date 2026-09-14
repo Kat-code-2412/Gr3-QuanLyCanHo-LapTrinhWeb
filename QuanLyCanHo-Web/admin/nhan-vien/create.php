@@ -92,14 +92,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $formData['TrangThai'] = 'Đang làm việc';
     }
 
+    // Xử lý upload Avatar
+    $avatarPath = null;
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['avatar'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+        ];
+
+        if ($file['size'] > $maxSize) {
+            $errors['avatar'] = 'Kích thước ảnh đại diện không được vượt quá 5MB.';
+        } else {
+            $imgInfo = @getimagesize($file['tmp_name']);
+            $mimeType = $imgInfo['mime'] ?? '';
+
+            if (!$imgInfo || !isset($allowedTypes[$mimeType])) {
+                $errors['avatar'] = 'Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, WEBP, GIF.';
+            } else {
+                $ext = $allowedTypes[$mimeType];
+                $uploadDir = __DIR__ . '/../../uploads/avatars';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = 'avatar_new_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $targetFile = $uploadDir . '/' . $fileName;
+
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    $avatarPath = 'uploads/avatars/' . $fileName;
+                } else {
+                    $errors['avatar'] = 'Không thể lưu file ảnh lên máy chủ.';
+                }
+            }
+        }
+    }
+
     // Nếu hợp lệ -> Thêm vào CSDL
     if (empty($errors)) {
         try {
             $pdo->beginTransaction();
             $hashedPassword = password_hash($formData['MatKhau'], PASSWORD_DEFAULT);
             $stmt = $pdo->prepare('
-                INSERT INTO NhanVien (HoTen, TenDangNhap, MatKhau, VaiTro, SoDienThoai, Email, TrangThai)
-                VALUES (:hoTen, :tenDangNhap, :matKhau, :vaiTro, :sdt, :email, :trangThai)
+                INSERT INTO NhanVien (HoTen, TenDangNhap, MatKhau, VaiTro, SoDienThoai, Email, TrangThai, Avatar)
+                VALUES (:hoTen, :tenDangNhap, :matKhau, :vaiTro, :sdt, :email, :trangThai, :avatar)
             ');
             $stmt->execute([
                 ':hoTen'       => $formData['HoTen'],
@@ -109,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':sdt'         => ($formData['SoDienThoai'] !== '') ? $formData['SoDienThoai'] : null,
                 ':email'       => ($formData['Email'] !== '') ? $formData['Email'] : null,
                 ':trangThai'   => $formData['TrangThai'],
+                ':avatar'      => $avatarPath,
             ]);
 
             $newId = (int)$pdo->lastInsertId();
@@ -183,10 +223,39 @@ if (!is_array($selectedBuildings)) {
         <h3 style="font-size: 1.05rem; font-weight: 600;">Thông Tin Nhân Viên</h3>
     </div>
     <div class="card-body">
-        <form method="POST" action="">
+        <form method="POST" action="" enctype="multipart/form-data">
             <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Upload Avatar -->
+                <div class="form-group" style="grid-column: span 2; padding: 1.1rem 1.25rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem; color: #1e293b;">
+                        <?= svgIcon('camera', '', 15) ?> Ảnh đại diện (Avatar - Không bắt buộc)
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                        <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid #e2e8f0; background: #ffffff; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                            <img id="createAvatarPreview" src="" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <div id="createAvatarPlaceholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #eff6ff; color: #2563eb; font-size: 1.5rem; font-weight: 700;">
+                                <?= svgIcon('user', '', 28) ?>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 220px;">
+                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                                <label for="createAvatarInput" class="btn btn-outline" style="cursor: pointer; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff;">
+                                    <?= svgIcon('upload', '', 14) ?> Chọn ảnh tải lên
+                                </label>
+                                <input type="file" id="createAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewCreateAvatar(this)">
+                            </div>
+                            <div style="font-size: 0.775rem; color: #64748b;">
+                                Định dạng: JPG, PNG, WEBP, GIF (tối đa 5MB).
+                            </div>
+                            <?php if (isset($errors['avatar'])): ?>
+                                <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.25rem; display: block;"><?= e($errors['avatar']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Họ tên -->
                 <div class="form-group" style="grid-column: span 2;">
                     <label for="HoTen" style="font-weight: 600; display: block; margin-bottom: 0.35rem;">
@@ -409,6 +478,24 @@ document.querySelectorAll('.building-checkbox').forEach(cb => {
         }
     });
 });
+
+function previewCreateAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('createAvatarPreview');
+            var placeholder = document.getElementById('createAvatarPlaceholder');
+            if (img) {
+                img.src = e.target.result;
+                img.style.display = 'block';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
