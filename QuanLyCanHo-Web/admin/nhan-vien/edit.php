@@ -40,6 +40,23 @@ $formData = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
+    // Xử lý xóa ảnh đại diện nhân sự khi xác nhận
+    if (($_POST['action'] ?? '') === 'delete_avatar') {
+        if (!empty($employee['Avatar'])) {
+            $filePath = __DIR__ . '/../../' . $employee['Avatar'];
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+            $stmtDel = $pdo->prepare('UPDATE NhanVien SET Avatar = NULL WHERE MaNV = ?');
+            $stmtDel->execute([$id]);
+            if ($isSelf) {
+                $_SESSION['Avatar'] = null;
+            }
+            setFlash('success', 'Đã xóa ảnh đại diện của nhân viên thành công!');
+        }
+        redirect('/admin/nhan-vien/edit.php?id=' . $id);
+    }
+
     $formData['HoTen']       = trim((string)($_POST['HoTen'] ?? ''));
     $formData['TenDangNhap'] = trim((string)($_POST['TenDangNhap'] ?? ''));
     $formData['MatKhau']     = (string)($_POST['MatKhau'] ?? '');
@@ -331,13 +348,20 @@ $allBuildingsWithCount = $pdo->query('
                             </div>
                         </div>
 
-                        <!-- Phải: Nút bấm thao tác hiện đại -->
-                        <div>
+                        <!-- Phải: Nút bấm Tải ảnh mới & Xóa ảnh -->
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                             <label for="empAvatarInput" style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #0f172a; background: #ffffff; border: 1px solid #cbd5e1; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.04);" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
                                 <?= svgIcon('upload', '', 15) ?>
                                 <span>Tải ảnh mới</span>
                             </label>
                             <input type="file" id="empAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="handleEmpAvatarFileSelect(this)">
+
+                            <?php if (!empty($employee['Avatar'])): ?>
+                                <button type="button" onclick="openDeleteEmpAvatarModal()" style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #dc2626; background: #ffffff; border: 1px solid #fecaca; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.04);" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#ffffff'">
+                                    <?= svgIcon('trash', '', 15) ?>
+                                    <span>Xóa ảnh</span>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -548,6 +572,34 @@ $allBuildingsWithCount = $pdo->query('
     </div>
 </div>
 
+<!-- MODAL XÁC NHẬN XÓA ẢNH ĐẠI DIỆN -->
+<div id="deleteEmpAvatarModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000; align-items: center; justify-content: center;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);" onclick="closeDeleteEmpAvatarModal()"></div>
+    <div style="position: relative; background: #ffffff; padding: 2.25rem; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); z-index: 2001; border: 1px solid #e2e8f0;">
+        <div style="width: 52px; height: 52px; margin: 0 auto 1.2rem; border-radius: 50%; background: #fef2f2; color: #ef4444; display: flex; align-items: center; justify-content: center;">
+            <?= svgIcon('trash', '', 26) ?>
+        </div>
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">
+            Xác nhận xóa ảnh
+        </h3>
+        <p style="font-size: 0.925rem; color: #64748b; margin-bottom: 1.75rem; line-height: 1.5;">
+            Bạn có chắc chắn muốn xóa ảnh đại diện này không?
+        </p>
+        <div style="display: flex; gap: 0.85rem; justify-content: center;">
+            <button type="button" class="btn btn-outline" onclick="closeDeleteEmpAvatarModal()" style="min-width: 110px; height: 42px; font-weight: 600; border-radius: 8px;">
+                Không
+            </button>
+            <form method="POST" action="" style="margin: 0;">
+                <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
+                <input type="hidden" name="action" value="delete_avatar">
+                <button type="submit" class="btn btn-danger" style="min-width: 110px; height: 42px; font-weight: 700; border-radius: 8px; background: #ef4444; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                    Có
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 document.getElementById('VaiTro')?.addEventListener('change', function() {
     const section = document.getElementById('building_assignment_section');
@@ -595,6 +647,22 @@ function handleEmpAvatarFileSelect(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+function openDeleteEmpAvatarModal() {
+    const m = document.getElementById('deleteEmpAvatarModal');
+    if (m) m.style.display = 'flex';
+}
+
+function closeDeleteEmpAvatarModal() {
+    const m = document.getElementById('deleteEmpAvatarModal');
+    if (m) m.style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteEmpAvatarModal();
+    }
+});
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
