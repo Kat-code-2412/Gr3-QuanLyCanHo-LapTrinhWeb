@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['pending_verify_type'] = 'FORGOT_PASSWORD';
                 $_SESSION['pending_verify_name'] = $user['HoTen'];
 
-                setFlash('info', 'Mã xác minh đặt lại mật khẩu đã được gửi. Vui lòng nhập mã OTP.');
                 redirect('/auth/verify-otp.php');
             }
         } catch (Throwable $t) {

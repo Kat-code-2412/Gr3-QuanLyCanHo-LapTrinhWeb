@@ -87,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['pending_verify_type'] = 'REGISTER';
                 $_SESSION['pending_verify_name'] = $fullName;
 
-                setFlash('info', 'Mã xác minh OTP 6 số đã được tạo. Vui lòng nhập mã để kích hoạt tài khoản.');
                 redirect('/auth/verify-otp.php');
             }
         } catch (Throwable $ex) {
