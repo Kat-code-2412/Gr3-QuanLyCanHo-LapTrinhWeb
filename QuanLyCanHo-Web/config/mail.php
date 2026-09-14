@@ -16,7 +16,7 @@ return [
     'port' => 587,
     'encryption' => 'tls',
     'username' => 'huuluan04743@gmail.com', // Email Gmail gửi đi
-    'password' => '', // Dán Mật khẩu ứng dụng (App Password 16 chữ số) vào đây
+    'password' => 'hwdryqjlncngqiec', // Mật khẩu ứng dụng (App Password 16 chữ số)
     'from_address' => 'huuluan04743@gmail.com',
     'from_name' => 'Hệ Thống Quản Lý Căn Hộ Dịch Vụ',
     'debug_mode' => false,
