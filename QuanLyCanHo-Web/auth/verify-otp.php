@@ -39,6 +39,26 @@ if (isset($_GET['action']) && $_GET['action'] === 'resend') {
     }
 }
 
+// Xử lý Quay lại (hủy phiên OTP và quay về trang đăng ký hoặc quên mật khẩu)
+if (isset($_GET['action']) && $_GET['action'] === 'back') {
+    if ($type === 'REGISTER' && $userId) {
+        try {
+            $pdo = require __DIR__ . '/../config/database.php';
+            $stmtDelPq = $pdo->prepare("DELETE FROM phanquyen WHERE MaNV = ?");
+            $stmtDelPq->execute([$userId]);
+            $stmtDelNv = $pdo->prepare("DELETE FROM NhanVien WHERE MaNV = ? AND TrangThai = 'Nghỉ việc' AND email_verified_at IS NULL");
+            $stmtDelNv->execute([$userId]);
+        } catch (Throwable $e) {
+            // bỏ qua nếu có lỗi
+        }
+        unset($_SESSION['pending_verify_target'], $_SESSION['pending_verify_user_id'], $_SESSION['pending_verify_type'], $_SESSION['pending_verify_name']);
+        redirect('/auth/register.php');
+    } else {
+        unset($_SESSION['pending_verify_target'], $_SESSION['pending_verify_user_id'], $_SESSION['pending_verify_type'], $_SESSION['pending_verify_name']);
+        redirect('/auth/forgot-password.php');
+    }
+}
+
 // Xử lý Xác thực OTP POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
@@ -204,9 +224,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Mã có hiệu lực trong: <strong id="countdown" style="color: #f87171;">05:00</strong>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: 10px; margin-bottom: 1.25rem; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: 10px; margin-bottom: 0.75rem; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
             Xác nhận mã OTP
         </button>
+
+        <a href="<?= url('/auth/verify-otp.php?action=back') ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); color: #cbd5e1; text-decoration: none; margin-bottom: 1.25rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'; this.style.color='#cbd5e1';">
+            <?= svgIcon('arrow-left', '', 15) ?>
+            <span>Quay lại</span>
+        </a>
     </form>
 
     <div style="font-size: 0.875rem; color: #94a3b8; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.25rem;">

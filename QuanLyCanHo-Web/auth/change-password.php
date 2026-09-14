@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!password_verify($oldPassword, $currentHash) && !($oldPassword === '123456' && $currentHash === '123456')) {
             $error = 'Mật khẩu hiện tại không chính xác.';
+        } elseif (password_verify($newPassword, $currentHash) || $newPassword === $oldPassword || $newPassword === $currentHash) {
+            $error = 'Trùng với mật khẩu cũ. Vui lòng đặt lại mật khẩu !';
         } else {
             $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
             $stmtUp = $pdo->prepare('UPDATE NhanVien SET MatKhau = ? WHERE MaNV = ?');

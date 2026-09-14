@@ -52,13 +52,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo = require __DIR__ . '/../config/database.php';
 
             // Kiểm tra trùng lặp
-            $checkSql = "SELECT COUNT(*) FROM NhanVien WHERE TenDangNhap = ? OR (Email != '' AND Email = ?) OR (SoDienThoai != '' AND SoDienThoai = ?)";
+            $checkSql = "SELECT MaNV, TrangThai, email_verified_at FROM NhanVien WHERE TenDangNhap = ? OR (Email != '' AND Email = ?) OR (SoDienThoai != '' AND SoDienThoai = ?)";
             $stmtCheck = $pdo->prepare($checkSql);
             $stmtCheck->execute([$username, $email, $phone]);
+            $existingRows = $stmtCheck->fetchAll();
 
-            if ((int)$stmtCheck->fetchColumn() > 0) {
+            $isDuplicate = false;
+            $unverifiedIds = [];
+            foreach ($existingRows as $row) {
+                if ($row['TrangThai'] !== 'Nghỉ việc' || !empty($row['email_verified_at'])) {
+                    $isDuplicate = true;
+                    break;
+                } else {
+                    $unverifiedIds[] = (int)$row['MaNV'];
+                }
+            }
+
+            if ($isDuplicate) {
                 $error = 'Tên đăng nhập, Email hoặc Số điện thoại đã tồn tại trên hệ thống.';
             } else {
+                // Dọn dẹp bản ghi chưa kích hoạt cũ trước đó nếu có
+                foreach ($unverifiedIds as $delId) {
+                    $pdo->prepare("DELETE FROM phanquyen WHERE MaNV = ?")->execute([$delId]);
+                    $pdo->prepare("DELETE FROM NhanVien WHERE MaNV = ?")->execute([$delId]);
+                }
+
                 $hashPass = password_hash($password, PASSWORD_DEFAULT);
 
                 // Tạo tài khoản với trạng thái INACTIVE chờ xác minh OTP

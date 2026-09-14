@@ -30,14 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $pdo = require __DIR__ . '/../config/database.php';
-            $hashPass = password_hash($newPassword, PASSWORD_DEFAULT);
 
-            $stmt = $pdo->prepare("UPDATE NhanVien SET MatKhau = ? WHERE Email = ? OR SoDienThoai = ?");
-            $stmt->execute([$hashPass, $target, $target]);
+            // Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ
+            $stmtCheck = $pdo->prepare("SELECT MatKhau FROM NhanVien WHERE Email = ? OR SoDienThoai = ? LIMIT 1");
+            $stmtCheck->execute([$target, $target]);
+            $currentHash = (string)$stmtCheck->fetchColumn();
 
-            unset($_SESSION['otp_verified_for_reset']);
-            setFlash('success', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.');
-            redirect('/auth/login.php');
+            if ($currentHash !== '' && (password_verify($newPassword, $currentHash) || $newPassword === $currentHash)) {
+                $error = 'Trùng với mật khẩu cũ. Vui lòng đặt lại mật khẩu !';
+            } else {
+                $hashPass = password_hash($newPassword, PASSWORD_DEFAULT);
+
+                $stmt = $pdo->prepare("UPDATE NhanVien SET MatKhau = ? WHERE Email = ? OR SoDienThoai = ?");
+                $stmt->execute([$hashPass, $target, $target]);
+
+                unset($_SESSION['otp_verified_for_reset']);
+                setFlash('success', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.');
+                redirect('/auth/login.php');
+            }
         } catch (Throwable $t) {
             error_log('Lỗi reset mật khẩu: ' . $t->getMessage());
             $error = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
@@ -165,9 +175,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    required>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: 10px; margin-bottom: 1.25rem; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: 10px; margin-bottom: 0.75rem; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
             Cập nhật mật khẩu
         </button>
+
+        <a href="<?= url('/auth/login.php') ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); color: #cbd5e1; text-decoration: none; margin-bottom: 0.5rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'; this.style.color='#cbd5e1';">
+            <?= svgIcon('arrow-left', '', 15) ?>
+            <span>Quay lại đăng nhập</span>
+        </a>
     </form>
 </div>
 
