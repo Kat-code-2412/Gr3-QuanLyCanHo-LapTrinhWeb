@@ -79,22 +79,15 @@ function isMenuActive(string $path, string $currentUri): bool {
         <?php endif; ?>
 
         <!-- NHÓM TÀI CHÍNH -->
-        <?php 
-        $canDienNuoc = $isAdmin || hasPermission('DIENNUOC_MANAGE');
-        $canHoaDon = $isAdmin || hasPermission('HOADON_MANAGE');
-        if ($canDienNuoc || $canHoaDon): 
-        ?>
         <div class="nav-section-title">TÀI CHÍNH</div>
         <ul class="nav-menu">
-            <?php if ($canDienNuoc): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/dien-nuoc/index.php') ?>" class="nav-link <?= isMenuActive('/admin/dien-nuoc/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('electric', 'nav-icon', 18) ?>
                     <span class="nav-label">Điện nước</span>
                 </a>
             </li>
-            <?php endif; ?>
-            <?php if ($canHoaDon): ?>
+            <?php if ($isAdmin || hasPermission('HOADON_MANAGE')): ?>
             <li class="nav-item">
                 <a href="<?= url('/admin/hoa-don/index.php') ?>" class="nav-link <?= isMenuActive('/admin/hoa-don/', $currentUri) ? 'active' : '' ?>">
                     <?= svgIcon('invoice', 'nav-icon', 18) ?>
@@ -103,7 +96,6 @@ function isMenuActive(string $path, string $currentUri): bool {
             </li>
             <?php endif; ?>
         </ul>
-        <?php endif; ?>
 
         <!-- NHÓM VẬN HÀNH -->
         <div class="nav-section-title">VẬN HÀNH</div>

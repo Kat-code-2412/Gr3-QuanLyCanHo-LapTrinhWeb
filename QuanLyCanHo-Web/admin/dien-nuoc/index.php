@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 $title = 'Quản Lý Chỉ Số Điện Nước Hàng Tháng';
 require_once __DIR__ . '/../../includes/header.php';
-requirePermission('DIENNUOC_MANAGE');
+requireLogin();
 
 $pdo = require __DIR__ . '/../../config/database.php';
 $baseUrl = url('/admin/dien-nuoc');
@@ -21,6 +21,9 @@ $selectedAddress = trim((string)($_GET['address'] ?? ''));
 $staffAssigned = getStaffAssignedBuildings();
 if ($staffAssigned !== null) {
     $addresses = $staffAssigned;
+    if ($selectedAddress !== '' && !in_array($selectedAddress, $staffAssigned, true)) {
+        $selectedAddress = '';
+    }
 } else {
     $addresses = $pdo->query("SELECT DISTINCT DiaChi FROM CanHo WHERE DiaChi IS NOT NULL AND DiaChi != '' ORDER BY DiaChi ASC")->fetchAll(PDO::FETCH_COLUMN);
 }
@@ -288,6 +291,15 @@ $rooms = $stmt->fetchAll();
     </div>
 </div>
 
+<?php if ($staffAssigned !== null && empty($staffAssigned)): ?>
+    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 0.9rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; color: #92400e;">
+        <?= svgIcon('info', '', 20) ?>
+        <div style="font-size: 0.9rem;">
+            <strong>Lưu ý:</strong> Bạn hiện chưa được chỉ định quản lý tòa nhà nào trong hệ thống, do đó danh sách phòng và chỉ số điện nước sẽ không hiển thị. Vui lòng liên hệ Admin để được phân công tòa nhà.
+        </div>
+    </div>
+<?php endif; ?>
+
 <!-- BỘ LỌC THÁNG VÀ TÒA NHÀ -->
 <div class="card mb-3" style="padding: 1.25rem;">
     <form method="GET" action="" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
@@ -308,12 +320,16 @@ $rooms = $stmt->fetchAll();
                 <?= svgIcon('building', '', 14) ?> Tòa nhà / Địa chỉ căn hộ
             </label>
             <select name="address" id="address" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Tất cả tòa nhà --</option>
-                <?php foreach ($addresses as $addr): ?>
-                    <option value="<?= e($addr) ?>" <?= ($selectedAddress === $addr) ? 'selected' : '' ?>>
-                        <?= e($addr) ?>
-                    </option>
-                <?php endforeach; ?>
+                <?php if ($staffAssigned !== null && empty($staffAssigned)): ?>
+                    <option value="">-- Chưa được phân công tòa nhà --</option>
+                <?php else: ?>
+                    <option value="">-- Tất cả tòa nhà --</option>
+                    <?php foreach ($addresses as $addr): ?>
+                        <option value="<?= e($addr) ?>" <?= ($selectedAddress === $addr) ? 'selected' : '' ?>>
+                            <?= e($addr) ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </select>
         </div>
 
@@ -349,7 +365,21 @@ $rooms = $stmt->fetchAll();
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($rooms)): ?>
+                <?php if ($staffAssigned !== null && empty($staffAssigned)): ?>
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 3.5rem 1rem; color: #64748b;">
+                            <div style="margin-bottom: 0.75rem; color: #f59e0b; display: flex; justify-content: center;">
+                                <?= svgIcon('building', '', 42) ?>
+                            </div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem;">
+                                Bạn chưa được phân công quản lý tòa nhà nào
+                            </div>
+                            <div style="font-size: 0.875rem; color: #64748b; max-width: 480px; margin: 0 auto; line-height: 1.5;">
+                                Dữ liệu chỉ số điện nước được giới hạn theo các tòa nhà bạn phụ trách. Vui lòng liên hệ Quản trị viên để được phân công tòa nhà quản lý.
+                            </div>
+                        </td>
+                    </tr>
+                <?php elseif (empty($rooms)): ?>
                     <tr>
                         <td colspan="7" class="text-center" style="padding: 3rem 1rem; color: #94a3b8;">
                             Hiện không có phòng nào đang thuê phù hợp với bộ lọc đã chọn.
