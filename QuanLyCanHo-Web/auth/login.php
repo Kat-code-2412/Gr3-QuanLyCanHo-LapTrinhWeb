@@ -613,7 +613,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                                id="account" 
                                name="account" 
                                class="vip-input" 
-                               placeholder="VD: admin hoặc nv_an" 
+                               placeholder="Nhập tên đăng nhập" 
                                value="<?= e($accountInput) ?>" 
                                required 
                                autofocus>

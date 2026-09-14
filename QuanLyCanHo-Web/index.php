@@ -159,7 +159,7 @@ try {
         }
 
         body {
-            background-color: var(--vip-bg-dark);
+            background-color: #060914;
             color: var(--vip-text-main);
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
@@ -169,13 +169,11 @@ try {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background-image: 
-                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.14) 0%, transparent 42%),
-                radial-gradient(circle at 88% 20%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 50% 60%, rgba(99, 102, 241, 0.09) 0%, transparent 50%),
-                radial-gradient(circle at 80% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
-                linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+                radial-gradient(circle at 15% 12%, rgba(37, 99, 235, 0.09) 0%, transparent 45%),
+                radial-gradient(circle at 85% 25%, rgba(14, 165, 233, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 30% 65%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 88%, rgba(226, 184, 85, 0.05) 0%, transparent 45%);
+            background-attachment: fixed;
         }
 
         /* AMBIENT LIGHTS */
@@ -301,16 +299,16 @@ try {
         }
 
         /* ==========================================================================
-           1. HERO SLIDER CAROUSEL (CINEMATIC LUXURY VIP)
+           1. HERO SLIDER (LUXURY QUIET ELEGANCE - ĐẲNG CẤP & TINH TẾ)
            ========================================================================== */
         .hero-slider-wrap {
             position: relative;
             width: 100%;
             height: calc(100vh - 78px);
-            min-height: 660px;
-            max-height: 840px;
+            min-height: 680px;
+            max-height: 860px;
             overflow: hidden;
-            background: #02050e;
+            background: #030712;
         }
 
         .hero-slide {
@@ -318,9 +316,13 @@ try {
             inset: 0;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.9s;
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1s;
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            padding-bottom: 6.5rem;
+            box-sizing: border-box;
             z-index: 1;
         }
 
@@ -335,9 +337,9 @@ try {
             inset: 0;
             background-size: cover;
             background-position: center center;
-            transform: scale(1.07);
-            filter: brightness(0.9) contrast(1.12) saturate(1.2);
-            transition: transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1.06);
+            filter: brightness(0.9) contrast(1.08) saturate(1.15);
+            transition: transform 9s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 0;
         }
 
@@ -349,209 +351,259 @@ try {
             position: absolute;
             inset: 0;
             background: 
-                radial-gradient(circle at 76% 50%, rgba(4, 7, 20, 0.08) 0%, rgba(4, 7, 20, 0.55) 65%, rgba(4, 7, 20, 0.94) 100%),
-                linear-gradient(90deg, rgba(4, 7, 20, 0.96) 0%, rgba(4, 7, 20, 0.84) 40%, rgba(4, 7, 20, 0.35) 75%, rgba(4, 7, 20, 0.2) 100%),
-                linear-gradient(0deg, rgba(4, 7, 20, 0.95) 0%, transparent 25%);
+                linear-gradient(180deg, rgba(3, 7, 18, 0.42) 0%, rgba(3, 7, 18, 0.68) 55%, #030712 100%),
+                radial-gradient(circle at 50% 38%, rgba(3, 7, 18, 0.1) 0%, rgba(3, 7, 18, 0.6) 100%);
             z-index: 1;
         }
 
         .hero-slide-container {
-            max-width: 1380px;
+            max-width: 1320px;
             width: 100%;
             margin: 0 auto;
-            padding: 0 4rem;
+            padding: 0 3.5rem;
             position: relative;
             z-index: 2;
+            text-align: center;
             display: flex;
+            flex-direction: column;
             align-items: center;
         }
 
-        .hero-title {
-            font-size: 3.45rem;
-            font-weight: 800;
-            line-height: 1.14;
-            letter-spacing: -0.03em;
-            color: #ffffff;
-            margin-bottom: 1.35rem;
-            text-shadow: 0 4px 28px rgba(0, 0, 0, 0.8);
+        /* Staggered Cinematic Reveal Animation */
+        .hero-slide .hero-title,
+        .hero-slide .hero-desc,
+        .hero-slide .hero-btn-group {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .hero-title .text-gradient {
-            background: linear-gradient(135deg, #00f0ff 0%, #38bdf8 45%, #a855f7 100%);
+        .hero-slide.active .hero-title {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.15s;
+        }
+        .hero-slide.active .hero-desc {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.28s;
+        }
+        .hero-slide.active .hero-btn-group {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.42s;
+        }
+
+        /* Hero Typography */
+        .hero-title {
+            font-size: 3.15rem;
+            font-weight: 800;
+            line-height: 1.22;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            margin-bottom: 1.15rem;
+            max-width: 960px;
+            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+        }
+
+        .hero-title .hero-gold-text {
+            background: linear-gradient(135deg, #ffffff 0%, #fef08a 40%, #e2b855 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
-            filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.45));
+            filter: drop-shadow(0 0 20px rgba(226, 184, 85, 0.35));
         }
 
         .hero-desc {
-            font-size: 1.15rem;
+            font-size: 1.125rem;
             color: #cbd5e1;
-            line-height: 1.75;
-            max-width: 640px;
-            margin-bottom: 2.5rem;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+            line-height: 1.7;
+            max-width: 720px;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
         }
 
         .hero-btn-group {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 1.25rem;
         }
 
-        /* ==========================================================================
-           VIP BUTTONS (NEON GLOW & SHINE EFFECTS)
-           ========================================================================== */
+        /* Buttons */
         .btn-vip-primary {
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 1rem 2.25rem;
-            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 50%, #4f46e5 100%);
+            padding: 0.95rem 2.25rem;
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 60%, #1d4ed8 100%);
             color: #ffffff !important;
-            font-size: 1rem;
+            font-size: 0.975rem;
             font-weight: 700;
             border-radius: 14px;
             text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             cursor: pointer;
-            box-shadow: 0 0 28px rgba(14, 165, 233, 0.45), 0 10px 25px -5px rgba(37, 99, 235, 0.55);
+            box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.5), 0 0 20px rgba(2, 132, 199, 0.35);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-vip-primary::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -120%;
-            width: 80%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-            transform: skewX(-20deg);
-            transition: left 0.65s ease;
-        }
-
-        .btn-vip-primary:hover::after {
-            left: 150%;
         }
 
         .btn-vip-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 0 38px rgba(14, 165, 233, 0.65), 0 15px 32px -4px rgba(37, 99, 235, 0.7);
-            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #6366f1 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 14px 30px -4px rgba(37, 99, 235, 0.65), 0 0 28px rgba(56, 189, 248, 0.45);
+            background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 60%, #1e40af 100%);
         }
 
         .btn-vip-outline {
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 1rem 2rem;
-            background: rgba(13, 20, 38, 0.6);
+            padding: 0.95rem 2rem;
+            background: rgba(255, 255, 255, 0.08);
             color: #ffffff !important;
-            font-size: 1rem;
+            font-size: 0.975rem;
             font-weight: 700;
             border-radius: 14px;
             text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             cursor: pointer;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-vip-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(56, 189, 248, 0.65);
-            color: #38bdf8 !important;
-            transform: translateY(-3px);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), 0 8px 25px -4px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #ffffff !important;
+            transform: translateY(-2px);
         }
 
-        /* SLIDER NAVIGATION CONTROLS */
+        /* ==========================================================================
+           LUXURY METRIC STRIP (DẢI 4 THÔNG SỐ VÀNG Ở ĐÁY HERO - GỌN GÀNG & SANG TRỌNG)
+           ========================================================================== */
+        .hero-bottom-strip {
+            position: absolute;
+            bottom: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 2.25rem;
+            padding: 0.75rem 2.25rem;
+            background: rgba(5, 9, 22, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        .hero-metric-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .hero-metric-val {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero-metric-lbl {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+        }
+
+        .hero-metric-divider {
+            width: 1px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* SLIDER CONTROLS (TINH TẾ & THANH LỊCH) */
         .hero-nav-arrow {
             position: absolute;
-            top: 50%;
+            top: 48%;
             transform: translateY(-50%);
-            width: 56px;
-            height: 56px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background: rgba(8, 14, 30, 0.72);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(5, 9, 24, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 10;
-            backdrop-filter: blur(18px);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             transition: all 0.25s ease;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
-        }
-
-        .hero-nav-arrow:hover {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            border-color: rgba(255, 255, 255, 0.45);
-            transform: translateY(-50%) scale(1.12);
-            box-shadow: 0 0 28px rgba(14, 165, 233, 0.65);
-            color: #ffffff;
-        }
-
-        .arrow-prev { left: 2.5rem; }
-        .arrow-next { right: 2.5rem; }
-
-        .hero-dots-wrap {
-            position: absolute;
-            bottom: 2.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            z-index: 10;
-            padding: 0.55rem 1.15rem;
-            background: rgba(4, 7, 20, 0.65);
-            backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
         }
 
-        .hero-dot {
-            width: 40px;
-            height: 5px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.22);
+        .hero-nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(226, 184, 85, 0.6);
+            color: #fef08a;
+            transform: translateY(-50%) scale(1.08);
+            box-shadow: 0 0 22px rgba(226, 184, 85, 0.35);
+        }
+
+        .arrow-prev { left: 2.25rem; }
+        .arrow-next { right: 2.25rem; }
+
+        /* VẠCH CHỈ SỐ SLIDE (ELEGANT SLIDE INDICATORS) */
+        .hero-dots-wrap {
+            position: absolute;
+            top: 2rem;
+            right: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            z-index: 10;
+        }
+
+        .hero-dot-line {
+            width: 26px;
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
             cursor: pointer;
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hero-dot.active {
-            background: linear-gradient(90deg, #00f0ff, #38bdf8);
-            width: 68px;
-            box-shadow: 0 0 18px rgba(0, 240, 255, 0.75);
+        .hero-dot-line.active {
+            width: 56px;
+            background: linear-gradient(90deg, #fef08a, #e2b855);
+            box-shadow: 0 0 14px rgba(226, 184, 85, 0.7);
         }
 
         /* ==========================================================================
-           3. BỘ SƯU TẬP CĂN HỘ DỊCH VỤ MẪU (INTERACTIVE SUITE CAROUSEL)
+           3. PHÂN HỆ QUẢN LÝ TOÀN DIỆN (FEATURES & MODULES SHOWCASE)
            ========================================================================== */
-        .suites-section {
-            padding: 7rem 3.5rem;
+        .features-section {
+            padding: 7rem 3.5rem 5rem;
             max-width: 1440px;
             margin: 0 auto;
             position: relative;
             z-index: 2;
         }
 
-        .section-header-wrap {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            margin-bottom: 3rem;
-            flex-wrap: wrap;
-            gap: 1.75rem;
+        .section-header-center {
+            text-align: center;
+            max-width: 820px;
+            margin: 0 auto 4rem;
         }
 
         .section-tag {
@@ -563,9 +615,9 @@ try {
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: #38bdf8;
-            margin-bottom: 0.65rem;
-            padding: 0.35rem 0.9rem;
-            background: rgba(14, 165, 233, 0.12);
+            margin-bottom: 0.85rem;
+            padding: 0.4rem 1rem;
+            background: rgba(14, 165, 233, 0.1);
             border: 1px solid rgba(56, 189, 248, 0.25);
             border-radius: 9999px;
             backdrop-filter: blur(8px);
@@ -576,287 +628,230 @@ try {
             font-weight: 800;
             color: #ffffff;
             letter-spacing: -0.025em;
-            margin: 0;
+            line-height: 1.25;
+            margin: 0 0 1rem;
             background: linear-gradient(135deg, #ffffff 60%, #cbd5e1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .filter-tabs {
-            display: flex;
-            gap: 0.5rem;
-            background: rgba(13, 20, 38, 0.75);
-            padding: 0.4rem;
-            border-radius: 16px;
-            border: 1px solid var(--vip-border);
-            backdrop-filter: blur(18px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-        }
-
-        .filter-btn {
-            background: transparent;
-            border: none;
+        .section-subtitle {
+            font-size: 1.05rem;
             color: #94a3b8;
-            padding: 0.6rem 1.25rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s ease;
+            line-height: 1.7;
+            margin: 0;
         }
 
-        .filter-btn:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .filter-btn.active {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            color: #ffffff;
-            box-shadow: 0 0 18px rgba(14, 165, 233, 0.45);
-        }
-
-        .suites-carousel-container {
-            position: relative;
-        }
-
-        .suites-slider {
-            display: flex;
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding: 1.25rem 0.5rem 2.5rem;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
         }
 
-        .suites-slider::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* VIP SUITE CARD */
-        .suite-card {
-            flex: 0 0 360px;
-            background: linear-gradient(180deg, rgba(17, 26, 48, 0.88) 0%, rgba(8, 14, 28, 0.96) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .feature-card {
+            background: rgba(13, 19, 36, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
-            overflow: hidden;
+            padding: 2.25rem;
             backdrop-filter: blur(20px);
-            box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
             display: flex;
             flex-direction: column;
-        }
-
-        .suite-card:hover {
-            transform: translateY(-10px) scale(1.015);
-            border-color: rgba(56, 189, 248, 0.45);
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(14, 165, 233, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-        }
-
-        .suite-img-wrap {
-            height: 235px;
-            width: 100%;
             position: relative;
             overflow: hidden;
-            background: #040714;
         }
 
-        .suite-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .suite-card:hover .suite-img {
-            transform: scale(1.1);
-        }
-
-        .suite-price-pill {
+        .feature-card::before {
+            content: '';
             position: absolute;
-            bottom: 14px;
-            left: 14px;
-            background: rgba(4, 7, 20, 0.88);
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            border-radius: 10px;
-            padding: 0.4rem 0.85rem;
-            font-size: 0.875rem;
-            font-weight: 800;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            background: rgba(18, 27, 52, 0.85);
+            border-color: rgba(56, 189, 248, 0.35);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.12);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.35rem;
+        }
+
+        .feature-icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon-box {
+            transform: scale(1.08);
+        }
+
+        .icon-blue {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(37, 99, 235, 0.3) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.4);
             color: #38bdf8;
-            backdrop-filter: blur(14px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-            letter-spacing: -0.01em;
         }
 
-        .suite-status-pill {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            border-radius: 8px;
-            padding: 0.35rem 0.8rem;
-            font-size: 0.75rem;
+        .icon-amber {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.3) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        .icon-emerald {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.3) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .icon-purple {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0.3) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #a78bfa;
+        }
+
+        .icon-rose {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(225, 29, 72, 0.3) 100%);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #fb7185;
+        }
+
+        .icon-sky {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(14, 165, 233, 0.3) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            color: #22d3ee;
+        }
+
+        .feature-badge {
+            font-size: 0.725rem;
             font-weight: 700;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            backdrop-filter: blur(14px);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
         }
 
-        .status-ready {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.45);
-            color: #34d399;
-            box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
-        }
-
-        .status-rented {
-            background: rgba(37, 99, 235, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.45);
-            color: #60a5fa;
-            box-shadow: 0 0 16px rgba(37, 99, 235, 0.3);
-        }
-
-        .status-maint {
-            background: rgba(245, 158, 11, 0.2);
-            border: 1px solid rgba(245, 158, 11, 0.45);
-            color: #fbbf24;
-            box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
-        }
-
-        .suite-img-count {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            background: rgba(4, 7, 20, 0.82);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-radius: 8px;
-            padding: 0.3rem 0.7rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            backdrop-filter: blur(14px);
-        }
-
-        .suite-body {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .suite-room-code {
+        .feature-title {
             font-size: 1.25rem;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 0.25rem;
+            margin: 0 0 0.65rem;
+            letter-spacing: -0.015em;
         }
 
-        .suite-type-name {
-            font-size: 0.875rem;
-            color: #38bdf8;
+        .feature-desc {
+            font-size: 0.925rem;
+            color: #94a3b8;
+            line-height: 1.65;
+            margin: 0 0 1.25rem;
+            flex: 1;
+        }
+
+        .feature-points {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 1.15rem;
+        }
+
+        .feature-point-item {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 0.825rem;
+            color: #cbd5e1;
+        }
+
+        .feature-point-item svg {
+            color: #34d399;
+            flex-shrink: 0;
+        }
+
+        /* ==========================================================================
+           BENEFITS / VALUE METRICS STRIP
+           ========================================================================== */
+        .benefits-section {
+            padding: 1rem 3.5rem 6rem;
+            max-width: 1440px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .benefit-box {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(9, 14, 28, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 1.75rem 1.5rem;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .benefit-box:hover {
+            transform: translateY(-4px);
+            border-color: rgba(226, 184, 85, 0.3);
+            background: linear-gradient(180deg, rgba(20, 31, 56, 0.7) 0%, rgba(11, 18, 36, 0.9) 100%);
+        }
+
+        .benefit-num {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 40%, #fef08a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .benefit-label {
+            font-size: 0.95rem;
             font-weight: 700;
-            margin-bottom: 0.6rem;
+            color: #f1f5f9;
+            margin-bottom: 0.35rem;
         }
 
-        .suite-location {
+        .benefit-sub {
             font-size: 0.825rem;
             color: #94a3b8;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.45rem;
-            line-height: 1.45;
-            margin-bottom: 1rem;
-            min-height: 38px;
+            line-height: 1.55;
+            margin: 0;
         }
-
-        .suite-services-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.55rem;
-            padding: 0.85rem 0;
-            border-top: 1px solid var(--vip-border);
-            border-bottom: 1px solid var(--vip-border);
-            margin-bottom: 1.15rem;
-        }
-
-        .suite-svc-item {
-            display: flex;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.775rem;
-            color: #94a3b8;
-            background: rgba(255, 255, 255, 0.035);
-            padding: 0.4rem 0.55rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        .suite-svc-item strong {
-            color: #f1f5f9;
-            font-weight: 700;
-        }
-
-        .btn-view-suite {
-            width: 100%;
-            background: rgba(14, 165, 233, 0.12);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            border-radius: 12px;
-            padding: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .btn-view-suite:hover {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 22px rgba(14, 165, 233, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .suite-scroll-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(8, 14, 30, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(14px);
-            transition: all 0.25s ease;
-        }
-
-        .suite-scroll-btn:hover {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-50%) scale(1.12);
-            box-shadow: 0 0 25px rgba(14, 165, 233, 0.6);
-        }
-
-        .suite-scroll-prev { left: -25px; }
-        .suite-scroll-next { right: -25px; }
 
         /* ==========================================================================
            4. WORKFLOW SHOWCASE TABS (QUY TRÌNH VẬN HÀNH 4 BƯỚC)
@@ -962,19 +957,19 @@ try {
 
         .step-content-pane {
             display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 3.5rem;
-            align-items: center;
+            max-width: 860px;
+            margin: 0 auto;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(8, 14, 28, 0.96) 100%);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
-            padding: 3.5rem;
+            padding: 3.5rem 4rem;
             backdrop-filter: blur(24px);
             box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            text-align: center;
         }
 
         .step-content-pane.active {
-            display: grid;
+            display: block;
             animation: fadeInStep 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
@@ -998,13 +993,19 @@ try {
             color: #cbd5e1;
             font-size: 1.05rem;
             line-height: 1.75;
-            margin-bottom: 1.75rem;
+            margin: 0 auto 1.75rem;
+            max-width: 680px;
         }
 
         .step-check-list {
             list-style: none;
             padding: 0;
-            margin: 0 0 2.25rem;
+            margin: 0 auto 2.5rem;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.85rem;
+            text-align: left;
         }
 
         .step-check-list li {
@@ -1013,7 +1014,6 @@ try {
             gap: 0.85rem;
             font-size: 0.95rem;
             color: #e2e8f0;
-            margin-bottom: 0.85rem;
         }
 
         .step-check-list li svg {
@@ -1022,24 +1022,158 @@ try {
             filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
         }
 
-        /* HUD COMMAND-CENTER PREVIEW BOX */
-        .step-preview-box {
-            background: #040714;
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-radius: 20px;
-            padding: 2.25rem;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 35px rgba(14, 165, 233, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            position: relative;
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 1.15rem;
+            margin-bottom: 1.35rem;
         }
 
-        .step-preview-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 25px;
-            right: 25px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+        .widget-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .widget-icon-mini {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+        }
+
+        .widget-title-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .widget-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-live-green {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .badge-live-blue {
+            background: rgba(14, 165, 233, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+        }
+
+        .badge-live-amber {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        .widget-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .widget-tile {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+        }
+
+        .widget-label {
+            font-size: 0.725rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .widget-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .widget-highlight-bar {
+            background: rgba(37, 99, 235, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 14px;
+            padding: 0.9rem 1.15rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-highlight-lbl {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+
+        .widget-highlight-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        /* ==========================================================================
+           CTA SECTION
+           ========================================================================== */
+        .cta-section {
+            padding: 3rem 3.5rem 7rem;
+            max-width: 1440px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(37, 99, 235, 0.18) 50%, rgba(99, 102, 241, 0.12) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 32px;
+            padding: 4.5rem 3rem;
+            text-align: center;
+            backdrop-filter: blur(24px);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 1rem;
+            letter-spacing: -0.025em;
+        }
+
+        .cta-desc {
+            font-size: 1.125rem;
+            color: #cbd5e1;
+            max-width: 680px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
         }
 
         /* ==========================================================================
@@ -1159,23 +1293,56 @@ try {
 
         /* RESPONSIVE */
         @media (max-width: 1024px) {
+            .hero-slider-wrap {
+                min-height: 680px;
+            }
+            .hero-title { font-size: 2.75rem; }
             .hero-slide-container { padding: 0 2rem; }
-            .hero-title { font-size: 2.7rem; }
+            .hero-bottom-strip { gap: 1.25rem; padding: 0.65rem 1.5rem; bottom: 1.25rem; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .benefits-grid { grid-template-columns: repeat(2, 1fr); }
             .step-tabs-nav { grid-template-columns: 1fr 1fr; }
             .step-content-pane { grid-template-columns: 1fr; gap: 2rem; padding: 2rem; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .vip-nav-links { display: none; }
         }
 
+        @media (max-width: 768px) {
+            .hero-slider-wrap {
+                min-height: 600px;
+            }
+            .hero-slide { padding-bottom: 3.5rem; }
+            .hero-title { font-size: 2.2rem; }
+            .hero-desc { font-size: 1rem; margin-bottom: 1.75rem; }
+            .hero-bottom-strip {
+                display: none;
+            }
+            .hero-nav-arrow { display: none; }
+            .hero-dots-wrap {
+                top: auto;
+                bottom: 1.5rem;
+                right: 50%;
+                transform: translateX(50%);
+            }
+            .features-grid { grid-template-columns: 1fr; }
+            .benefits-grid { grid-template-columns: 1fr; }
+            .features-section { padding: 4.5rem 1.5rem 3rem; }
+            .benefits-section { padding: 1rem 1.5rem 4rem; }
+            .workflow-section { padding: 4.5rem 1.5rem; }
+            .cta-section { padding: 2rem 1.5rem 5rem; }
+            .cta-box { padding: 3rem 1.5rem; }
+            .cta-title { font-size: 2rem; }
+            .section-title { font-size: 2.1rem; }
+        }
+
         @media (max-width: 640px) {
             .vip-nav { padding: 0 1.25rem; }
-            .hero-title { font-size: 2.15rem; }
-            .hero-btn-group { flex-direction: column; align-items: stretch; }
+            .hero-title { font-size: 1.85rem; }
+            .hero-desc { font-size: 0.925rem; }
+            .hero-btn-group { flex-direction: column; align-items: stretch; width: 100%; max-width: 320px; }
             .step-tabs-nav { grid-template-columns: 1fr; }
+            .widget-grid-2col { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr; }
-            .arrow-prev, .arrow-next { display: none; }
-            .suites-section { padding: 4rem 1.25rem; }
-            .workflow-section { padding: 4rem 1.25rem; }
         }
     </style>
 </head>
@@ -1195,8 +1362,9 @@ try {
 
         <ul class="vip-nav-links">
             <li><a href="#hero">Trang chủ</a></li>
-            <li><a href="#suites">Bộ sưu tập Suites</a></li>
+            <li><a href="#features">Tính năng quản lý</a></li>
             <li><a href="#workflow">Quy trình vận hành</a></li>
+            <li><a href="#benefits">Ưu thế hệ thống</a></li>
         </ul>
 
         <div class="vip-nav-actions">
@@ -1218,246 +1386,311 @@ try {
     </nav>
 
     <!-- ========================================================================
-         1. HERO SLIDER CAROUSEL (4 SLIDES LUXURY VIP)
+         1. HERO SLIDER CAROUSEL (4 SLIDES LUXURY VIP NEXT-GEN OPERATING SYSTEM)
          ======================================================================== -->
     <?php
-    // Chuẩn bị danh sách ảnh nền cho Hero Slider (kết hợp ảnh căn hộ thực tế và ảnh seed chất lượng cao)
-    $heroSlideImages = [];
-    if (!empty($imgRows)) {
-        foreach ($imgRows as $ir) {
-            if (!empty($ir['DuongDan'])) {
-                $heroSlideImages[] = url('/' . ltrim($ir['DuongDan'], '/'));
-            }
-        }
-    }
-    if (empty($heroSlideImages) && !empty($featuredSuites)) {
-        foreach ($featuredSuites as $fs) {
-            if (!empty($fs['AnhDaiDien'])) {
-                $heroSlideImages[] = url('/' . ltrim($fs['AnhDaiDien'], '/'));
-            }
-        }
-    }
-    $bgSlide1 = $heroSlideImages[0] ?? url('/uploads/can-ho/seed_1pn_36b3e8db12d94465a1f11565f05fca70_phong-ngu-anh-khai-go-vap-3.jpg');
-    $bgSlide2 = $heroSlideImages[1] ?? url('/uploads/can-ho/seed_penthouse_5b920eeeccf34de399d46c99971512f3_images.jpg');
-    $bgSlide3 = $heroSlideImages[2] ?? url('/uploads/can-ho/seed_2pn_4d8b2f62cfc2490c95993e8beb7d4667_images.jpg');
+    // 4 Ảnh nền Hero Slider Full HD siêu sang trọng chuẩn Luxury Serviced Apartments 5 sao
+    $bgSlide1 = url('/uploads/can-ho/luxury_hero_slide_1.jpg');
+    $bgSlide2 = url('/uploads/can-ho/luxury_hero_slide_2.jpg');
+    $bgSlide3 = url('/uploads/can-ho/luxury_hero_slide_3.jpg');
+    $bgSlide4 = url('/uploads/can-ho/luxury_hero_slide_4.jpg');
+    $gaugeDeg = min(360, max(0, round(($occupancyRate / 100) * 360))) . 'deg';
     ?>
     <section class="hero-slider-wrap" id="hero">
         
-        <!-- SLIDE 1 -->
+        <!-- SLIDE 1: QUẢN LÝ CĂN HỘ TẬP TRUNG -->
         <div class="hero-slide active" data-slide="0">
             <div class="hero-slide-bg" style="background-image: url('<?= $bgSlide1 ?>');"></div>
             <div class="hero-slide-overlay"></div>
             <div class="hero-slide-container">
-                <div style="max-width: 780px;">
-                    <h2 class="hero-title">
-                        Hệ Thống Quản Lý Căn Hộ Dịch Vụ<br>
-                        <span class="text-gradient">Quản Lý Tập Trung – Vận Hành Hiệu Quả</span>
-                    </h2>
-                    <p class="hero-desc">
-                        Giải pháp hỗ trợ chủ nhà và nhân viên quản lý căn hộ, khách thuê, hợp đồng và các hoạt động vận hành hằng ngày.
-                    </p>
-                    <div class="hero-btn-group">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Bắt đầu quản trị ngay</span>
-                            <?= svgIcon('arrow-right', '', 18) ?>
-                        </button>
-                        <a href="#suites" class="btn-vip-outline">
-                            <?= svgIcon('eye', '', 18) ?>
-                            <span>Khám phá các căn hộ</span>
-                        </a>
-                    </div>
+                <h2 class="hero-title">
+                    Quản Lý Căn Hộ Tập Trung<br>
+                    <span class="hero-gold-text">Theo Dõi Phòng & Khách Thuê Dễ Dàng</span>
+                </h2>
+                <p class="hero-desc">
+                    Quản lý thông tin căn hộ, phòng và khách thuê trên một hệ thống duy nhất.
+                </p>
+                <div class="hero-btn-group">
+                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                        <span>Bắt đầu quản trị ngay</span>
+                        <?= svgIcon('arrow-right', '', 18) ?>
+                    </button>
+                    <a href="#features" class="btn-vip-outline">
+                        <?= svgIcon('layers', '', 18) ?>
+                        <span>Khám phá tính năng</span>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 2 -->
+        <!-- SLIDE 2: QUẢN LÝ ĐIỆN NƯỚC -->
         <div class="hero-slide" data-slide="1">
             <div class="hero-slide-bg" style="background-image: url('<?= $bgSlide2 ?>');"></div>
             <div class="hero-slide-overlay"></div>
             <div class="hero-slide-container">
-                <div style="max-width: 780px;">
-                    <h2 class="hero-title">
-                        Quản Lý Điện Nước Tập Trung<br>
-                        <span class="text-gradient">Theo Dõi Chỉ Số – Tính Phí Chính Xác</span>
-                    </h2>
-                    <p class="hero-desc">
-                        Nhập chỉ số theo tháng, tự động lấy dữ liệu kỳ trước và hỗ trợ tính chi phí cho khách thuê.
-                    </p>
-                    <div class="hero-btn-group">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Trải nghiệm chốt số ngay</span>
-                            <?= svgIcon('arrow-right', '', 18) ?>
-                        </button>
-                        <a href="#workflow" class="btn-vip-outline">
-                            <span>Xem quy trình 4 bước</span>
-                        </a>
-                    </div>
+                <h2 class="hero-title">
+                    Quản Lý Điện Nước<br>
+                    <span class="hero-gold-text">Tính Tiền & Theo Dõi Chỉ Số</span>
+                </h2>
+                <p class="hero-desc">
+                    Cập nhật chỉ số điện nước và tự động tính chi phí theo từng phòng.
+                </p>
+                <div class="hero-btn-group">
+                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                        <span>Trải nghiệm chốt số ngay</span>
+                        <?= svgIcon('arrow-right', '', 18) ?>
+                    </button>
+                    <a href="#workflow" class="btn-vip-outline">
+                        <?= svgIcon('help-circle', '', 18) ?>
+                        <span>Xem quy trình 4 bước</span>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 3 -->
+        <!-- SLIDE 3: QUẢN LÝ HỢP ĐỒNG -->
         <div class="hero-slide" data-slide="2">
             <div class="hero-slide-bg" style="background-image: url('<?= $bgSlide3 ?>');"></div>
             <div class="hero-slide-overlay"></div>
             <div class="hero-slide-container">
-                <div style="max-width: 780px;">
-                    <h2 class="hero-title">
-                        Quản Lý Hợp Đồng Dễ Dàng<br>
-                        <span class="text-gradient">Theo Dõi Thời Hạn – Cảnh Báo Tự Động</span>
-                    </h2>
-                    <p class="hero-desc">
-                        Lưu thông tin khách thuê, tiền cọc và thời hạn hợp đồng, đồng thời nhắc khi hợp đồng sắp hết hạn.
-                    </p>
-                    <div class="hero-btn-group">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Truy cập hồ sơ hợp đồng</span>
-                            <?= svgIcon('arrow-right', '', 18) ?>
-                        </button>
-                        <a href="<?= url('/auth/login.php') ?>" class="btn-vip-outline">
-                            <span>Đăng nhập chuyên biệt</span>
-                        </a>
-                    </div>
+                <h2 class="hero-title">
+                    Quản Lý Hợp Đồng<br>
+                    <span class="hero-gold-text">Theo Dõi Thời Hạn & Gia Hạn</span>
+                </h2>
+                <p class="hero-desc">
+                    Lưu trữ thông tin hợp đồng, tiền cọc và nhắc thời hạn để hạn chế bỏ sót.
+                </p>
+                <div class="hero-btn-group">
+                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                        <span>Truy cập hồ sơ hợp đồng</span>
+                        <?= svgIcon('arrow-right', '', 18) ?>
+                    </button>
+                    <a href="<?= url('/auth/login.php') ?>" class="btn-vip-outline">
+                        <?= svgIcon('lock', '', 18) ?>
+                        <span>Đăng nhập hệ thống</span>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDER CONTROLS -->
+        <!-- SLIDE 4: QUẢN LÝ THU TIỀN -->
+        <div class="hero-slide" data-slide="3">
+            <div class="hero-slide-bg" style="background-image: url('<?= $bgSlide4 ?>');"></div>
+            <div class="hero-slide-overlay"></div>
+            <div class="hero-slide-container">
+                <h2 class="hero-title">
+                    Quản Lý Thu Tiền<br>
+                    <span class="hero-gold-text">Theo Dõi Hóa Đơn & Công Nợ</span>
+                </h2>
+                <p class="hero-desc">
+                    Theo dõi tiền phòng, điện nước và các khoản phí của từng khách thuê một cách rõ ràng.
+                </p>
+                <div class="hero-btn-group">
+                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                        <span>Xem quản lý tài chính</span>
+                        <?= svgIcon('arrow-right', '', 18) ?>
+                    </button>
+                    <a href="#features" class="btn-vip-outline">
+                        <?= svgIcon('layers', '', 18) ?>
+                        <span>Khám phá tính năng</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- DẢI 4 THÔNG SỐ VÀNG Ở ĐÁY HERO (TINH GỌN & THẨM MỸ) -->
+        <div class="hero-bottom-strip">
+            <div class="hero-metric-item">
+                <span class="hero-metric-val"><?= $totalRooms ?>+</span>
+                <span class="hero-metric-lbl">Căn Hộ Vận Hành</span>
+            </div>
+            <div class="hero-metric-divider"></div>
+            <div class="hero-metric-item">
+                <span class="hero-metric-val"><?= $occupancyRate ?>%</span>
+                <span class="hero-metric-lbl">Tỉ Lệ Lấp Đầy</span>
+            </div>
+            <div class="hero-metric-divider"></div>
+            <div class="hero-metric-item">
+                <span class="hero-metric-val">100%</span>
+                <span class="hero-metric-lbl">Minh Bạch Số Liệu</span>
+            </div>
+            <div class="hero-metric-divider"></div>
+            <div class="hero-metric-item">
+                <span class="hero-metric-val">24/7</span>
+                <span class="hero-metric-lbl">Vận Hành & Hỗ Trợ</span>
+            </div>
+        </div>
+
+        <!-- SLIDER CONTROLS: MŨI TÊN CHUYỂN SLIDE KÍNH MỜ TINH TẾ -->
         <button type="button" class="hero-nav-arrow arrow-prev" onclick="prevHeroSlide()" title="Slide trước">
-            <?= svgIcon('chevron-left', '', 24) ?>
+            <?= svgIcon('chevron-left', '', 22) ?>
         </button>
         <button type="button" class="hero-nav-arrow arrow-next" onclick="nextHeroSlide()" title="Slide kế tiếp">
-            <?= svgIcon('chevron-right', '', 24) ?>
+            <?= svgIcon('chevron-right', '', 22) ?>
         </button>
 
+        <!-- VẠCH CHỈ SỐ SLIDE GÓC TRÊN PHẢI -->
         <div class="hero-dots-wrap">
-            <div class="hero-dot active" onclick="setHeroSlide(0)"></div>
-            <div class="hero-dot" onclick="setHeroSlide(1)"></div>
-            <div class="hero-dot" onclick="setHeroSlide(2)"></div>
+            <div class="hero-dot-line active" onclick="setHeroSlide(0)" title="Slide 1"></div>
+            <div class="hero-dot-line" onclick="setHeroSlide(1)" title="Slide 2"></div>
+            <div class="hero-dot-line" onclick="setHeroSlide(2)" title="Slide 3"></div>
+            <div class="hero-dot-line" onclick="setHeroSlide(3)" title="Slide 4"></div>
         </div>
     </section>
 
 
     <!-- ========================================================================
-         3. BỘ SƯU TẬP CĂN HỘ DỊCH VỤ MẪU (INTERACTIVE SUITES CAROUSEL)
+         2. PHÂN HỆ TÍNH NĂNG QUẢN TRỊ TOÀN DIỆN (ENTERPRISE FEATURES GRID)
          ======================================================================== -->
-    <section class="suites-section" id="suites">
-        <div class="section-header-wrap">
-            <div>
-                <div class="section-tag"><?= svgIcon('building', '', 14) ?> HỆ THỐNG CĂN HỘ</div>
-                <h2 class="section-title">Khám Phá Các Căn Hộ Dịch Vụ Mẫu</h2>
-            </div>
-            
-            <div class="filter-tabs">
-                <button type="button" class="filter-btn active" onclick="filterSuites('all', this)">Tất cả (<?= count($featuredSuites) ?>)</button>
-                <button type="button" class="filter-btn" onclick="filterSuites('Studio', this)">Studio (<?= $suiteCounts['Studio'] ?? 0 ?>)</button>
-                <button type="button" class="filter-btn" onclick="filterSuites('Duplex', this)">Duplex (<?= $suiteCounts['Duplex'] ?? 0 ?>)</button>
-                <button type="button" class="filter-btn" onclick="filterSuites('1 Phòng Ngủ', this)">1 Phòng Ngủ (<?= $suiteCounts['1 Phòng Ngủ'] ?? 0 ?>)</button>
-                <button type="button" class="filter-btn" onclick="filterSuites('2 Phòng Ngủ', this)">2 Phòng Ngủ (<?= $suiteCounts['2 Phòng Ngủ'] ?? 0 ?>)</button>
-            </div>
+    <section class="features-section" id="features">
+        <div class="section-header-center">
+            <h2 class="section-title">Giải Pháp Quản Trị Căn Hộ Dịch Vụ Toàn Diện</h2>
+            <p class="section-subtitle">
+                Số hóa toàn diện mọi khâu quản lý từ tiếp nhận khách thuê, chốt điện nước, phát hành hóa đơn tự động đến bảo trì tòa nhà trên một nền tảng duy nhất.
+            </p>
         </div>
 
-        <div class="suites-carousel-container">
-            <button type="button" class="suite-scroll-btn suite-scroll-prev" onclick="scrollSuites(-360)" title="Lướt sang trái">
-                <?= svgIcon('chevron-left', '', 20) ?>
-            </button>
-            <button type="button" class="suite-scroll-btn suite-scroll-next" onclick="scrollSuites(360)" title="Lướt sang phải">
-                <?= svgIcon('chevron-right', '', 20) ?>
-            </button>
+        <div class="features-grid">
+            <!-- FEATURE 1 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-blue">
+                        <?= svgIcon('building', '', 26) ?>
+                    </div>
+                    <span class="feature-badge">Quản lý trực quan</span>
+                </div>
+                <h3 class="feature-title">Quản Lý Phòng</h3>
+                <p class="feature-desc">
+                    Theo dõi tình trạng phòng trống, đang thuê hoặc bảo trì theo thời gian thực. Phân loại linh hoạt Studio, 1PN, 2PN, Duplex cùng biểu phí dịch vụ riêng.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Cập nhật tình trạng phòng tức thì</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Thiết lập đơn giá & dịch vụ riêng từng căn</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Tra cứu nhanh theo số phòng và loại phòng</li>
+                </ul>
+            </div>
 
-            <div class="suites-slider" id="suitesSlider">
-                <?php if (empty($featuredSuites)): ?>
-                    <div style="width: 100%; text-align: center; padding: 3.5rem 1.5rem; background: rgba(15, 23, 42, 0.4); border: 1px dashed rgba(255,255,255,0.12); border-radius: 16px; margin: 0 1rem;">
-                        <div style="color: #64748b; margin-bottom: 0.75rem; display: flex; justify-content: center;">
-                            <?= svgIcon('building', '', 48) ?>
-                        </div>
-                        <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem;">Chưa Có Căn Hộ Nào Trong Hệ Thống</h3>
-                        <p style="color: #94a3b8; font-size: 0.95rem; max-width: 500px; margin: 0 auto 1.25rem; line-height: 1.6;">
-                            Dữ liệu căn hộ hiện đang trống. Quản trị viên vui lòng đăng nhập vào trang quản trị để thêm các căn hộ mới.
-                        </p>
-                        <a href="<?= e($dashboardUrl) ?>" class="btn-vip-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                            <?= svgIcon('home', '', 16) ?> <span>Vào Trang Quản Trị</span>
-                        </a>
+            <!-- FEATURE 2 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-amber">
+                        <?= svgIcon('electric', '', 26) ?>
                     </div>
-                <?php else: ?>
-                    <?php foreach ($featuredSuites as $suite): 
-                        $isRented = ($suite['TrangThai'] === 'Đang thuê');
-                        $isMaint = ($suite['TrangThai'] === 'Bảo trì');
-                        $statusClass = $isRented ? 'status-rented' : ($isMaint ? 'status-maint' : 'status-ready');
-                        $statusText = $isRented ? 'Đang thuê' : ($isMaint ? 'Bảo trì' : 'Trống sẵn sàng');
-                        $typeCat = $suite['TenLoai'] ?? 'Studio';
-                        $modalData = [
-                            'id' => (int)$suite['MaCanHo'],
-                            'room' => $suite['SoPhong'],
-                            'type' => $suite['TenLoai'] ?? 'Studio',
-                            'price' => formatMoney((float)$suite['GiaThue']) . ' / tháng',
-                            'area' => $suite['DienTich'] . ' m²',
-                            'status' => $statusText,
-                            'statusClass' => $statusClass,
-                            'address' => $suite['DiaChi'] ?: 'Tòa nhà Căn hộ Dịch vụ',
-                            'desc' => $suite['MoTa'] ?: 'Căn hộ dịch vụ tiện nghi, không gian thoáng mát sạch sẽ.',
-                            'images' => $suite['AllImages'] ?? [url('/' . ltrim($suite['AnhDaiDien'], '/'))],
-                            'dien' => formatMoney(normalizeServiceFee($suite['GiaDien'] ?? 3800, 'dien')) . ' / kWh',
-                            'nuoc' => formatMoney(normalizeServiceFee($suite['GiaNuoc'] ?? 100000, 'nuoc')) . ' / tháng',
-                            'xeMay' => formatMoney(normalizeServiceFee($suite['GiaXeMay'] ?? 120000, 'xemay')) . ' / xe / tháng',
-                            'oto' => formatMoney(normalizeServiceFee($suite['GiaOto'] ?? 1200000, 'oto')) . ' / xe / tháng',
-                            'internet' => formatMoney(normalizeServiceFee($suite['GiaInternet'] ?? 100000, 'internet')) . ' / tháng',
-                            'veSinh' => formatMoney(normalizeServiceFee($suite['GiaVeSinh'] ?? 50000, 'vesinh')) . ' / tháng'
-                        ];
-                        $jsonData = htmlspecialchars(json_encode($modalData, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
-                    ?>
-                    <div class="suite-card" data-type="<?= e($typeCat) ?>">
-                        <div class="suite-img-wrap" onclick='openSuiteModal(<?= $jsonData ?>)' style="cursor: pointer;" title="Bấm để xem album ảnh & chi tiết">
-                            <img src="<?= url('/' . ltrim($suite['AnhDaiDien'], '/')) ?>" alt="Căn <?= e($suite['SoPhong']) ?>" class="suite-img" loading="lazy">
-                            <div class="suite-price-pill">
-                                <?= formatMoney((float)$suite['GiaThue']) ?> / tháng
-                            </div>
-                            <div class="suite-status-pill <?= $statusClass ?>">
-                                <?= $statusText ?>
-                            </div>
-                            <?php if (!empty($suite['AllImages']) && count($suite['AllImages']) > 1): ?>
-                                <div class="suite-img-count">
-                                    <?= svgIcon('camera', '', 12) ?>
-                                    <span><?= count($suite['AllImages']) ?> ảnh</span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="suite-body">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
-                                <div class="suite-room-code">Phòng <?= e($suite['SoPhong']) ?></div>
-                                <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">#<?= (int)$suite['MaCanHo'] ?></span>
-                            </div>
-                            <div class="suite-type-name"><?= e($suite['TenLoai']) ?> &bull; <?= number_format((float)$suite['DienTich'], 0) ?> m²</div>
-                            <div class="suite-location">
-                                <?= svgIcon('map-pin', '', 14) ?>
-                                <span><?= e($suite['DiaChi'] ?: 'Tòa nhà Căn hộ Dịch vụ') ?></span>
-                            </div>
-                            <div class="suite-services-row">
-                                <div class="suite-svc-item" title="Đơn giá điện theo đồng hồ">
-                                    <?= svgIcon('electric', '', 13) ?>
-                                    <span>Điện: <strong><?= formatMoney(normalizeServiceFee($suite['GiaDien'] ?? 3800, 'dien')) ?>/kWh</strong></span>
-                                </div>
-                                <div class="suite-svc-item" title="Tiền nước khoán theo phòng">
-                                    <?= svgIcon('water', '', 13) ?>
-                                    <span>Nước: <strong><?= formatMoney(normalizeServiceFee($suite['GiaNuoc'] ?? 100000, 'nuoc')) ?>/tháng</strong></span>
-                                </div>
-                                <div class="suite-svc-item" title="Phí gửi xe máy theo xe">
-                                    <?= svgIcon('motorcycle', '', 13) ?>
-                                    <span>Xe máy: <strong><?= formatMoney(normalizeServiceFee($suite['GiaXeMay'] ?? 120000, 'xemay')) ?>/xe</strong></span>
-                                </div>
-                                <div class="suite-svc-item" title="Internet wifi tốc độ cao">
-                                    <?= svgIcon('wifi', '', 13) ?>
-                                    <span>Wifi: <strong><?= formatMoney(normalizeServiceFee($suite['GiaInternet'] ?? 100000, 'internet')) ?>/tháng</strong></span>
-                                </div>
-                            </div>
-                            <button type="button" class="btn-view-suite" onclick='openSuiteModal(<?= $jsonData ?>)'>
-                                <span>Xem chi tiết & biểu phí</span>
-                                <?= svgIcon('arrow-right', '', 14) ?>
-                            </button>
-                        </div>
+                    <span class="feature-badge">Chính xác 100%</span>
+                </div>
+                <h3 class="feature-title">Chốt Số Điện Nước</h3>
+                <p class="feature-desc">
+                    Tự động kế thừa chỉ số cũ từ kỳ trước, chỉ cần nhập số mới. Hệ thống tự động tính lượng tiêu thụ và thành tiền theo đơn giá phòng, không lo nhầm lẫn.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Ghi nhận nhanh ngay trên hệ thống</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Cảnh báo nếu chỉ số mới nhỏ hơn chỉ số cũ</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Tự động liên kết phát hành hóa đơn tháng</li>
+                </ul>
+            </div>
+
+            <!-- FEATURE 3 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-emerald">
+                        <?= svgIcon('file-text', '', 26) ?>
                     </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                    <span class="feature-badge">Hồ sơ số hóa</span>
+                </div>
+                <h3 class="feature-title">Hợp Đồng & Khách Thuê</h3>
+                <p class="feature-desc">
+                    Lưu trữ hồ sơ cư dân an toàn, quản lý chi tiết tiền đặt cọc, ngày bắt đầu và ngày kết thúc. Chủ động cảnh báo trước hạn để chuẩn bị tái ký hoặc bàn giao.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Quản lý thông tin CCCD và hợp đồng thuê</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Quản lý tiền cọc minh bạch, an toàn</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Tự động cảnh báo hợp đồng sắp hết hạn</li>
+                </ul>
+            </div>
+
+            <!-- FEATURE 4 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-purple">
+                        <?= svgIcon('wallet', '', 26) ?>
+                    </div>
+                    <span class="feature-badge">Gạch nợ tức thì</span>
+                </div>
+                <h3 class="feature-title">Hóa Đơn & Thanh Toán</h3>
+                <p class="feature-desc">
+                    Tổng hợp tự động tiền phòng, điện nước và dịch vụ (xe máy, wifi, vệ sinh) thành một hóa đơn hoàn chỉnh. Quản lý công nợ và trạng thái thanh toán minh bạch.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Ghi nhận thanh toán chuyển khoản & tiền mặt</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Xuất in hóa đơn khổ chuẩn A4 / A5</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Theo dõi công nợ & lịch sử thanh toán</li>
+                </ul>
+            </div>
+
+            <!-- FEATURE 5 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-rose">
+                        <?= svgIcon('tool', '', 26) ?>
+                    </div>
+                    <span class="feature-badge">Phản hồi 24/7</span>
+                </div>
+                <h3 class="feature-title">Tiếp Nhận & Xử Lý Sự Cố</h3>
+                <p class="feature-desc">
+                    Ghi nhận kịp thời các phản ánh hư hỏng thiết bị (máy lạnh, đường ống nước, bóng đèn...) từ khách thuê. Phân công kỹ thuật và cập nhật tiến độ liên tục.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Tiếp nhận yêu cầu sửa chữa tức thời</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Theo dõi tiến độ từ tiếp nhận đến hoàn tất</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Lưu vết lịch sử bảo dưỡng từng phòng</li>
+                </ul>
+            </div>
+
+            <!-- FEATURE 6 -->
+            <div class="feature-card">
+                <div class="feature-top-row">
+                    <div class="feature-icon-box icon-sky">
+                        <?= svgIcon('trend-up', '', 26) ?>
+                    </div>
+                    <span class="feature-badge">Thời gian thực</span>
+                </div>
+                <h3 class="feature-title">Báo Cáo & Thống Kê Doanh Thu</h3>
+                <p class="feature-desc">
+                    Cung cấp cái nhìn toàn diện về tỷ lệ lấp đầy buồng phòng, dòng tiền thu chi thực tế, công nợ quá hạn và hỗ trợ xuất dữ liệu phục vụ đối soát định kỳ.
+                </p>
+                <ul class="feature-points">
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Biểu đồ doanh thu trực quan theo tháng</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Báo cáo công nợ & danh sách nợ đọng</li>
+                    <li class="feature-point-item"><?= svgIcon('check', '', 14) ?> Dữ liệu đồng bộ 100% với hệ thống</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================================
+         3. ƯU THẾ VẬN HÀNH NỔI BẬT (KEY BENEFITS STRIP)
+         ======================================================================== -->
+    <section class="benefits-section" id="benefits">
+        <div class="benefits-grid">
+            <div class="benefit-box">
+                <div class="benefit-num">85%</div>
+                <div class="benefit-label">Tiết Kiệm Thời Gian</div>
+                <p class="benefit-sub">Tự động hóa tính toán hóa đơn và chốt số, giải phóng công việc thủ công.</p>
+            </div>
+            <div class="benefit-box">
+                <div class="benefit-num">100%</div>
+                <div class="benefit-label">Minh Bạch Tuyệt Đối</div>
+                <p class="benefit-sub">Khách thuê và chủ nhà đối soát rõ ràng từng số điện, số nước và chi phí.</p>
+            </div>
+            <div class="benefit-box">
+                <div class="benefit-num">24/7</div>
+                <div class="benefit-label">Truy Cập Mọi Lúc</div>
+                <p class="benefit-sub">Vận hành mượt mà trên máy tính bàn, laptop, máy tính bảng và điện thoại.</p>
+            </div>
+            <div class="benefit-box">
+                <div class="benefit-num">An Toàn</div>
+                <div class="benefit-label">Bảo Mật & Phân Quyền</div>
+                <p class="benefit-sub">Phân quyền chặt chẽ giữa Quản trị viên và Nhân viên, bảo vệ dữ liệu tối đa.</p>
             </div>
         </div>
     </section>
@@ -1467,10 +1700,10 @@ try {
          ======================================================================== -->
     <section class="workflow-section" id="workflow">
         <div class="workflow-container">
-            <div style="text-align: center; max-width: 720px; margin: 0 auto 3rem;">
-                <h2 class="section-title">Quy Trình Quản Lý Căn Hộ</h2>
-                <p style="color: #94a3b8; font-size: 1.05rem; margin-top: 0.5rem; font-weight: 500;">
-                    Từ Khách Thuê Đến Vận Hành
+            <div style="text-align: center; max-width: 720px; margin: 0 auto 3.5rem;">
+                <h2 class="section-title">Quy Trình Quản Lý 4 Bước</h2>
+                <p class="section-subtitle">
+                    Chuẩn hóa mọi thao tác từ lúc khách nhận phòng, chốt điện nước định kỳ đến xuất hóa đơn và xử lý kỹ thuật.
                 </p>
             </div>
 
@@ -1510,42 +1743,19 @@ try {
                         <li><?= svgIcon('check', '', 18) ?> Tự động lấy thông tin giá thuê và dịch vụ của căn hộ</li>
                         <li><?= svgIcon('check', '', 18) ?> Theo dõi hợp đồng sắp hết hạn trên Dashboard</li>
                     </ul>
-                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                        <span>Đăng nhập để lập hợp đồng</span>
-                        <?= svgIcon('arrow-right', '', 16) ?>
-                    </button>
-                </div>
-                <div class="step-preview-box">
-                    <?php if ($latestContract): ?>
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
-                            <span style="font-weight: 700; color: #ffffff;">HỢP ĐỒNG THUÊ CĂN HỘ #<?= e((string)$latestContract['MaHopDong']) ?></span>
-                            <span class="badge badge-success"><?= svgIcon('check', '', 12) ?> <?= e($latestContract['TrangThai']) ?></span>
-                        </div>
-                        <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 2;">
-                            <div>Căn hộ: <strong style="color: #ffffff;">Phòng <?= e($latestContract['SoPhong']) ?> (<?= e($latestContract['TenLoai']) ?>)</strong></div>
-                            <div>Khách thuê: <strong style="color: #ffffff;"><?= e($latestContract['TenKhach']) ?></strong></div>
-                            <div>Tiền thuê: <strong style="color: #38bdf8;"><?= formatMoney((float)$latestContract['GiaThueThoaThuan']) ?> / tháng</strong></div>
-                            <div>Tiền cọc: <strong style="color: #34d399;"><?= formatMoney((float)$latestContract['TienCoc']) ?></strong></div>
-                            <div>Thời hạn: <strong style="color: #ffffff;"><?= formatDate($latestContract['NgayBatDau']) ?> &rarr; <?= formatDate($latestContract['NgayKetThuc']) ?></strong></div>
-                        </div>
-                    <?php else: ?>
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem;">
-                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: #64748b; margin-bottom: 0.75rem;">
-                                <?= svgIcon('file-text', '', 24) ?>
-                            </div>
-                            <div style="font-weight: 700; color: #ffffff; font-size: 1rem; margin-bottom: 0.25rem;">Chưa Có Hợp Đồng Thuê Nào</div>
-                            <div style="font-size: 0.85rem; color: #94a3b8; max-width: 280px; line-height: 1.5;">
-                                Dữ liệu hợp đồng trong hệ thống đang trống. Khi bạn lập hợp đồng mới, thông tin sẽ tự động hiển thị tại đây.
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    <div style="text-align: center;">
+                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                            <span>Đăng nhập để lập hợp đồng</span>
+                            <?= svgIcon('arrow-right', '', 16) ?>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- STEP 2 CONTENT -->
             <div class="step-content-pane" data-step="1">
                 <div class="step-pane-info">
-                    <h3>Chốt Chỉ Số Điện Nước Thông Minh</h3>
+                    <h3>Chốt Chỉ Số Điện Nước</h3>
                     <p>
                         Ghi nhận chỉ số công tơ điện hàng tháng nhanh gọn. Hệ thống tự kế thừa số cũ từ kỳ trước, tính lượng tiêu thụ và áp đơn giá điện riêng theo từng tòa nhà.
                     </p>
@@ -1554,88 +1764,40 @@ try {
                         <li><?= svgIcon('check', '', 18) ?> Báo lỗi ngay nếu số mới nhỏ hơn số cũ</li>
                         <li><?= svgIcon('check', '', 18) ?> Tự động liên kết phát hành hóa đơn tương ứng</li>
                     </ul>
-                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                        <span>Trải nghiệm chốt chỉ số</span>
-                        <?= svgIcon('arrow-right', '', 16) ?>
-                    </button>
-                </div>
-                <div class="step-preview-box">
-                    <?php if ($latestDienNuoc): ?>
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
-                            <span style="font-weight: 700; color: #ffffff;">CHỐT ĐIỆN NƯỚC KỲ <?= e($latestDienNuoc['ThangNam'] ?? date('m/Y')) ?></span>
-                            <span class="badge badge-info"><?= svgIcon('electric', '', 12) ?> Đã ghi nhận</span>
-                        </div>
-                        <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 2;">
-                            <div>Phòng: <strong style="color: #ffffff;">Phòng <?= e($latestDienNuoc['SoPhong']) ?></strong></div>
-                            <div>Chỉ số điện cũ: <strong style="color: #94a3b8;"><?= number_format((float)$latestDienNuoc['ChiSoDienCu'], 0) ?> kWh</strong></div>
-                            <div>Chỉ số điện mới: <strong style="color: #ffffff;"><?= number_format((float)$latestDienNuoc['ChiSoDienMoi'], 0) ?> kWh</strong> (Tiêu thụ: <?= number_format((float)($latestDienNuoc['ChiSoDienMoi'] - $latestDienNuoc['ChiSoDienCu']), 0) ?> kWh)</div>
-                            <div>Tiền điện: <strong style="color: #ffffff;"><?= formatMoney((float)($latestDienNuoc['TienDien'] ?? 0)) ?></strong></div>
-                            <div>Tiền nước: <strong style="color: #38bdf8;"><?= formatMoney((float)($latestDienNuoc['TienNuoc'] ?? 0)) ?></strong></div>
-                        </div>
-                    <?php else: ?>
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem;">
-                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: #64748b; margin-bottom: 0.75rem;">
-                                <?= svgIcon('electric', '', 24) ?>
-                            </div>
-                            <div style="font-weight: 700; color: #ffffff; font-size: 1rem; margin-bottom: 0.25rem;">Chưa Có Kỳ Chốt Điện Nước</div>
-                            <div style="font-size: 0.85rem; color: #94a3b8; max-width: 280px; line-height: 1.5;">
-                                Dữ liệu chỉ số đang trống. Khi quản trị viên ghi nhận chỉ số kỳ mới, thông tin sẽ hiển thị tại đây.
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    <div style="text-align: center;">
+                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                            <span>Trải nghiệm chốt chỉ số</span>
+                            <?= svgIcon('arrow-right', '', 16) ?>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- STEP 3 CONTENT -->
             <div class="step-content-pane" data-step="2">
                 <div class="step-pane-info">
-                    <h3>Phát Hành Hóa Đơn & Thanh Toán Tức Thì</h3>
+                    <h3>Phát Hành Hóa Đơn & Thanh Toán</h3>
                     <p>
-                        Tự động tổng hợp tiền phòng, tiền điện, tiền nước và các phụ phí dịch vụ (xe máy, rác, internet) thành 1 hóa đơn hoàn chỉnh chỉ trong 1 click chuột.
+                        Tự động tổng hợp tiền phòng, tiền điện, tiền nước và các phụ phí dịch vụ (xe máy, rác, wifi) thành 1 hóa đơn hoàn chỉnh chỉ trong 1 thao tác.
                     </p>
                     <ul class="step-check-list">
                         <li><?= svgIcon('check', '', 18) ?> Hỗ trợ in ấn mẫu hóa đơn khổ A4/A5 chuyên nghiệp</li>
                         <li><?= svgIcon('check', '', 18) ?> Ghi nhận thanh toán linh hoạt: Chuyển khoản ngân hàng hoặc tiền mặt</li>
                         <li><?= svgIcon('check', '', 18) ?> Cập nhật trạng thái tức thời vào doanh thu thực thu</li>
                     </ul>
-                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                        <span>Xem mẫu hóa đơn chuẩn</span>
-                        <?= svgIcon('arrow-right', '', 16) ?>
-                    </button>
-                </div>
-                <div class="step-preview-box">
-                    <?php if ($latestHoaDon): ?>
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
-                            <span style="font-weight: 700; color: #ffffff;">HÓA ĐƠN #HD-<?= str_pad((string)$latestHoaDon['MaHoaDon'], 4, '0', STR_PAD_LEFT) ?></span>
-                            <span class="badge badge-success"><?= svgIcon('check', '', 12) ?> <?= e($latestHoaDon['TrangThaiThanhToan'] ?? $latestHoaDon['TrangThai'] ?? 'Đã phát hành') ?></span>
-                        </div>
-                        <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 2;">
-                            <div>Phòng / Khách: <strong style="color: #ffffff;">Phòng <?= e($latestHoaDon['SoPhong']) ?> (<?= e($latestHoaDon['TenKhach']) ?>)</strong></div>
-                            <div>Kỳ thanh toán: <strong style="color: #ffffff;"><?= e($latestHoaDon['KyThanhToan']) ?></strong></div>
-                            <div>Tiền phòng: <strong style="color: #ffffff;"><?= formatMoney((float)($latestHoaDon['TienPhong'] ?? 0)) ?></strong></div>
-                            <div>Dịch vụ & Điện nước: <strong style="color: #ffffff;"><?= formatMoney((float)(($latestHoaDon['TienDien'] ?? 0) + ($latestHoaDon['TienNuoc'] ?? 0) + ($latestHoaDon['TienDichVu'] ?? 0))) ?></strong></div>
-                            <div style="border-top: 1px dashed rgba(255,255,255,0.2); margin-top: 0.5rem; padding-top: 0.5rem;">
-                                TỔNG CỘNG: <strong style="color: #38bdf8; font-size: 1.2rem;"><?= formatMoney((float)$latestHoaDon['TongTien']) ?></strong>
-                            </div>
-                        </div>
-                    <?php else: ?>
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem;">
-                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: #64748b; margin-bottom: 0.75rem;">
-                                <?= svgIcon('wallet', '', 24) ?>
-                            </div>
-                            <div style="font-weight: 700; color: #ffffff; font-size: 1rem; margin-bottom: 0.25rem;">Chưa Có Hóa Đơn Phát Hành</div>
-                            <div style="font-size: 0.85rem; color: #94a3b8; max-width: 280px; line-height: 1.5;">
-                                Hệ thống chưa tạo hóa đơn nào. Hóa đơn mới phát hành sẽ tự động hiển thị tại đây.
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    <div style="text-align: center;">
+                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                            <span>Xem mẫu hóa đơn chuẩn</span>
+                            <?= svgIcon('arrow-right', '', 16) ?>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- STEP 4 CONTENT -->
             <div class="step-content-pane" data-step="3">
                 <div class="step-pane-info">
-                    <h3>Bảo Trì 24/7 & Báo Cáo Tài Chính Tổng Thể</h3>
+                    <h3>Bảo Trì & Báo Cáo Tài Chính</h3>
                     <p>
                         Tiếp nhận phản ánh hư hỏng từ khách thuê (máy lạnh, vòi nước, khóa cửa), phân công kỹ thuật viên xử lý và đối soát công nợ toàn hệ thống theo thời gian thực.
                     </p>
@@ -1644,121 +1806,17 @@ try {
                         <li><?= svgIcon('check', '', 18) ?> Thống kê danh sách khách nợ tiền phòng quá hạn</li>
                         <li><?= svgIcon('check', '', 18) ?> Xuất file Excel / PDF báo cáo tài chính chỉ trong 1 thao tác</li>
                     </ul>
-                    <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                        <span>Vào xem Báo cáo Dashboard</span>
-                        <?= svgIcon('arrow-right', '', 16) ?>
-                    </button>
-                </div>
-                <div class="step-preview-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
-                        <span style="font-weight: 700; color: #ffffff;">TỔNG QUAN HỆ THỐNG VẬN HÀNH</span>
-                        <span class="badge badge-info"><?= svgIcon('trend-up', '', 12) ?> Thời gian thực</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 2;">
-                        <div>Tổng số căn hộ: <strong style="color: #ffffff;"><?= $totalRooms ?> phòng</strong></div>
-                        <div>Tỷ lệ lấp đầy: <strong style="color: #34d399;"><?= $occupancyRate ?>% (<?= $rentedRooms ?>/<?= $totalRooms ?> phòng)</strong></div>
-                        <div>Doanh thu tháng này: <strong style="color: #38bdf8;"><?= formatMoney($doanhThuThang) ?></strong></div>
-                        <div>Số sự cố bảo trì: <strong style="color: <?= $maintPending > 0 ? '#f59e0b' : '#34d399' ?>;"><?= $maintPending ?> Đang xử lý</strong></div>
-                        <div>Công nợ tồn đọng: <strong style="color: <?= $debtCount > 0 ? '#ef4444' : '#94a3b8' ?>;"><?= $debtCount ?> Hóa đơn</strong></div>
+                    <div style="text-align: center;">
+                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
+                            <span>Vào xem Báo cáo Dashboard</span>
+                            <?= svgIcon('arrow-right', '', 16) ?>
+                        </button>
                     </div>
                 </div>
             </div>
 
         </div>
     </section>
-
-    <!-- ========================================================================
-         MODAL XEM CHI TIẾT CĂN HỘ THỰC TẾ (ALBUM & BIỂU PHÍ)
-         ======================================================================== -->
-    <div class="modal-backdrop-vip" id="suiteDetailModal" onclick="if(event.target===this) closeSuiteModal()">
-        <div class="modal-vip-dialog" style="max-width: 660px; padding: 1.75rem; max-height: 90vh; overflow-y: auto;">
-            <button type="button" class="modal-close-btn" onclick="closeSuiteModal()" title="Đóng">
-                <?= svgIcon('x', '', 20) ?>
-            </button>
-
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div style="width: 42px; height: 42px; border-radius: 10px; background: #2563eb; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;">
-                    <?= svgIcon('building', '', 22) ?>
-                </div>
-                <div style="flex: 1; min-width: 0;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                        <h3 id="modalSuiteRoom" style="font-size: 1.35rem; font-weight: 800; color: #ffffff; margin: 0;"></h3>
-                        <span id="modalSuiteStatus" class="suite-status-pill" style="position: static;"></span>
-                    </div>
-                    <p id="modalSuiteAddress" style="font-size: 0.825rem; color: #94a3b8; margin: 0.25rem 0 0;"></p>
-                </div>
-            </div>
-
-            <!-- GALLERY ẢNH THỰC TẾ -->
-            <div style="margin-bottom: 1.25rem;">
-                <div style="height: 280px; width: 100%; border-radius: 12px; overflow: hidden; background: #000; margin-bottom: 0.5rem; position: relative;">
-                    <img id="modalSuiteMainImg" src="" alt="Ảnh căn hộ thực tế" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s ease;">
-                </div>
-                <div id="modalSuiteThumbs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;"></div>
-            </div>
-
-            <!-- THÔNG SỐ CHÍNH -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div style="background: rgba(30, 41, 59, 0.6); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Giá thuê niêm yết</div>
-                    <div id="modalSuitePrice" style="font-size: 1.15rem; font-weight: 800; color: #38bdf8; margin-top: 0.2rem;"></div>
-                </div>
-                <div style="background: rgba(30, 41, 59, 0.6); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Loại căn hộ</div>
-                    <div id="modalSuiteType" style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-top: 0.2rem;"></div>
-                </div>
-                <div style="background: rgba(30, 41, 59, 0.6); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Diện tích sử dụng</div>
-                    <div id="modalSuiteArea" style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-top: 0.2rem;"></div>
-                </div>
-            </div>
-
-            <!-- MÔ TẢ TỪ CƠ SỞ DỮ LIỆU -->
-            <div style="margin-bottom: 1.25rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.35rem;">Mô tả tiện ích thực tế từ hệ thống</div>
-                <div id="modalSuiteDesc" style="font-size: 0.875rem; color: #e2e8f0; line-height: 1.6; background: rgba(15, 23, 42, 0.55); padding: 0.85rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);"></div>
-            </div>
-
-            <!-- BIỂU PHÍ DỊCH VỤ TOÀ NHÀ -->
-            <div style="margin-bottom: 1.5rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
-                    <?= svgIcon('tool', '', 14) ?>
-                    <span>Biểu phí dịch vụ áp dụng thực tế</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.8rem;">
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Tiền điện:</span> <strong id="modalSuiteDien" style="color: #38bdf8; display: block;"></strong>
-                    </div>
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Tiền nước:</span> <strong id="modalSuiteNuoc" style="color: #38bdf8; display: block;"></strong>
-                    </div>
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Phí xe máy:</span> <strong id="modalSuiteXeMay" style="color: #ffffff; display: block;"></strong>
-                    </div>
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Phí ô tô:</span> <strong id="modalSuiteOto" style="color: #ffffff; display: block;"></strong>
-                    </div>
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Wifi Internet:</span> <strong id="modalSuiteInternet" style="color: #ffffff; display: block;"></strong>
-                    </div>
-                    <div style="background: rgba(30, 41, 59, 0.45); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-                        <span style="color: #94a3b8;">Phí vệ sinh:</span> <strong id="modalSuiteVeSinh" style="color: #ffffff; display: block;"></strong>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NÚT THAO TÁC -->
-            <div style="display: flex; gap: 0.75rem;">
-                <button type="button" class="btn-vip-primary" style="flex: 1; justify-content: center; padding: 0.75rem;" onclick="closeSuiteModal(); openLoginModal();">
-                    <span id="modalActionBtnText">Đăng nhập để quản lý căn này</span>
-                    <?= svgIcon('arrow-right', '', 16) ?>
-                </button>
-                <button type="button" class="btn-vip-outline" style="padding: 0.75rem 1.25rem;" onclick="closeSuiteModal()">
-                    <span>Đóng</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- ========================================================================
          5. MODAL ĐĂNG NHẬP VIP NHANH NGAY TẠI TRANG CHỦ
@@ -1796,7 +1854,7 @@ try {
                                id="modalAccount" 
                                name="account" 
                                style="width: 100%; padding: 0.8rem 1rem 0.8rem 2.4rem; background: rgba(30,41,59,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #ffffff; font-family: inherit; font-size: 0.9rem; box-sizing: border-box;"
-                               placeholder="VD: admin hoặc nv_an" 
+                               placeholder="Nhập tên đăng nhập" 
                                required>
                     </div>
                 </div>
@@ -1856,18 +1914,18 @@ try {
             <div class="footer-col">
                 <h4>Phân Hệ Quản Lý</h4>
                 <ul class="footer-links">
-                    <li><a href="#suites">Quản lý Căn hộ</a></li>
-                    <li><a href="#workflow">Hợp đồng & Cọc</a></li>
-                    <li><a href="#workflow">Chốt điện nước VNĐ</a></li>
-                    <li><a href="#workflow">Hóa đơn & Doanh thu</a></li>
+                    <li><a href="#features">Quản lý Căn hộ & Phòng</a></li>
+                    <li><a href="#workflow">Hợp đồng & Khách thuê</a></li>
+                    <li><a href="#workflow">Chốt điện nước tự động</a></li>
+                    <li><a href="#workflow">Hóa đơn & Thanh toán</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
                 <h4>Hỗ Trợ Vận Hành</h4>
                 <ul class="footer-links">
-                    <li><a href="#workflow">Bảo trì kỹ thuật 24/7</a></li>
-                    <li><a href="#workflow">Kiểm soát công nợ</a></li>
+                    <li><a href="#benefits">Ưu thế hệ thống</a></li>
+                    <li><a href="#workflow">Quy trình vận hành 4 bước</a></li>
                     <li><a href="<?= url('/auth/login.php') ?>">Cổng thông tin nhân viên</a></li>
                     <li><a href="<?= url('/auth/register.php') ?>">Đăng ký tài khoản</a></li>
                 </ul>
@@ -1882,18 +1940,22 @@ try {
 
     <!-- JAVASCRIPT ĐIỀU KHIỂN SLIDER & MODAL -->
     <script>
-    // 1. HERO SLIDER LOGIC
+    // 1. HERO SLIDER LOGIC (4 SLIDES LUXURY ELEGANCE)
     let currentHeroSlide = 0;
     const heroSlides = document.querySelectorAll('.hero-slide');
-    const heroDots = document.querySelectorAll('.hero-dot');
+    const heroDots = document.querySelectorAll('.hero-dot-line');
     const totalHeroSlides = heroSlides.length;
-    let heroTimer;
+    let heroTimer = null;
 
     function setHeroSlide(index) {
         currentHeroSlide = index;
+        
+        // Cập nhật trạng thái hiển thị Slide mượt mà
         heroSlides.forEach((slide, i) => {
             slide.classList.toggle('active', i === index);
         });
+
+        // Cập nhật vạch chỉ số slide
         heroDots.forEach((dot, i) => {
             dot.classList.toggle('active', i === index);
         });
@@ -1908,7 +1970,8 @@ try {
     }
 
     function startHeroAutoplay() {
-        heroTimer = setInterval(nextHeroSlide, 6000);
+        clearInterval(heroTimer);
+        heroTimer = setInterval(nextHeroSlide, 6500);
     }
 
     function resetHeroAutoplay() {
@@ -1916,118 +1979,37 @@ try {
         startHeroAutoplay();
     }
 
+    // Khởi động ban đầu
+    setHeroSlide(0);
     startHeroAutoplay();
 
-    // Hỗ trợ Touch Swipe cho Hero
-    let touchStartX = 0;
-    let touchEndX = 0;
+    // Dừng khi rê chuột vào Hero, tiếp tục khi rời chuột
     const heroWrap = document.getElementById('hero');
+    if (heroWrap) {
+        heroWrap.addEventListener('mouseenter', () => clearInterval(heroTimer));
+        heroWrap.addEventListener('mouseleave', () => resetHeroAutoplay());
 
-    heroWrap.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+        // Hỗ trợ Touch Swipe trên điện thoại / tablet
+        let touchStartX = 0;
+        let touchEndX = 0;
 
-    heroWrap.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleHeroSwipe();
-    }, { passive: true });
+        heroWrap.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
 
-    function handleHeroSwipe() {
-        if (touchEndX < touchStartX - 50) {
-            nextHeroSlide();
-            resetHeroAutoplay();
-        }
-        if (touchEndX > touchStartX + 50) {
-            prevHeroSlide();
-            resetHeroAutoplay();
-        }
-    }
-
-    // 2. SUITES HORIZONTAL CAROUSEL SCROLL
-    function scrollSuites(offset) {
-        const slider = document.getElementById('suitesSlider');
-        slider.scrollBy({ left: offset, behavior: 'smooth' });
-    }
-
-    // Lọc theo loại căn
-    function filterSuites(type, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const cards = document.querySelectorAll('.suite-card');
-        cards.forEach(card => {
-            const cardType = card.getAttribute('data-type');
-            if (type === 'all' || cardType === type) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
+        heroWrap.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) {
+                nextHeroSlide();
+                resetHeroAutoplay();
+            } else if (touchEndX > touchStartX + 50) {
+                prevHeroSlide();
+                resetHeroAutoplay();
             }
-        });
-
-        const slider = document.getElementById('suitesSlider');
-        if (slider) slider.scrollTo({ left: 0, behavior: 'smooth' });
+        }, { passive: true });
     }
 
-    // Modal xem chi tiết căn hộ thực tế
-    function openSuiteModal(data) {
-        document.getElementById('modalSuiteRoom').textContent = 'Phòng ' + data.room + ' (' + data.type + ')';
-        document.getElementById('modalSuiteAddress').textContent = data.address;
-
-        const stEl = document.getElementById('modalSuiteStatus');
-        stEl.textContent = data.status;
-        stEl.className = 'suite-status-pill ' + data.statusClass;
-
-        document.getElementById('modalSuitePrice').textContent = data.price;
-        document.getElementById('modalSuiteType').textContent = data.type;
-        document.getElementById('modalSuiteArea').textContent = data.area;
-        document.getElementById('modalSuiteDesc').textContent = data.desc;
-
-        document.getElementById('modalSuiteDien').textContent = data.dien;
-        document.getElementById('modalSuiteNuoc').textContent = data.nuoc;
-        document.getElementById('modalSuiteXeMay').textContent = data.xeMay;
-        document.getElementById('modalSuiteOto').textContent = data.oto;
-        document.getElementById('modalSuiteInternet').textContent = data.internet;
-        document.getElementById('modalSuiteVeSinh').textContent = data.veSinh;
-
-        const mainImg = document.getElementById('modalSuiteMainImg');
-        const thumbs = document.getElementById('modalSuiteThumbs');
-        thumbs.innerHTML = '';
-
-        if (data.images && data.images.length > 0) {
-            mainImg.src = data.images[0];
-            data.images.forEach((imgSrc, idx) => {
-                const th = document.createElement('img');
-                th.src = imgSrc;
-                th.alt = 'Ảnh thu nhỏ ' + (idx + 1);
-                th.style.width = '64px';
-                th.style.height = '48px';
-                th.style.objectFit = 'cover';
-                th.style.borderRadius = '6px';
-                th.style.cursor = 'pointer';
-                th.style.flexShrink = '0';
-                th.style.border = (idx === 0) ? '2px solid #38bdf8' : '2px solid rgba(255,255,255,0.1)';
-                th.onclick = function() {
-                    mainImg.src = imgSrc;
-                    thumbs.querySelectorAll('img').forEach(im => im.style.borderColor = 'rgba(255,255,255,0.1)');
-                    th.style.borderColor = '#38bdf8';
-                };
-                thumbs.appendChild(th);
-            });
-        }
-
-        const actionText = (data.status === 'Trống sẵn sàng') ? 'Đăng nhập để lập hợp đồng thuê' : 'Đăng nhập để quản lý căn này';
-        document.getElementById('modalActionBtnText').textContent = actionText;
-
-        document.getElementById('suiteDetailModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeSuiteModal() {
-        document.getElementById('suiteDetailModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    // 3. WORKFLOW TABS
+    // 2. WORKFLOW TABS
     function showStep(index) {
         document.querySelectorAll('.step-tab-btn').forEach((btn, i) => {
             btn.classList.toggle('active', i === index);
@@ -2037,7 +2019,7 @@ try {
         });
     }
 
-    // 4. QUICK LOGIN MODAL LOGIC
+    // 3. QUICK LOGIN MODAL LOGIC
     function openLoginModal() {
         document.getElementById('loginModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -2047,7 +2029,6 @@ try {
         document.getElementById('loginModal').style.display = 'none';
         document.body.style.overflow = 'auto';
     }
-
 
     function toggleModalPwd() {
         const inp = document.getElementById('modalPassword');
@@ -2065,7 +2046,6 @@ try {
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             closeLoginModal();
-            closeSuiteModal();
         }
     });
     </script>
