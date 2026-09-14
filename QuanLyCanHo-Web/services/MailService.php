@@ -112,25 +112,29 @@ class MailService
         </div>
         ";
 
-        // Ghi log mã OTP vào session và file log để phục vụ môi trường thử nghiệm XAMPP Localhost
-        $_SESSION['last_otp_code'] = $otpCode;
-        $_SESSION['last_otp_target'] = $recipientEmail;
+        // Ghi log mã OTP vào file log
         file_put_contents(__DIR__ . '/../logs/otp_mail.log', "[" . date('Y-m-d H:i:s') . "] Target: {$recipientEmail} | OTP: {$otpCode} | Type: {$type}\n", FILE_APPEND);
 
-        // Thử gửi qua mail() native nếu server có sendmail cấu hình
-        try {
-            $headers = [
-                'MIME-Version: 1.0',
-                'Content-type: text/html; charset=utf-8',
-                'From: ' . $config['from_name'] . ' <' . $config['from_address'] . '>',
-                'Reply-To: ' . $config['from_address'],
-                'X-Mailer: PHP/' . phpversion()
-            ];
-            @mail($recipientEmail, $subject, $htmlBody, implode("\r\n", $headers));
-        } catch (Throwable $e) {
-            // Ignore if local SMTP agent not running
+        // Gửi email trực tiếp qua Gmail SMTP
+        require_once __DIR__ . '/SmtpMailer.php';
+        $sendResult = SmtpMailer::send($recipientEmail, $recipientName, $subject, $htmlBody, $config);
+
+        // Nếu SMTP không thành công và server có sendmail native, thử fallback qua mail()
+        if (!$sendResult['success']) {
+            try {
+                $headers = [
+                    'MIME-Version: 1.0',
+                    'Content-type: text/html; charset=utf-8',
+                    'From: ' . $config['from_name'] . ' <' . $config['from_address'] . '>',
+                    'Reply-To: ' . $config['from_address'],
+                    'X-Mailer: PHP/' . phpversion()
+                ];
+                @mail($recipientEmail, $subject, $htmlBody, implode("\r\n", $headers));
+            } catch (Throwable $e) {
+                // Ignore fallback error
+            }
         }
 
-        return true;
+        return $sendResult['success'];
     }
 }

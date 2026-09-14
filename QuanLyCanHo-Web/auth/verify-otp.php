@@ -76,9 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
-// Hiển thị gợi ý OTP phục vụ localhost test
-$localHintOtp = $_SESSION['last_otp_code'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -188,13 +185,6 @@ $localHintOtp = $_SESSION['last_otp_code'] ?? '';
         <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.75rem 1rem; color: #6ee7b7; font-size: 0.875rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; text-align: left;">
             <?= svgIcon('check', '', 18) ?>
             <div><?= e($flashSuccess) ?></div>
-        </div>
-    <?php endif; ?>
-
-    <?php if ($localHintOtp !== ''): ?>
-        <div style="background: rgba(59, 130, 246, 0.1); border: 1px dashed rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.825rem; color: #93c5fd; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
-            <?= svgIcon('info', '', 16) ?>
-            <span>Môi trường Dev Local: Mã OTP là <strong style="color: #ffffff; letter-spacing: 1px;"><?= e($localHintOtp) ?></strong></span>
         </div>
     <?php endif; ?>
 
