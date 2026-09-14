@@ -100,7 +100,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200, user-scalable=yes, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập VIP - Hệ Thống Quản Lý Căn Hộ Dịch Vụ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -125,13 +125,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             color: #f8fafc;
             position: relative;
-            min-width: 1200px;
         }
 
         /* AMBIENT GLOW */
@@ -468,6 +469,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         .auth-footer-links a:hover {
             color: #93c5fd;
             text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .auth-container {
+                flex-direction: column;
+                margin: 1.25rem 1rem;
+                max-width: 480px;
+                width: calc(100% - 2rem);
+                min-height: auto;
+                border-radius: 20px;
+            }
+            .auth-slider-panel {
+                display: none !important;
+            }
+            .auth-form-panel {
+                padding: 2rem 1.5rem;
+            }
+            .auth-title {
+                font-size: 1.5rem;
+            }
+            .vip-input {
+                font-size: 16px !important;
+            }
         }
     </style>
 </head>

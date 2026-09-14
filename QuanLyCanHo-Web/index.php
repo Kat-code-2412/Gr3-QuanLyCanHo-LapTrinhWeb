@@ -132,7 +132,7 @@ try {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, user-scalable=yes, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Căn Hộ Dịch Vụ - Hệ Thống Quản Trị & Vận Hành Đẳng Cấp VIP</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -164,7 +164,8 @@ try {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
-            min-width: 1280px;
+            width: 100%;
+            overflow-x: hidden;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -1289,6 +1290,35 @@ try {
         .footer-links a:hover {
             color: #38bdf8;
             padding-left: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-slider-wrap { min-height: 620px; }
+            .hero-title { font-size: 2.5rem; }
+            .hero-slide-container { padding: 0 1.5rem; }
+            .features-grid, .benefits-grid { grid-template-columns: repeat(2, 1fr); }
+            .step-tabs-nav { grid-template-columns: 1fr 1fr; }
+            .step-content-pane { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .vip-nav-links { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .hero-slider-wrap { min-height: 520px; }
+            .hero-title { font-size: 1.85rem; }
+            .hero-desc { font-size: 0.95rem; margin-bottom: 1.5rem; }
+            .hero-bottom-strip { display: none; }
+            .hero-nav-arrow { display: none; }
+            .hero-dots-wrap { top: auto; bottom: 1.25rem; right: 50%; transform: translateX(50%); }
+            .features-grid, .benefits-grid { grid-template-columns: 1fr; }
+            .features-section, .benefits-section, .workflow-section, .cta-section { padding: 3.5rem 1.25rem; }
+            .cta-box { padding: 2.5rem 1.25rem; }
+            .cta-title { font-size: 1.75rem; }
+            .section-title { font-size: 1.85rem; }
+            .hero-btn-group { flex-direction: column; align-items: stretch; width: 100%; max-width: 320px; }
+            .step-tabs-nav { grid-template-columns: 1fr; }
+            .widget-grid-2col { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>

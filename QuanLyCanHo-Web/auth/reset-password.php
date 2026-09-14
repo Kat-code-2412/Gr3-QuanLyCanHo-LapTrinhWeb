@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200, user-scalable=yes, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đặt lại mật khẩu - Hệ Thống Quản Lý Căn Hộ Dịch Vụ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            min-width: 1200px;
+            width: 100%;
+            overflow-x: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -123,6 +124,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
+        }
+        @media (max-width: 540px) {
+            .auth-card {
+                padding: 1.75rem 1.25rem !important;
+                margin: 1rem auto !important;
+                width: calc(100% - 1.5rem) !important;
+                border-radius: 16px !important;
+            }
+            .form-control-dark {
+                font-size: 16px !important;
+            }
         }
     </style>
 </head>

@@ -20,10 +20,47 @@ declare(strict_types=1);
     <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const isMobile = window.innerWidth <= 992;
+
         if (sidebar) {
-            sidebar.classList.toggle('collapsed');
+            if (isMobile) {
+                const isOpen = sidebar.classList.toggle('show-mobile');
+                if (overlay) {
+                    overlay.classList.toggle('active', isOpen);
+                }
+                document.body.style.overflow = isOpen ? 'hidden' : '';
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
         }
     }
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992) {
+            const sidebar = document.getElementById('appSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.remove('show-mobile');
+            if (overlay) overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar) {
+            sidebar.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('show-mobile');
+                        if (overlay) overlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        }
+    });
 
     function toggleUserDropdown(event) {
         event.stopPropagation();
