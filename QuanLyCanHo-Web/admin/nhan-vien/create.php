@@ -227,31 +227,44 @@ if (!is_array($selectedBuildings)) {
             <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-                <!-- Upload Avatar -->
-                <div class="form-group" style="grid-column: span 2; padding: 1.1rem 1.25rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem; color: #1e293b;">
-                        <?= svgIcon('camera', '', 15) ?> Ảnh đại diện (Avatar - Không bắt buộc)
-                    </label>
-                    <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
-                        <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid #e2e8f0; background: #ffffff; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
-                            <img id="createAvatarPreview" src="" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                            <div id="createAvatarPlaceholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #eff6ff; color: #2563eb; font-size: 1.5rem; font-weight: 700;">
-                                <?= svgIcon('user', '', 28) ?>
+                <!-- Upload Avatar Hiện Đại -->
+                <div class="form-group" style="grid-column: span 2; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;">
+                        <!-- Trái: Khung ảnh đại diện và thông tin -->
+                        <div style="display: flex; align-items: center; gap: 1.25rem;">
+                            <div style="position: relative; flex-shrink: 0;">
+                                <div id="createAvatarWrapper" style="width: 76px; height: 76px; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); background: #e2e8f0; transition: all 0.25s ease;">
+                                    <img id="createAvatarPreview" src="" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <div id="createAvatarPlaceholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; font-size: 1.5rem; font-weight: 700;">
+                                        <?= svgIcon('user', '', 28) ?>
+                                    </div>
+                                </div>
+                                <label for="createAvatarInput" title="Tải ảnh mới" style="position: absolute; bottom: -2px; right: -2px; width: 26px; height: 26px; border-radius: 50%; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                    <?= svgIcon('camera', '', 13) ?>
+                                </label>
+                            </div>
+
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.2rem;">
+                                    Ảnh Đại Diện Nhân Sự
+                                </div>
+                                <div style="font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+                                    Tùy chọn tải ảnh ngay khi tạo tài khoản (JPG, PNG, WEBP, tối đa 5MB).
+                                </div>
+                                <div id="createAvatarStatusText" style="font-size: 0.8rem; font-weight: 600; margin-top: 0.35rem; display: none;"></div>
+                                <?php if (isset($errors['avatar'])): ?>
+                                    <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.35rem; display: block;"><?= e($errors['avatar']) ?></small>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <div style="flex: 1; min-width: 220px;">
-                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.35rem;">
-                                <label for="createAvatarInput" class="btn btn-outline" style="cursor: pointer; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff;">
-                                    <?= svgIcon('upload', '', 14) ?> Chọn ảnh tải lên
-                                </label>
-                                <input type="file" id="createAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewCreateAvatar(this)">
-                            </div>
-                            <div style="font-size: 0.775rem; color: #64748b;">
-                                Định dạng: JPG, PNG, WEBP, GIF (tối đa 5MB).
-                            </div>
-                            <?php if (isset($errors['avatar'])): ?>
-                                <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.25rem; display: block;"><?= e($errors['avatar']) ?></small>
-                            <?php endif; ?>
+
+                        <!-- Phải: Nút bấm thao tác hiện đại -->
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                            <label for="createAvatarInput" style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #0f172a; background: #ffffff; border: 1px solid #cbd5e1; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.04);" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                                <?= svgIcon('upload', '', 15) ?>
+                                <span>Tải ảnh đại diện</span>
+                            </label>
+                            <input type="file" id="createAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewCreateAvatar(this)">
                         </div>
                     </div>
                 </div>
@@ -481,19 +494,29 @@ document.querySelectorAll('.building-checkbox').forEach(cb => {
 
 function previewCreateAvatar(input) {
     if (input.files && input.files[0]) {
-        var reader = new FileReader();
+        const file = input.files[0];
+        const reader = new FileReader();
         reader.onload = function(e) {
-            var img = document.getElementById('createAvatarPreview');
-            var placeholder = document.getElementById('createAvatarPlaceholder');
+            const img = document.getElementById('createAvatarPreview');
+            const placeholder = document.getElementById('createAvatarPlaceholder');
+            const wrapper = document.getElementById('createAvatarWrapper');
+            const status = document.getElementById('createAvatarStatusText');
+
             if (img) {
                 img.src = e.target.result;
                 img.style.display = 'block';
             }
-            if (placeholder) {
-                placeholder.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+            if (wrapper) wrapper.style.borderColor = '#38bdf8';
+
+            if (status) {
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                status.style.display = 'block';
+                status.style.color = '#0284c7';
+                status.innerHTML = '✓ Đã chọn ảnh: <strong>' + file.name + '</strong> (' + sizeMb + ' MB)';
             }
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     }
 }
 </script>

@@ -299,39 +299,55 @@ $allBuildingsWithCount = $pdo->query('
             <input type="hidden" name="_csrf" value="<?= e(csrfToken()) ?>">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-                <!-- Upload Avatar -->
-                <div class="form-group" style="grid-column: span 2; padding: 1.1rem 1.25rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem; color: #1e293b;">
-                        <?= svgIcon('camera', '', 15) ?> Ảnh đại diện (Avatar)
-                    </label>
-                    <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
-                        <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid #e2e8f0; background: #ffffff; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
-                            <img id="empAvatarPreview" src="<?= !empty($employee['Avatar']) ? e(url($employee['Avatar'])) : '' ?>" 
-                                 alt="Avatar" 
-                                 style="width: 100%; height: 100%; object-fit: cover; <?= empty($employee['Avatar']) ? 'display: none;' : '' ?>">
-                            <div id="empAvatarPlaceholder" style="width: 100%; height: 100%; display: <?= !empty($employee['Avatar']) ? 'none' : 'flex' ?>; align-items: center; justify-content: center; background: #eff6ff; color: #2563eb; font-size: 1.5rem; font-weight: 700;">
-                                <?= e(getInitials($employee['HoTen'])) ?>
-                            </div>
-                        </div>
-                        <div style="flex: 1; min-width: 220px;">
-                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.35rem;">
-                                <label for="empAvatarInput" class="btn btn-outline" style="cursor: pointer; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff;">
-                                    <?= svgIcon('upload', '', 14) ?> Chọn ảnh mới
+                <!-- Upload Avatar Hiện Đại -->
+                <div class="form-group" style="grid-column: span 2; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;">
+                        <!-- Trái: Khung ảnh đại diện và thông tin -->
+                        <div style="display: flex; align-items: center; gap: 1.25rem;">
+                            <div style="position: relative; flex-shrink: 0;">
+                                <div id="empAvatarWrapper" style="width: 76px; height: 76px; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); background: #e2e8f0; transition: all 0.25s ease;">
+                                    <img id="empAvatarPreview" src="<?= !empty($employee['Avatar']) ? e(url($employee['Avatar'])) : '' ?>" 
+                                         alt="Avatar" 
+                                         style="width: 100%; height: 100%; object-fit: cover; <?= empty($employee['Avatar']) ? 'display: none;' : '' ?>">
+                                    <div id="empAvatarPlaceholder" style="width: 100%; height: 100%; display: <?= !empty($employee['Avatar']) ? 'none' : 'flex' ?>; align-items: center; justify-content: center; background: <?= ($employee['VaiTro'] === 'Admin') ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' ?>; color: #ffffff; font-size: 1.5rem; font-weight: 700;">
+                                        <?= e(getInitials($employee['HoTen'])) ?>
+                                    </div>
+                                </div>
+                                <label for="empAvatarInput" title="Tải ảnh mới" style="position: absolute; bottom: -2px; right: -2px; width: 26px; height: 26px; border-radius: 50%; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                    <?= svgIcon('camera', '', 13) ?>
                                 </label>
-                                <input type="file" id="empAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="previewEmpAvatar(this)">
-                                
-                                <?php if (!empty($employee['Avatar'])): ?>
-                                    <label style="font-size: 0.825rem; color: #dc2626; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; margin: 0; background: #fff; padding: 0.4rem 0.75rem; border: 1px solid #fecaca; border-radius: 6px;">
-                                        <input type="checkbox" name="remove_avatar" value="1" onchange="toggleRemoveEmpAvatar(this)">
-                                        Xóa ảnh hiện tại
-                                    </label>
+                            </div>
+
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.2rem;">
+                                    Ảnh Đại Diện Nhân Sự
+                                </div>
+                                <div style="font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+                                    Hỗ trợ định dạng JPG, PNG hoặc WEBP. Dung lượng tối đa 5MB.
+                                </div>
+                                <div id="empAvatarStatusText" style="font-size: 0.8rem; font-weight: 600; margin-top: 0.35rem; display: none;"></div>
+                                <?php if (isset($errors['avatar'])): ?>
+                                    <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.35rem; display: block;"><?= e($errors['avatar']) ?></small>
                                 <?php endif; ?>
                             </div>
-                            <div style="font-size: 0.775rem; color: #64748b;">
-                                Định dạng: JPG, PNG, WEBP, GIF (tối đa 5MB).
-                            </div>
-                            <?php if (isset($errors['avatar'])): ?>
-                                <small style="color: var(--danger-color); font-weight: 600; margin-top: 0.25rem; display: block;"><?= e($errors['avatar']) ?></small>
+                        </div>
+
+                        <!-- Phải: Nút bấm thao tác hiện đại -->
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                            <label for="empAvatarInput" style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #0f172a; background: #ffffff; border: 1px solid #cbd5e1; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.04);" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                                <?= svgIcon('upload', '', 15) ?>
+                                <span>Tải ảnh mới</span>
+                            </label>
+                            <input type="file" id="empAvatarInput" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" style="display: none;" onchange="handleEmpAvatarFileSelect(this)">
+
+                            <!-- Hidden field xóa avatar -->
+                            <input type="hidden" name="remove_avatar" id="removeEmpAvatarInput" value="0">
+
+                            <?php if (!empty($employee['Avatar'])): ?>
+                                <button type="button" id="btnRemoveEmpAvatar" onclick="handleToggleRemoveEmpAvatar()" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.95rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #dc2626; background: #ffffff; border: 1px solid #fecaca; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#ffffff'">
+                                    <?= svgIcon('trash', '', 14) ?>
+                                    <span id="removeEmpBtnText">Xóa ảnh hiện tại</span>
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -570,37 +586,98 @@ document.querySelectorAll('.building-checkbox').forEach(cb => {
     });
 });
 
-function previewEmpAvatar(input) {
+let isEmpMarkedForRemoval = false;
+
+function handleEmpAvatarFileSelect(input) {
     if (input.files && input.files[0]) {
-        var reader = new FileReader();
+        const file = input.files[0];
+        
+        isEmpMarkedForRemoval = false;
+        const removeInput = document.getElementById('removeEmpAvatarInput');
+        if (removeInput) removeInput.value = '0';
+        
+        const removeBtn = document.getElementById('btnRemoveEmpAvatar');
+        const removeText = document.getElementById('removeEmpBtnText');
+        if (removeBtn && removeText) {
+            removeText.textContent = 'Xóa ảnh hiện tại';
+            removeBtn.style.background = '#ffffff';
+            removeBtn.style.color = '#dc2626';
+            removeBtn.style.borderColor = '#fecaca';
+        }
+
+        const reader = new FileReader();
         reader.onload = function(e) {
-            var img = document.getElementById('empAvatarPreview');
-            var placeholder = document.getElementById('empAvatarPlaceholder');
+            const img = document.getElementById('empAvatarPreview');
+            const placeholder = document.getElementById('empAvatarPlaceholder');
+            const wrapper = document.getElementById('empAvatarWrapper');
+            const status = document.getElementById('empAvatarStatusText');
+
             if (img) {
                 img.src = e.target.result;
                 img.style.display = 'block';
                 img.style.opacity = '1';
+                img.style.filter = 'none';
             }
-            if (placeholder) {
-                placeholder.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+            if (wrapper) wrapper.style.borderColor = '#38bdf8';
+
+            if (status) {
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                status.style.display = 'block';
+                status.style.color = '#0284c7';
+                status.innerHTML = '✓ Đã chọn ảnh: <strong>' + file.name + '</strong> (' + sizeMb + ' MB)';
             }
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     }
 }
 
-function toggleRemoveEmpAvatar(checkbox) {
-    var img = document.getElementById('empAvatarPreview');
-    var placeholder = document.getElementById('empAvatarPlaceholder');
-    if (checkbox.checked) {
-        if (img) img.style.opacity = '0.25';
-        if (placeholder) placeholder.style.display = 'flex';
+function handleToggleRemoveEmpAvatar() {
+    isEmpMarkedForRemoval = !isEmpMarkedForRemoval;
+    const removeInput = document.getElementById('removeEmpAvatarInput');
+    const removeBtn = document.getElementById('btnRemoveEmpAvatar');
+    const removeText = document.getElementById('removeEmpBtnText');
+    const img = document.getElementById('empAvatarPreview');
+    const wrapper = document.getElementById('empAvatarWrapper');
+    const status = document.getElementById('empAvatarStatusText');
+    const fileInput = document.getElementById('empAvatarInput');
+
+    if (isEmpMarkedForRemoval) {
+        if (removeInput) removeInput.value = '1';
+        if (fileInput) fileInput.value = '';
+        if (removeText) removeText.textContent = 'Hoàn tác xóa';
+        if (removeBtn) {
+            removeBtn.style.background = '#fee2e2';
+            removeBtn.style.color = '#b91c1c';
+            removeBtn.style.borderColor = '#fca5a5';
+        }
+        if (img) {
+            img.style.opacity = '0.35';
+            img.style.filter = 'grayscale(100%)';
+        }
+        if (wrapper) wrapper.style.borderColor = '#fca5a5';
+        if (status) {
+            status.style.display = 'block';
+            status.style.color = '#dc2626';
+            status.innerHTML = '⚠️ Đã đánh dấu gỡ ảnh đại diện. Nhấn <strong>"Lưu Thay Đổi"</strong> để xác nhận.';
+        }
     } else {
+        if (removeInput) removeInput.value = '0';
+        if (removeText) removeText.textContent = 'Xóa ảnh hiện tại';
+        if (removeBtn) {
+            removeBtn.style.background = '#ffffff';
+            removeBtn.style.color = '#dc2626';
+            removeBtn.style.borderColor = '#fecaca';
+        }
         if (img) {
             img.style.opacity = '1';
-            img.style.display = 'block';
+            img.style.filter = 'none';
         }
-        if (placeholder) placeholder.style.display = 'none';
+        if (wrapper) wrapper.style.borderColor = '#ffffff';
+        if (status) {
+            status.style.display = 'none';
+            status.innerHTML = '';
+        }
     }
 }
 </script>
