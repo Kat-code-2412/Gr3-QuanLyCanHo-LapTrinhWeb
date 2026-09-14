@@ -291,15 +291,6 @@ $rooms = $stmt->fetchAll();
     </div>
 </div>
 
-<?php if ($staffAssigned !== null && empty($staffAssigned)): ?>
-    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 0.9rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; color: #92400e;">
-        <?= svgIcon('info', '', 20) ?>
-        <div style="font-size: 0.9rem;">
-            <strong>Lưu ý:</strong> Bạn hiện chưa được chỉ định quản lý tòa nhà nào trong hệ thống, do đó danh sách phòng và chỉ số điện nước sẽ không hiển thị. Vui lòng liên hệ Admin để được phân công tòa nhà.
-        </div>
-    </div>
-<?php endif; ?>
-
 <!-- BỘ LỌC THÁNG VÀ TÒA NHÀ -->
 <div class="card mb-3" style="padding: 1.25rem;">
     <form method="GET" action="" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
@@ -367,22 +358,20 @@ $rooms = $stmt->fetchAll();
             <tbody>
                 <?php if ($staffAssigned !== null && empty($staffAssigned)): ?>
                     <tr>
-                        <td colspan="7" class="text-center" style="padding: 3.5rem 1rem; color: #64748b;">
-                            <div style="margin-bottom: 0.75rem; color: #f59e0b; display: flex; justify-content: center;">
-                                <?= svgIcon('building', '', 42) ?>
+                        <td colspan="7" class="text-center" style="padding: 3rem 1.5rem; color: #64748b;">
+                            <div style="display: flex; justify-content: center; margin-bottom: 0.5rem; color: #94a3b8;">
+                                <?= svgIcon('info', '', 40) ?>
                             </div>
-                            <div style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem;">
-                                Bạn chưa được phân công quản lý tòa nhà nào
-                            </div>
-                            <div style="font-size: 0.875rem; color: #64748b; max-width: 480px; margin: 0 auto; line-height: 1.5;">
-                                Dữ liệu chỉ số điện nước được giới hạn theo các tòa nhà bạn phụ trách. Vui lòng liên hệ Quản trị viên để được phân công tòa nhà quản lý.
-                            </div>
+                            <p style="margin: 0; font-size: 0.95rem;">Bạn chưa được phân công quản lý tòa nhà nào.</p>
                         </td>
                     </tr>
                 <?php elseif (empty($rooms)): ?>
                     <tr>
-                        <td colspan="7" class="text-center" style="padding: 3rem 1rem; color: #94a3b8;">
-                            Hiện không có phòng nào đang thuê phù hợp với bộ lọc đã chọn.
+                        <td colspan="7" class="text-center" style="padding: 3rem 1.5rem; color: #64748b;">
+                            <div style="display: flex; justify-content: center; margin-bottom: 0.5rem; color: #94a3b8;">
+                                <?= svgIcon('info', '', 40) ?>
+                            </div>
+                            <p style="margin: 0; font-size: 0.95rem;">Không tìm thấy phòng nào phù hợp điều kiện.</p>
                         </td>
                     </tr>
                 <?php else: ?>
