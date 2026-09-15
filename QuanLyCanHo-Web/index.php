@@ -828,16 +828,15 @@ try {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
-            margin-bottom: 4rem;
+            margin-bottom: 0;
         }
 
         .step-tab-btn {
-            background: rgba(13, 20, 38, 0.65);
+            background: rgba(13, 20, 38, 0.7);
             border: 1px solid var(--vip-border);
             border-radius: 20px;
-            padding: 1.75rem 1.5rem;
+            padding: 2rem 1.6rem;
             text-align: left;
-            cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             backdrop-filter: blur(16px);
@@ -850,120 +849,45 @@ try {
             left: 20px;
             right: 20px;
             height: 3px;
-            background: transparent;
+            background: linear-gradient(90deg, #00f0ff, #38bdf8);
             border-radius: 0 0 4px 4px;
+            opacity: 0.5;
             transition: all 0.3s ease;
         }
 
         .step-tab-btn:hover {
-            background: rgba(20, 31, 56, 0.8);
-            border-color: rgba(255, 255, 255, 0.16);
-            transform: translateY(-3px);
-        }
-
-        .step-tab-btn.active {
-            background: linear-gradient(180deg, rgba(14, 165, 233, 0.15) 0%, rgba(13, 20, 38, 0.85) 100%);
+            background: rgba(20, 31, 56, 0.85);
             border-color: rgba(56, 189, 248, 0.45);
-            box-shadow: 0 12px 30px -8px rgba(14, 165, 233, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px -8px rgba(14, 165, 233, 0.3);
         }
 
-        .step-tab-btn.active::before {
-            background: linear-gradient(90deg, #00f0ff, #38bdf8);
+        .step-tab-btn:hover::before {
+            opacity: 1;
             box-shadow: 0 0 14px rgba(0, 240, 255, 0.85);
         }
 
         .step-num {
             font-size: 0.8rem;
             font-weight: 800;
-            color: #64748b;
-            margin-bottom: 0.6rem;
+            color: #38bdf8;
+            margin-bottom: 0.65rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
 
-        .step-tab-btn.active .step-num {
-            color: #38bdf8;
-        }
-
         .step-tab-title {
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.45rem;
         }
 
         .step-tab-sub {
-            font-size: 0.825rem;
+            font-size: 0.85rem;
             color: #94a3b8;
-            line-height: 1.5;
-        }
-
-        .step-content-pane {
-            display: none;
-            max-width: 860px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(8, 14, 28, 0.96) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 28px;
-            padding: 3.5rem 4rem;
-            backdrop-filter: blur(24px);
-            box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-            text-align: center;
-        }
-
-        .step-content-pane.active {
-            display: block;
-            animation: fadeInStep 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        @keyframes fadeInStep {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .step-pane-info h3 {
-            font-size: 2.15rem;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 1.15rem;
-            letter-spacing: -0.025em;
-            background: linear-gradient(135deg, #ffffff 70%, #93c5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .step-pane-info p {
-            color: #cbd5e1;
-            font-size: 1.05rem;
-            line-height: 1.75;
-            margin: 0 auto 1.75rem;
-            max-width: 680px;
-        }
-
-        .step-check-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 auto 2.5rem;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.85rem;
-            text-align: left;
-        }
-
-        .step-check-list li {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            font-size: 0.95rem;
-            color: #e2e8f0;
-        }
-
-        .step-check-list li svg {
-            color: #34d399;
-            flex-shrink: 0;
-            filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5));
+            line-height: 1.6;
+            margin: 0;
         }
 
         .widget-header {
@@ -1598,111 +1522,27 @@ try {
                 </p>
             </div>
 
-            <!-- TABS NAVIGATION -->
+            <!-- 4 BƯỚC QUY TRÌNH VẬN HÀNH -->
             <div class="step-tabs-nav">
-                <div class="step-tab-btn active" onclick="showStep(0)">
+                <div class="step-tab-btn">
                     <div class="step-num">BƯỚC 01</div>
                     <div class="step-tab-title">Khách Thuê & Hợp Đồng</div>
-                    <div class="step-tab-sub">Lưu thông tin khách thuê và quản lý hợp đồng.</div>
+                    <div class="step-tab-sub">Lưu thông tin khách thuê, tạo và quản lý hợp đồng thuê căn hộ.</div>
                 </div>
-                <div class="step-tab-btn" onclick="showStep(1)">
+                <div class="step-tab-btn">
                     <div class="step-num">BƯỚC 02</div>
                     <div class="step-tab-title">Điện, Nước & Dịch Vụ</div>
-                    <div class="step-tab-sub">Cập nhật chỉ số và tính chi phí hàng tháng.</div>
+                    <div class="step-tab-sub">Chốt chỉ số công tơ điện nước định kỳ và tự động tính phí dịch vụ.</div>
                 </div>
-                <div class="step-tab-btn" onclick="showStep(2)">
+                <div class="step-tab-btn">
                     <div class="step-num">BƯỚC 03</div>
                     <div class="step-tab-title">Hóa Đơn & Thanh Toán</div>
-                    <div class="step-tab-sub">Theo dõi các khoản phí và xuất hóa đơn.</div>
+                    <div class="step-tab-sub">Tổng hợp chi phí, phát hành hóa đơn và theo dõi lịch sử thanh toán.</div>
                 </div>
-                <div class="step-tab-btn" onclick="showStep(3)">
+                <div class="step-tab-btn">
                     <div class="step-num">BƯỚC 04</div>
                     <div class="step-tab-title">Bảo Trì & Báo Cáo</div>
-                    <div class="step-tab-sub">Theo dõi yêu cầu sửa chữa và tình hình vận hành.</div>
-                </div>
-            </div>
-
-            <!-- STEP 1 CONTENT -->
-            <div class="step-content-pane active" data-step="0">
-                <div class="step-pane-info">
-                    <h3>Tạo & Quản Lý Hợp Đồng</h3>
-                    <p>
-                        Quản lý thông tin khách thuê, căn hộ, tiền cọc, thời gian thuê và các dịch vụ đi kèm trên một hệ thống.
-                    </p>
-                    <ul class="step-check-list">
-                        <li><?= svgIcon('check', '', 18) ?> Chọn căn hộ và kiểm tra tình trạng phòng trước khi lưu</li>
-                        <li><?= svgIcon('check', '', 18) ?> Tự động lấy thông tin giá thuê và dịch vụ của căn hộ</li>
-                        <li><?= svgIcon('check', '', 18) ?> Theo dõi hợp đồng sắp hết hạn trên Dashboard</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Đăng nhập để lập hợp đồng</span>
-                            <?= svgIcon('arrow-right', '', 16) ?>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 2 CONTENT -->
-            <div class="step-content-pane" data-step="1">
-                <div class="step-pane-info">
-                    <h3>Chốt Chỉ Số Điện Nước</h3>
-                    <p>
-                        Ghi nhận chỉ số công tơ điện hàng tháng nhanh gọn. Hệ thống tự kế thừa số cũ từ kỳ trước, tính lượng tiêu thụ và áp đơn giá điện riêng theo từng tòa nhà.
-                    </p>
-                    <ul class="step-check-list">
-                        <li><?= svgIcon('check', '', 18) ?> Tiền nước tính bằng VNĐ khoán theo tháng (không tính theo m3)</li>
-                        <li><?= svgIcon('check', '', 18) ?> Báo lỗi ngay nếu số mới nhỏ hơn số cũ</li>
-                        <li><?= svgIcon('check', '', 18) ?> Tự động liên kết phát hành hóa đơn tương ứng</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Trải nghiệm chốt chỉ số</span>
-                            <?= svgIcon('arrow-right', '', 16) ?>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3 CONTENT -->
-            <div class="step-content-pane" data-step="2">
-                <div class="step-pane-info">
-                    <h3>Phát Hành Hóa Đơn & Thanh Toán</h3>
-                    <p>
-                        Tự động tổng hợp tiền phòng, tiền điện, tiền nước và các phụ phí dịch vụ (xe máy, rác, wifi) thành 1 hóa đơn hoàn chỉnh chỉ trong 1 thao tác.
-                    </p>
-                    <ul class="step-check-list">
-                        <li><?= svgIcon('check', '', 18) ?> Hỗ trợ in ấn mẫu hóa đơn khổ A4/A5 chuyên nghiệp</li>
-                        <li><?= svgIcon('check', '', 18) ?> Ghi nhận thanh toán linh hoạt: Chuyển khoản ngân hàng hoặc tiền mặt</li>
-                        <li><?= svgIcon('check', '', 18) ?> Cập nhật trạng thái tức thời vào doanh thu thực thu</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Xem mẫu hóa đơn chuẩn</span>
-                            <?= svgIcon('arrow-right', '', 16) ?>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 4 CONTENT -->
-            <div class="step-content-pane" data-step="3">
-                <div class="step-pane-info">
-                    <h3>Bảo Trì & Báo Cáo Tài Chính</h3>
-                    <p>
-                        Tiếp nhận phản ánh hư hỏng từ khách thuê (máy lạnh, vòi nước, khóa cửa), phân công kỹ thuật viên xử lý và đối soát công nợ toàn hệ thống theo thời gian thực.
-                    </p>
-                    <ul class="step-check-list">
-                        <li><?= svgIcon('check', '', 18) ?> Báo cáo doanh thu trên biểu đồ trực quan theo năm</li>
-                        <li><?= svgIcon('check', '', 18) ?> Thống kê danh sách khách nợ tiền phòng quá hạn</li>
-                        <li><?= svgIcon('check', '', 18) ?> Xuất file Excel / PDF báo cáo tài chính chỉ trong 1 thao tác</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <button type="button" onclick="openLoginModal()" class="btn-vip-primary">
-                            <span>Vào xem Báo cáo Dashboard</span>
-                            <?= svgIcon('arrow-right', '', 16) ?>
-                        </button>
-                    </div>
+                    <div class="step-tab-sub">Tiếp nhận xử lý sự cố thiết bị và tổng hợp báo cáo tài chính doanh thu.</div>
                 </div>
             </div>
 
@@ -1899,15 +1739,6 @@ try {
         }, { passive: true });
     }
 
-    // 2. WORKFLOW TABS
-    function showStep(index) {
-        document.querySelectorAll('.step-tab-btn').forEach((btn, i) => {
-            btn.classList.toggle('active', i === index);
-        });
-        document.querySelectorAll('.step-content-pane').forEach((pane, i) => {
-            pane.classList.toggle('active', i === index);
-        });
-    }
 
     // 3. QUICK LOGIN MODAL LOGIC
     function openLoginModal() {
