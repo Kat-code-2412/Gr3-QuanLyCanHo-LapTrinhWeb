@@ -39,8 +39,10 @@ foreach ($yearsRaw as $yVal) {
         $availableYearsMap[$yInt] = true;
     }
 }
-// Đảm bảo dải năm lân cận luôn sẵn sàng chọn: (Năm hiện tại - 3) đến (Năm hiện tại + 2)
-for ($y = $currentYear - 3; $y <= $currentYear + 2; $y++) {
+// Đảm bảo dải năm rộng từ 2015 đến 2035 luôn sẵn sàng chọn
+$minYear = 2015;
+$maxYear = max(2035, $currentYear + 5);
+for ($y = $minYear; $y <= $maxYear; $y++) {
     $availableYearsMap[$y] = true;
 }
 $availableYearsMap[$year] = true;

@@ -111,8 +111,10 @@ try {
     }
 } catch (Throwable $e) {}
 
-// 3. Đảm bảo dải năm lân cận luôn sẵn sàng: từ (Năm hiện tại - 3) đến (Năm hiện tại + 2)
-for ($y = $systemCurrentYear - 3; $y <= $systemCurrentYear + 2; $y++) {
+// 3. Đảm bảo dải năm rộng từ 2015 đến 2035 (và mở rộng theo năm hiện tại)
+$minYear = 2015;
+$maxYear = max(2035, $systemCurrentYear + 5);
+for ($y = $minYear; $y <= $maxYear; $y++) {
     $availableYearsMap[$y] = true;
 }
 $availableYearsMap[$curYear] = true;
@@ -179,24 +181,71 @@ foreach ($all12MonthsRev as $k => $val) {
         </p>
     </div>
     <div style="display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: center;">
-        <!-- BỘ CHỌN NĂM DASHBOARD TRỰC QUAN -->
-        <form method="GET" action="<?= url('/admin/index.php') ?>" style="display: inline-flex; align-items: center; margin: 0;">
-            <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 0.35rem 0.65rem; box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1);">
-                <span style="color: #0284c7; display: flex; align-items: center;">
-                    <?= svgIcon('calendar', '', 16) ?>
-                </span>
-                <span style="font-size: 0.85rem; font-weight: 700; color: #0284c7;">Năm:</span>
-                <select name="nam" 
-                        onchange="this.form.submit()" 
-                        style="border: none; background: transparent; font-size: 0.9rem; font-weight: 700; color: #0f172a; outline: none; cursor: pointer;">
-                    <?php foreach ($availableYears as $y): ?>
-                        <option value="<?= $y ?>" <?= ($y === $curYear) ? 'selected' : '' ?>>
-                            <?= $y ?> <?= ($y === $systemCurrentYear) ? '(Hiện tại)' : '' ?>
-                        </option>
+        <!-- BỘ CHỌN NĂM DASHBOARD DẠNG POPUP YEAR-PICKER THÔNG MINH -->
+        <div style="position: relative; display: inline-block;">
+            <button type="button" 
+                    id="btnOpenYearPicker"
+                    onclick="toggleDashboardYearPicker(event)" 
+                    style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 0.45rem 0.85rem; font-size: 0.9rem; font-weight: 700; color: #0284c7; cursor: pointer; box-shadow: 0 1px 3px rgba(2, 132, 199, 0.12); transition: all 0.2s;">
+                <?= svgIcon('calendar', '', 18) ?>
+                <span>Năm: <strong style="color: #0f172a; font-size: 0.95rem;"><?= $curYear ?></strong> <?= ($curYear === $systemCurrentYear) ? '<span style="color:#0284c7;font-size:0.75rem;">(Hiện tại)</span>' : '' ?></span>
+                <span style="font-size: 0.75rem; color: #64748b; margin-left: 2px;">▼</span>
+            </button>
+
+            <!-- BẢNG CHỌN NĂM TRỰC QUAN (POPOVER) -->
+            <div id="dashboardYearPickerPopover" 
+                 style="display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 1050; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 1.15rem; width: 330px; box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.25);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid #f1f5f9;">
+                    <div style="font-weight: 800; font-size: 0.9rem; color: #0f172a; display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="color: #0284c7;"><?= svgIcon('calendar', '', 16) ?></span>
+                        <span>Chọn Năm Xem Doanh Thu</span>
+                    </div>
+                    <button type="button" 
+                            onclick="toggleDashboardYearPicker(event, false)" 
+                            style="border: none; background: #f1f5f9; width: 26px; height: 26px; border-radius: 6px; color: #64748b; cursor: pointer; font-size: 1rem; line-height: 1; display: flex; align-items: center; justify-content: center;">
+                        &times;
+                    </button>
+                </div>
+
+                <!-- Nhập nhanh năm bất kỳ -->
+                <form method="GET" action="<?= url('/admin/index.php') ?>" style="display: flex; gap: 0.4rem; margin-bottom: 0.85rem;">
+                    <input type="number" 
+                           name="nam" 
+                           min="2000" 
+                           max="2099" 
+                           value="<?= $curYear ?>" 
+                           placeholder="Nhập năm cần xem..."
+                           style="flex: 1; padding: 0.4rem 0.65rem; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; font-weight: 700; color: #0f172a; outline: none;"
+                           onfocus="this.style.borderColor='#0284c7'"
+                           onblur="this.style.borderColor='#cbd5e1'">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem; border-radius: 6px;">
+                        Xem ngay
+                    </button>
+                </form>
+
+                <!-- Dải năm nhanh nhiều lựa chọn từ 2015 đến 2035 -->
+                <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.45rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Danh Sách Các Năm (<?= count($availableYears) ?> năm):
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; max-height: 220px; overflow-y: auto; padding-right: 2px;">
+                    <?php foreach ($availableYears as $y): 
+                        $isCur = ($y === $curYear);
+                        $isSystem = ($y === $systemCurrentYear);
+                    ?>
+                        <a href="<?= url('/admin/index.php?nam=' . $y) ?>" 
+                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.45rem 0.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: <?= $isCur ? '800' : '600' ?>; text-decoration: none; text-align: center; transition: all 0.15s; <?= $isCur ? 'background: #0284c7; color: #ffffff; box-shadow: 0 3px 8px rgba(2,132,199,0.35);' : ($isSystem ? 'background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;' : 'background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;') ?>"
+                           onmouseover="<?= $isCur ? '' : "this.style.background='#bae6fd';this.style.borderColor='#38bdf8';this.style.color='#0369a1';" ?>"
+                           onmouseout="<?= $isCur ? '' : ($isSystem ? "this.style.background='#e0f2fe';this.style.borderColor='#7dd3fc';this.style.color='#0369a1';" : "this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';this.style.color='#334155';") ?>">
+                            <span><?= $y ?></span>
+                            <?php if ($isSystem): ?>
+                                <span style="font-size: 0.65rem; opacity: <?= $isCur ? '0.9' : '0.8' ?>;">Hiện tại</span>
+                            <?php endif; ?>
+                        </a>
                     <?php endforeach; ?>
-                </select>
+                </div>
             </div>
-        </form>
+        </div>
 
         <a href="<?= url('/admin/bao-cao/doanh-thu.php?nam=' . $curYear) ?>" 
            class="btn btn-primary">
@@ -306,19 +355,35 @@ foreach ($all12MonthsRev as $k => $val) {
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
-                <!-- Dải nút chọn năm nhanh trên biểu đồ -->
-                <div style="display: inline-flex; align-items: center; gap: 0.2rem; background: #f1f5f9; padding: 0.2rem; border-radius: 8px;">
-                    <?php 
-                    $quickYears = array_slice($availableYears, 0, 4);
-                    foreach ($quickYears as $qy): 
-                        $isQy = ($qy === $curYear);
-                    ?>
-                        <a href="<?= url('/admin/index.php?nam=' . $qy) ?>" 
-                           style="padding: 0.2rem 0.5rem; font-size: 0.78rem; font-weight: <?= $isQy ? '700' : '600' ?>; border-radius: 6px; text-decoration: none; transition: all 0.2s; <?= $isQy ? 'background: #0284c7; color: #ffffff; box-shadow: 0 1px 3px rgba(2,132,199,0.3);' : 'color: #64748b; background: transparent;' ?>"
-                           title="Xem biểu đồ doanh thu năm <?= $qy ?>">
-                            <?= $qy ?>
-                        </a>
-                    <?php endforeach; ?>
+                <!-- Dải nút chuyển năm trước / năm sau & chọn nhanh -->
+                <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: #f1f5f9; padding: 0.2rem 0.35rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <!-- Lùi 1 năm -->
+                    <a href="<?= url('/admin/index.php?nam=' . ($curYear - 1)) ?>" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: #ffffff; color: #0284c7; text-decoration: none; font-weight: 800; font-size: 1.1rem; line-height: 1; border: 1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;"
+                       title="Xem năm trước (<?= $curYear - 1 ?>)"
+                       onmouseover="this.style.background='#0284c7';this.style.color='#fff';"
+                       onmouseout="this.style.background='#fff';this.style.color='#0284c7';">
+                        &lsaquo;
+                    </a>
+
+                    <!-- Bấm icon lịch để bật popup chọn năm luôn -->
+                    <button type="button" 
+                            onclick="toggleDashboardYearPicker(event, true)" 
+                            style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.55rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0284c7; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;"
+                            title="Bấm để chọn năm bất kỳ trong danh sách">
+                        <?= svgIcon('calendar', '', 15) ?>
+                        <span style="color: #0f172a;"><?= $curYear ?></span>
+                        <span style="font-size: 0.65rem; color: #64748b;">▼</span>
+                    </button>
+
+                    <!-- Tiến 1 năm -->
+                    <a href="<?= url('/admin/index.php?nam=' . ($curYear + 1)) ?>" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: #ffffff; color: #0284c7; text-decoration: none; font-weight: 800; font-size: 1.1rem; line-height: 1; border: 1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;"
+                       title="Xem năm sau (<?= $curYear + 1 ?>)"
+                       onmouseover="this.style.background='#0284c7';this.style.color='#fff';"
+                       onmouseout="this.style.background='#fff';this.style.color='#0284c7';">
+                        &rsaquo;
+                    </a>
                 </div>
 
                 <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">
@@ -462,6 +527,29 @@ document.addEventListener("DOMContentLoaded", function() {
                 plugins: { legend: { display: false } }
             }
         });
+    }
+});
+
+// Điều khiển bật/tắt bảng chọn năm (Year Picker Popover)
+function toggleDashboardYearPicker(e, forceState) {
+    if (e) e.stopPropagation();
+    const pop = document.getElementById('dashboardYearPickerPopover');
+    if (!pop) return;
+    if (typeof forceState === 'boolean') {
+        pop.style.display = forceState ? 'block' : 'none';
+    } else {
+        pop.style.display = (pop.style.display === 'block') ? 'none' : 'block';
+    }
+}
+
+// Bấm ra ngoài thì tự đóng popup
+document.addEventListener('click', function(e) {
+    const pop = document.getElementById('dashboardYearPickerPopover');
+    const btn = document.getElementById('btnOpenYearPicker');
+    if (pop && pop.style.display === 'block') {
+        if (!pop.contains(e.target) && (!btn || !btn.contains(e.target))) {
+            pop.style.display = 'none';
+        }
     }
 });
 </script>
