@@ -1163,9 +1163,8 @@ try {
             .hero-slider-wrap { min-height: 620px; }
             .hero-title { font-size: 2.5rem; }
             .hero-slide-container { padding: 0 1.5rem; }
-            .features-grid, .benefits-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
             .step-tabs-nav { grid-template-columns: 1fr 1fr; }
-            .step-content-pane { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .vip-nav-links { display: none; }
         }
