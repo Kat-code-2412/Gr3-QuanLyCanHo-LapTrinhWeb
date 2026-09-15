@@ -61,8 +61,64 @@ $doanhThuThangNay = (float)($curRevData['TongThucThu'] ?? 0);
 $doanhThuTienPhong = (float)($curRevData['TienPhongThucThu'] ?? 0);
 $soPhongDaThu      = (int)($curRevData['SoPhongDaThu'] ?? 0);
 
-// 3. DOANH THU THỰC THU TOÀN BỘ 12 THÁNG CỦA NĂM HIỆN TẠI
-$curYear = (int)date('Y');
+// 3. DOANH THU THỰC THU TOÀN BỘ 12 THÁNG CỦA NĂM ĐƯỢC CHỌN
+$systemCurrentYear = (int)date('Y');
+$selectedYear = filter_input(INPUT_GET, 'nam', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 2000, 'max_range' => 2100],
+]);
+if ($selectedYear === false || $selectedYear === null) {
+    $selectedYear = filter_input(INPUT_GET, 'year', FILTER_VALIDATE_INT, [
+        'options' => ['min_range' => 2000, 'max_range' => 2100],
+    ]);
+}
+if ($selectedYear === false || $selectedYear === null) {
+    $selectedYear = $systemCurrentYear;
+}
+$curYear = $selectedYear;
+
+// Lấy danh sách tất cả các năm có dữ liệu hoặc xung quanh năm hiện tại
+$availableYearsMap = [];
+
+// 1. Quét các năm có hóa đơn
+try {
+    $stmtYearsHd = $pdo->query("
+        SELECT DISTINCT RIGHT(KyThanhToan, 4) AS Nam 
+        FROM HoaDon 
+        WHERE KyThanhToan IS NOT NULL AND KyThanhToan <> ''
+    ");
+    $hdYears = $stmtYearsHd->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    foreach ($hdYears as $yStr) {
+        $yInt = (int)$yStr;
+        if ($yInt >= 2000 && $yInt <= 2100) {
+            $availableYearsMap[$yInt] = true;
+        }
+    }
+} catch (Throwable $e) {}
+
+// 2. Quét các năm trong hợp đồng
+try {
+    $stmtYearsHp = $pdo->query("
+        SELECT DISTINCT YEAR(NgayBatDau) AS Nam FROM HopDong WHERE NgayBatDau IS NOT NULL
+        UNION 
+        SELECT DISTINCT YEAR(NgayKetThuc) AS Nam FROM HopDong WHERE NgayKetThuc IS NOT NULL
+    ");
+    $hpYears = $stmtYearsHp->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    foreach ($hpYears as $yStr) {
+        $yInt = (int)$yStr;
+        if ($yInt >= 2000 && $yInt <= 2100) {
+            $availableYearsMap[$yInt] = true;
+        }
+    }
+} catch (Throwable $e) {}
+
+// 3. Đảm bảo dải năm lân cận luôn sẵn sàng: từ (Năm hiện tại - 3) đến (Năm hiện tại + 2)
+for ($y = $systemCurrentYear - 3; $y <= $systemCurrentYear + 2; $y++) {
+    $availableYearsMap[$y] = true;
+}
+$availableYearsMap[$curYear] = true;
+$availableYears = array_keys($availableYearsMap);
+rsort($availableYears);
+
 $stmtYearRev = $pdo->prepare("
     SELECT 
         hd.KyThanhToan,
@@ -123,7 +179,26 @@ foreach ($all12MonthsRev as $k => $val) {
         </p>
     </div>
     <div style="display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: center;">
-        <a href="<?= url('/admin/bao-cao/doanh-thu.php') ?>" 
+        <!-- BỘ CHỌN NĂM DASHBOARD TRỰC QUAN -->
+        <form method="GET" action="<?= url('/admin/index.php') ?>" style="display: inline-flex; align-items: center; margin: 0;">
+            <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 0.35rem 0.65rem; box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1);">
+                <span style="color: #0284c7; display: flex; align-items: center;">
+                    <?= svgIcon('calendar', '', 16) ?>
+                </span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #0284c7;">Năm:</span>
+                <select name="nam" 
+                        onchange="this.form.submit()" 
+                        style="border: none; background: transparent; font-size: 0.9rem; font-weight: 700; color: #0f172a; outline: none; cursor: pointer;">
+                    <?php foreach ($availableYears as $y): ?>
+                        <option value="<?= $y ?>" <?= ($y === $curYear) ? 'selected' : '' ?>>
+                            <?= $y ?> <?= ($y === $systemCurrentYear) ? '(Hiện tại)' : '' ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </form>
+
+        <a href="<?= url('/admin/bao-cao/doanh-thu.php?nam=' . $curYear) ?>" 
            class="btn btn-primary">
             <?= svgIcon('chart', '', 16) ?> <span>Báo Cáo Doanh Thu 12 Tháng</span>
         </a>
@@ -172,8 +247,8 @@ foreach ($all12MonthsRev as $k => $val) {
     <!-- CARD 3: DOANH THU NĂM (CLICKABLE) -->
     <div class="detail-item" 
          style="border-top: 3px solid #0284c7; cursor: pointer;" 
-         onclick="window.location.href='<?= url('/admin/bao-cao/doanh-thu.php') ?>'" 
-         title="Bấm để xem bóc tách doanh thu chi tiết 12 tháng">
+         onclick="window.location.href='<?= url('/admin/bao-cao/doanh-thu.php?nam=' . $curYear) ?>'" 
+         title="Bấm để xem bóc tách doanh thu chi tiết 12 tháng năm <?= $curYear ?>">
         <div class="detail-label">
             <span>DOANH THU NĂM <?= $curYear ?></span>
             <?= svgIcon('invoice', '', 18) ?>
@@ -182,10 +257,14 @@ foreach ($all12MonthsRev as $k => $val) {
             <?= formatMoney($tongDoanhThuNamHienTai) ?>
         </div>
         <div style="font-size: 0.825rem; color: #64748b; margin-top: 0.35rem;">
-            Tháng <?= date('m/Y') ?>: <strong style="color: #0369a1;"><?= formatMoney($doanhThuThangNay) ?></strong> (<?= $soPhongDaThu ?> phòng)
+            <?php if ($curYear === $systemCurrentYear): ?>
+                Tháng <?= date('m/Y') ?>: <strong style="color: #0369a1;"><?= formatMoney($doanhThuThangNay) ?></strong> (<?= $soPhongDaThu ?> phòng)
+            <?php else: ?>
+                Tổng cả năm <?= $curYear ?>: <strong style="color: #0369a1;"><?= formatMoney($tongDoanhThuNamHienTai) ?></strong>
+            <?php endif; ?>
         </div>
         <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.25rem;">
-            <span>Xem chi tiết 12 tháng</span> &rarr;
+            <span>Xem chi tiết năm <?= $curYear ?></span> &rarr;
         </div>
     </div>
 
@@ -226,11 +305,26 @@ foreach ($all12MonthsRev as $k => $val) {
                     Bấm vào cột tháng bất kỳ để xem bảng chi tiết từng hóa đơn của tháng đó
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                <!-- Dải nút chọn năm nhanh trên biểu đồ -->
+                <div style="display: inline-flex; align-items: center; gap: 0.2rem; background: #f1f5f9; padding: 0.2rem; border-radius: 8px;">
+                    <?php 
+                    $quickYears = array_slice($availableYears, 0, 4);
+                    foreach ($quickYears as $qy): 
+                        $isQy = ($qy === $curYear);
+                    ?>
+                        <a href="<?= url('/admin/index.php?nam=' . $qy) ?>" 
+                           style="padding: 0.2rem 0.5rem; font-size: 0.78rem; font-weight: <?= $isQy ? '700' : '600' ?>; border-radius: 6px; text-decoration: none; transition: all 0.2s; <?= $isQy ? 'background: #0284c7; color: #ffffff; box-shadow: 0 1px 3px rgba(2,132,199,0.3);' : 'color: #64748b; background: transparent;' ?>"
+                           title="Xem biểu đồ doanh thu năm <?= $qy ?>">
+                            <?= $qy ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+
                 <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">
                     Tổng: <span style="color: #0284c7; font-weight: 700;"><?= formatMoney($tongDoanhThuNamHienTai) ?></span>
                 </span>
-                <a href="<?= url('/admin/bao-cao/doanh-thu.php') ?>" class="btn btn-sm btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #0284c7; border-color: #cbd5e1;">
+                <a href="<?= url('/admin/bao-cao/doanh-thu.php?nam=' . $curYear) ?>" class="btn btn-sm btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #0284c7; border-color: #cbd5e1;">
                     Xem chi tiết &rarr;
                 </a>
             </div>

@@ -30,15 +30,22 @@ $stmtYears = $pdo->prepare("
     ORDER BY Nam DESC
 ");
 $stmtYears->execute($bldCond['params']);
-$years = $stmtYears->fetchAll(PDO::FETCH_COLUMN) ?: [];
+$yearsRaw = $stmtYears->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
-if (empty($years)) {
-    $years = [(string)$currentYear];
+$availableYearsMap = [];
+foreach ($yearsRaw as $yVal) {
+    $yInt = (int)$yVal;
+    if ($yInt >= 2000 && $yInt <= 2100) {
+        $availableYearsMap[$yInt] = true;
+    }
 }
-if (!in_array((string)$year, $years, true)) {
-    $years[] = (string)$year;
-    rsort($years);
+// Đảm bảo dải năm lân cận luôn sẵn sàng chọn: (Năm hiện tại - 3) đến (Năm hiện tại + 2)
+for ($y = $currentYear - 3; $y <= $currentYear + 2; $y++) {
+    $availableYearsMap[$y] = true;
 }
+$availableYearsMap[$year] = true;
+$years = array_map('strval', array_keys($availableYearsMap));
+rsort($years);
 
 // 2. Lấy dữ liệu tổng hợp từng tháng trong năm đã chọn từ Database
 $stmtMonths = $pdo->prepare("
